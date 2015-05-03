@@ -108,6 +108,32 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			}
 			break;
 
+		case ID_DUNGEON_PREV:
+			if (curDungeon > 0)
+			{
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
+				curDungeon--;
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
+				PaintDunMap();
+				if (resetRoomA)
+					curRoom = 0;
+				PaintRoomMap();
+			}
+			break;
+
+		case ID_DUNGEON_NEXT:
+			if (curDungeon < 7)
+			{
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
+				curDungeon++;
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
+				PaintDunMap();
+				if (resetRoomA)
+					curRoom = 0;
+				PaintRoomMap();
+			}
+			break;
+
 		case ID_NAV_1:
 		case ID_NAV_2:
 		case ID_NAV_3:
