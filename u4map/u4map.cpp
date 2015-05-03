@@ -39,6 +39,7 @@ long showMonsters = 0;
 long showParty = 0;
 long altIcon = 0;
 long showSpoilers = 0;
+short hideMimic = 0;
 
 short resetRoomA = 1;
 
@@ -226,6 +227,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_SPECIAL_MONSTERS:
 			showMonsters = !showMonsters;
 			if (showMonsters)
+				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_UNCHECKED);
+			PaintRoomMap();
+			break;
+
+		case ID_SPECIAL_HIDEMIMIC:
+			hideMimic = !hideMimic;
+			if (hideMimic)
 				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_UNCHECKED);
@@ -462,6 +472,8 @@ void PaintRoomMap()
 				if (monsterY[i][curRoom][curDungeon] > 0xa)
 					k=0;
 				thisIcon[monsterX[i][curRoom][curDungeon]][monsterY[i][curRoom][curDungeon]] = monsterType[i][curRoom][curDungeon];
+				if ((!hideMimic) && (monsterType[i][curRoom][curDungeon] == 0xac))
+					thisIcon[monsterX[i][curRoom][curDungeon]][monsterY[i][curRoom][curDungeon]] = 0xad;
 			}
 	}
 
