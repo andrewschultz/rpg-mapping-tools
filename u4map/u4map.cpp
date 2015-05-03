@@ -29,6 +29,7 @@ HWND hwnd;
 
 HDC roomdc;
 HDC leveldc;
+HDC level2dc;
 
 HDC localhdc;
 
@@ -40,6 +41,8 @@ long showParty = 0;
 long altIcon = 0;
 long showSpoilers = 0;
 short hideMimic = 0;
+
+short wrapHalf = 0;
 
 short resetRoomA = 1;
 
@@ -219,69 +222,76 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			}
 			break;
 
-		case ID_SPECIAL_SPOIL:
+		case ID_OPTIONS_SPOIL:
 			showSpoilers = !showSpoilers;
 			PaintRoomMap();
 			break;
 
-		case ID_SPECIAL_MONSTERS:
+		case ID_OPTIONS_MONSTERS:
 			showMonsters = !showMonsters;
 			if (showMonsters)
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MONSTERS, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MONSTERS, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
-		case ID_SPECIAL_HIDEMIMIC:
+		case ID_OPTIONS_HIDEMIMIC:
 			hideMimic = !hideMimic;
 			if (hideMimic)
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_HIDEMIMIC, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDEMIMIC, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_HIDEMIMIC, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDEMIMIC, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
-		case ID_SPECIAL_PARTY_NONE:
-		case ID_SPECIAL_PARTY_NORTH:
-		case ID_SPECIAL_PARTY_EAST:
-		case ID_SPECIAL_PARTY_SOUTH:
-		case ID_SPECIAL_PARTY_WEST:
-			CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_PARTY_NONE + showParty, MF_UNCHECKED);
+		case ID_OPTIONS_PARTY_NONE:
+		case ID_OPTIONS_PARTY_NORTH:
+		case ID_OPTIONS_PARTY_EAST:
+		case ID_OPTIONS_PARTY_SOUTH:
+		case ID_OPTIONS_PARTY_WEST:
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE + showParty, MF_UNCHECKED);
 			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
-			showParty = LOWORD(wparam) - ID_SPECIAL_PARTY_NONE;
+			showParty = LOWORD(wparam) - ID_OPTIONS_PARTY_NONE;
 			PaintRoomMap();
 			break;
 
-		case ID_SPECIAL_ALT_ICONS:
+		case ID_OPTIONS_ALT_ICONS:
 			altIcon = !altIcon;
 			if (altIcon)
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_ALT_ICONS, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ALT_ICONS, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_ALT_ICONS, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ALT_ICONS, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
-		case ID_SPECIAL_REVEAL_ALL_SECRET:
+		case ID_OPTIONS_REVEAL_ALL_SECRET:
 			showPath[0] = showPath[1] = showPath[2] = showPath[3] = 1;
 			PaintRoomMap();
 			break;
 
-		case ID_SPECIAL_HIDE_ALL_SECRET:
+		case ID_OPTIONS_HIDE_ALL_SECRET:
 			showPath[0] = showPath[1] = showPath[2] = showPath[3] = 0;
 			PaintRoomMap();
 			break;
 
-		case ID_SPECIAL_SHOW_1ST_SECRET:
-		case ID_SPECIAL_SHOW_2ND_SECRET:
-		case ID_SPECIAL_SHOW_3RD_SECRET:
-		case ID_SPECIAL_SHOW_4TH_SECRET:
-			temp = LOWORD(wparam)-ID_SPECIAL_SHOW_1ST_SECRET;
+		case ID_OPTIONS_SHOW_1ST_SECRET:
+		case ID_OPTIONS_SHOW_2ND_SECRET:
+		case ID_OPTIONS_SHOW_3RD_SECRET:
+		case ID_OPTIONS_SHOW_4TH_SECRET:
+			temp = LOWORD(wparam)-ID_OPTIONS_SHOW_1ST_SECRET;
 			showPath[temp] = !showPath[temp];
 			adjustSecretCheckmarks();
 			PaintRoomMap();
 			break;
 
+		case ID_OPTIONS_WRAPHALF:
+			wrapHalf = !wrapHalf;
+			if (wrapHalf)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
+			break;
 		}
 	case WM_PAINT:
 		PaintDunMap();
@@ -335,12 +345,15 @@ if (!RegisterClass(&winclass))
 
 	HBITMAP roombmp = (HBITMAP)LoadImage(hInstance,"room.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
 	HBITMAP levelbmp = (HBITMAP)LoadImage(hInstance,"level.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+	HBITMAP level2bmp = (HBITMAP)LoadImage(hInstance,"level2.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
 
 	roomdc = CreateCompatibleDC(localhdc);
 	leveldc = CreateCompatibleDC(localhdc);
+	level2dc = CreateCompatibleDC(localhdc);
 
 	HBITMAP oldroom = (HBITMAP)SelectObject(roomdc, roombmp);
 	HBITMAP oldlevel = (HBITMAP)SelectObject(leveldc, levelbmp);
+	HBITMAP oldlevel2 = (HBITMAP)SelectObject(level2dc, level2bmp);
 
 	ReadTheDungeons();
 	PaintDunMap();
@@ -349,7 +362,7 @@ if (!RegisterClass(&winclass))
 
 	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_HIDE_ALL_SECRET, MF_CHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
 
 	if (resetRoomA)
 		CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
@@ -444,6 +457,24 @@ void ReadTheDungeons()
 void PaintDunMap()
 {
 	int i, j;
+
+	if (wrapHalf)
+	{
+		for (j=0; j < 8; j++)
+			for (i=0; i < 8; i++)
+			{
+				BitBlt(localhdc, i*16, j*16, 16, 16, level2dc,
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+				BitBlt(localhdc, i*16+128, j*16, 16, 16, level2dc,
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+				BitBlt(localhdc, i*16, j*16+128, 16, 16, level2dc,
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, level2dc,
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+			}
+		return;
+	}
+
 	for (j=0; j < 8; j++)
 	{
 		for (i=0; i < 8; i++)
@@ -568,20 +599,20 @@ void adjustSecretCheckmarks()
 	for (i=0; i < 4; i++)
 		temp += showPath[i];
 
-	CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_REVEAL_ALL_SECRET, MF_UNCHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_HIDE_ALL_SECRET, MF_UNCHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_UNCHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_UNCHECKED);
 
 	if (temp == 4)
-		CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_REVEAL_ALL_SECRET, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_CHECKED);
 		return;
 	if (temp == 0)
-		CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_HIDE_ALL_SECRET, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
 		return;
 
 	for (i=0; i < 4; i++)
 		if (showPath[i])
-			CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_SHOW_1ST_SECRET+i, MF_CHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET+i, MF_CHECKED);
 		else
-			CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_SHOW_1ST_SECRET+i, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET+i, MF_UNCHECKED);
 
 }
