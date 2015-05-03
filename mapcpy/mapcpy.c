@@ -262,6 +262,11 @@ main(int argc, char * argv[])
 			printf("Writing %s\n", buffer+1);
 			I = fopen(buffer+1, "wb");
 			H = fopen("256.bmp", "rb");
+			if (H == NULL)
+			{
+				printf("Need 256.bmp. I can't read it. Bailing.\n");
+				return 0;
+			}
 			for (i=0; i < 0x436; i++)
 			{
 				switch(i)
