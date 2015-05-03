@@ -254,6 +254,7 @@ if (!RegisterClass(&winclass))
 
 	ReadTheDungeons();
 	PaintDunMap();
+	PaintRoomMap();
 
     hAccelTable = LoadAccelerators(hInstance, "MYACCEL");
 
@@ -319,8 +320,6 @@ void PaintRoomMap()
 	short i, j;
 	short tempIcon[11][11];
 
-	return;
-
 	if (curDungeon == 1)
 	{
 		Rectangle(localhdc, 288, 0, 640, 352);
@@ -328,12 +327,12 @@ void PaintRoomMap()
 	}
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
-			tempIcon[i][j] = dunTile[i][j][curLevel][curDungeon];
+			tempIcon[i][j] = roomBase[i][j][curRoom][curDungeon];
 
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
 			BitBlt(localhdc, i*32+288, j*32, 32, 32, roomdc,
-				32*(tempIcon[i][j] % 10), 32*(tempIcon[i][j] & 0xf), SRCCOPY);
+				32*(tempIcon[i][j] % 0x20), 32*(tempIcon[i][j] / 0x20), SRCCOPY);
 }
 
 void ReadTheDungeons()
@@ -352,9 +351,12 @@ void ReadTheDungeons()
 
 	fclose(F);
 
-	F = fopen("DUNGEON.OVL", "rb");
+	F = fopen("DUNGEON.CBT", "rb");
 
 	for (l=0; l < 8; l++)
+	{
+		if (l == 1)
+			l++;
 		for (k=0; k < 16; k++)
 		{
 			for (j=0; j < 11; j++)
@@ -364,6 +366,7 @@ void ReadTheDungeons()
 				for (i=0; i <11; i++)
 					roomBase[i][j][k][l] = tempRoom[i][j];
 		}
+	}
 }
 
 short curDirValid()
