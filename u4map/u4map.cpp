@@ -175,9 +175,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_RESET_ROOM_A:
 			resetRoomA = !resetRoomA;
 			if (resetRoomA)
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_UNCHECKED);
 			break;
 
 		case ID_NAV_UP:
@@ -236,9 +236,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_SPECIAL_HIDEMIMIC:
 			hideMimic = !hideMimic;
 			if (hideMimic)
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_HIDEMIMIC, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_MONSTERS, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_SPECIAL_HIDEMIMIC, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
