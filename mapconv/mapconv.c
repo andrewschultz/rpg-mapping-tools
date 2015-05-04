@@ -958,6 +958,21 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[q][i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
 		return;
 
+	case 'H':
+		tst = myBuf[1] - 0x30;
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0; i < tst; i++)
+				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
+		return;
+
+	case 'V':
+		tst = myBuf[1] - 0x30;
+		for (j=0; j < tst; j++)
+			for (i=0; i < BmpHandler.TheWidth; i++)
+				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
+		return;
+
+
 	case '=':	//changes one icon to all one color.
 		for (j=0;  j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
