@@ -66,6 +66,12 @@
 
 #define ID_OPTIONS_WRAPHALF	340
 
+#define ID_ABOUT_BASICS	401
+#define ID_ABOUT_THANKS	402
+
+#define ID_ABOUT_REPO	403
+#define ID_ABOUT_REPO_U4	404
+
 #define VK_0 0x30
 #define VK_1 0x31
 #define VK_2 0x32

@@ -11,6 +11,8 @@
 
 #include <stdlib.h>
 
+#include <shellapi.h>
+
 #include "u4map.h"
 
 //#defines for Windows
@@ -92,6 +94,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 	case WM_COMMAND:
 		switch(LOWORD(wparam))
 		{
+
+			//DUNGEON MENU ITEMS
+
 		case ID_DUNGEON_DECEIT:
 		case ID_DUNGEON_DESPISE:
 		case ID_DUNGEON_DESTARD:
@@ -137,6 +142,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				PaintRoomMap();
 			}
 			break;
+
+			//NAVIGATION MENU ITEMS
 
 		case ID_NAV_1:
 		case ID_NAV_2:
@@ -222,6 +229,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			}
 			break;
 
+			//OPTIONS MENU ITEMS
+
 		case ID_OPTIONS_SPOIL:
 			showSpoilers = !showSpoilers;
 			PaintRoomMap();
@@ -292,6 +301,27 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
 			break;
+
+			//ABOUT MENU ITEMS
+
+		case ID_ABOUT_BASICS:
+			MessageBox(hwnd, "This Ultima V mapper goes through all the dungeons and dungeon rooms.", "About", MB_OK);
+			break;
+
+		case ID_ABOUT_THANKS:
+			MessageBox(hwnd, "The Ultima V Codex was a big help.\nSo was GitHub.", "About", MB_OK);
+			break;
+
+		case ID_ABOUT_REPO:
+			ShellExecute(hwnd, "open", "https://github.com/andrewschultz/rpg-mapping-tools/",
+				NULL, NULL, SW_SHOWNORMAL);
+			break;
+
+		case ID_ABOUT_REPO_U4:
+			ShellExecute(hwnd, "open", "https://github.com/andrewschultz/rpg-mapping-tools/tree/master/u5map",
+				NULL, NULL, SW_SHOWNORMAL);
+			break;
+
 		}
 	case WM_PAINT:
 		PaintDunMap();

@@ -105,4 +105,12 @@ BEGIN
 		MENUITEM SEPARATOR
 		MENUITEM "Wrap and half-size\t-", ID_OPTIONS_WRAPHALF
 	END
+	POPUP "&About"
+	BEGIN
+		MENUITEM "&Basics", ID_ABOUT_BASICS
+		MENUITEM "&Basics", ID_ABOUT_THANKS
+		MENUITEM SEPARATOR
+		MENUITEM "Visit &Mapping tools repository", ID_ABOUT_REPO
+		MENUITEM "Visit U4 &Mapper sub-repository", ID_ABOUT_REPO_U4
+	END
 END
