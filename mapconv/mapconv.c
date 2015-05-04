@@ -958,18 +958,27 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[q][i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
 		return;
 
-	case 'H':
+	case 'H': //horizontal trimming, with color after
 		tst = myBuf[1] - 0x30;
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0; i < tst; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
 		return;
 
-	case 'V':
+	case 'V': //vertical trimming, with color after
 		tst = myBuf[1] - 0x30;
 		for (j=0; j < tst; j++)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
+		return;
+
+	case 'S': //switch 2 colors. Actually, you can switch with a null color with no problem.
+		tst = myBuf[1] - 0x30;
+		tst2 = myBuf[2] - 0x30;
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0; i < BmpHandler.TheWidth; i++)
+				if ((BmpHandler.Icons[q][i][j] == tst) || (BmpHandler.Icons[q][i][j] == tst2))
+					BmpHandler.Icons[q][i][j] = tst + tst2 - BmpHandler.Icons[q][i][j];
 		return;
 
 
