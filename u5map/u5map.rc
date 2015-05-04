@@ -77,14 +77,14 @@ BEGIN
 		MENUITEM "&7 Hythloth\t7", ID_DUNGEON_HYTHLOTH
 		MENUITEM "&8 Doom\t8", ID_DUNGEON_DOOM
 		MENUITEM SEPARATOR
-		MENUITEM "&Previous dungeon", ID_DUNGEON_PREV
+		MENUITEM "&Previous dungeon", ID_DUNGEON_PREV, GRAYED
 		MENUITEM "&Next dungeon", ID_DUNGEON_NEXT
 	END
 	POPUP "&Navigate"
 	BEGIN
-		MENUITEM "&Up\tup arrow", ID_NAV_UP
+		MENUITEM "&Up\tup arrow", ID_NAV_UP, GRAYED
 		MENUITEM "&Down\tdown arrow", ID_NAV_DOWN
-		MENUITEM "&Prev Room\tleft arrow", ID_NAV_PREVRM
+		MENUITEM "&Prev Room\tleft arrow", ID_NAV_PREVRM, GRAYED
 		MENUITEM "&Next Room\tright arrow", ID_NAV_NEXTRM
 		MENUITEM SEPARATOR
 		MENUITEM "Level &1\tctrl-1", ID_NAV_1
@@ -100,7 +100,8 @@ BEGIN
 		MENUITEM "...", ID_NAV_NULL
 		MENUITEM "Room P\tp", ID_NAV_P
 		MENUITEM SEPARATOR
-		MENUITEM "Reset Room A", ID_RESET_ROOM_A
+		MENUITEM "Reset to Room A on dungeon change", ID_RESET_ROOM_A
+		MENUITEM "Reset to Level 1 on dungeon change", ID_RESET_LVL_1
 	END
 	POPUP "&Options"
 	BEGIN
@@ -113,6 +114,11 @@ BEGIN
 		MENUITEM "Show &East party\talt-east", ID_OPTIONS_PARTY_EAST
 		MENUITEM SEPARATOR
 		MENUITEM "&Wrap and half size\t-", ID_OPTIONS_WRAPHALF
+		MENUITEM SEPARATOR
+		MENUITEM "Player 2 is &Fighter\tctrl-F8", ID_OPTIONS_FIGHTER_2
+		MENUITEM "Player 2 is &Bard\tshift-F8", ID_OPTIONS_BARD_2
+		MENUITEM "Player 2 is &Mage\talt-F8", ID_OPTIONS_MAGE_2
+		MENUITEM "(3-6 are F9-F12)", ID_OPTIONS_FBMDOC
 	END
 	POPUP "&About"
 	BEGIN

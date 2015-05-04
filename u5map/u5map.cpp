@@ -26,6 +26,9 @@ void PaintDunMap();
 void PaintRoomMap();
 short curDirValid();
 void adjustSecretCheckmarks();
+void checkPrevNextRoom();
+void checkPrevNextDun();
+void checkPrevNextLvl();
 
 //globals
 long curRoom = 0;
@@ -33,6 +36,7 @@ long curDungeon = 0;
 long curLevel = 0;
 
 long resetRoomA = 0;
+long resetLvl1 = 0;
 
 short wrapHalf = 0;
 
@@ -95,7 +99,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
+				if (resetLvl1)
+					curLevel = 0;
 				PaintRoomMap();
+				checkPrevNextDun();
 			}
 			break;
 
@@ -108,7 +115,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
+				if (resetLvl1)
+					curLevel = 0;
 				PaintRoomMap();
+				checkPrevNextDun();
 			}
 			break;
 
@@ -121,7 +131,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
+				if (resetLvl1)
+					curLevel = 0;
 				PaintRoomMap();
+				checkPrevNextDun();
 			}
 			break;
 
@@ -141,6 +154,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLevel = LOWORD(wparam) - ID_NAV_1;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
 				PaintDunMap();
+				checkPrevNextDun();
 			}
 			break;
 
@@ -162,6 +176,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_P:
 			curRoom = LOWORD(wparam) - ID_NAV_A;
 			PaintDunMap();
+			checkPrevNextRoom();
 			break;
 
 		case ID_RESET_ROOM_A:
@@ -172,6 +187,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_UNCHECKED);
 			break;
 
+		case ID_RESET_LVL_1:
+			resetLvl1 = !resetLvl1;
+			if (resetLvl1)
+				CheckMenuItem( GetMenu(hwnd), ID_RESET_LVL_1, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_RESET_LVL_1, MF_UNCHECKED);
+			break;
+
 		case ID_NAV_UP:
 			if (curLevel > 0)
 			{
@@ -179,6 +202,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLevel--;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
 				PaintDunMap();
+				checkPrevNextLvl();
 			}
 			break;
 
@@ -189,6 +213,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLevel++;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
 				PaintDunMap();
+				checkPrevNextLvl();
 			}
 			break;
 
@@ -196,6 +221,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			if (curRoom > 0)
 				curRoom--;
 				PaintRoomMap();
+				checkPrevNextRoom();
 			break;
 
 		case ID_NAV_NEXTRM:
@@ -203,6 +229,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			{
 				curRoom++;
 				PaintRoomMap();
+				checkPrevNextRoom();
 			}
 			break;
 
@@ -253,8 +280,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_FIGHTER_6:
 			temp = LOWORD(wparam) - ID_OPTIONS_MAGE_2;
 			partyArray[temp % 5 + 1] = 320 + 4 * (temp / 5);
-
 			PaintRoomMap();
+			if (temp % 5 == 0)
+			{
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAGE_2, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_FIGHTER_2, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_BARD_2, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
+			}
 			break;
 			//ABOUT MENU ITEMS
 
@@ -348,6 +381,7 @@ if (!RegisterClass(&winclass))
 	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_BARD_2, MF_CHECKED);
 
 	if (resetRoomA)
 		CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
@@ -530,3 +564,43 @@ short curDirValid()
 void adjustSecretCheckmarks()
 {
 }
+
+void checkPrevNextDun()
+{
+	if (curDungeon == 7)
+		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_NEXT, MF_GRAYED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_NEXT, MF_ENABLED);
+	if (curDungeon == 0)
+		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_PREV, MF_GRAYED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_PREV, MF_ENABLED);
+	checkPrevNextRoom(); //if room is reset to A, we need to grey out the "previous room" option
+	checkPrevNextLvl(); //if level is reset to 0, we need to grey out the "previous level" option
+}
+
+void checkPrevNextLvl()
+{
+	if (curLevel == 7)
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_GRAYED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_ENABLED);
+	if (curLevel == 0)
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_GRAYED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_ENABLED);
+}
+
+
+void checkPrevNextRoom()
+{
+	if (curRoom == 15)
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_GRAYED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_ENABLED);
+	if (curRoom == 0)
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_GRAYED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_ENABLED);
+}
+
