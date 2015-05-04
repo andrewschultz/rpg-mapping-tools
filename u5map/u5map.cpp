@@ -59,6 +59,7 @@ short partyWY[6][16][8];
 short showMonsters = 0;
 short showSpoilers = 0;
 short showParty = 0;
+short newPushed = 0;
 short showPushed = 0;
 
 short whatTo[8][16][8];
@@ -296,10 +297,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			break;
 
 		case ID_OPTIONS_SHOW_PUSHED:
-			if (showPushed < 8)
-				showPushed = 8;
+			newPushed = !newPushed;
+			showPushed = 8 * newPushed;
+			if (showPushed)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_CHECKED);
 			else
-				showPushed = 0;
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_UNCHECKED);
+			PaintRoomMap();
 			break;
 
 		case ID_OPTIONS_NOGUY_2:
@@ -340,7 +344,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			//ABOUT MENU ITEMS
 
 		case ID_OPTIONS_FBMDOC:
-			MessageBox(hwnd, "F8-F12 are players 2-6.\nCtrl=fighter, shift=bard, alt=mage none=no player.\n\\
+			MessageBox(hwnd, "F8-F12 are players 2-6.\nCtrl=fighter, shift=bard, alt=mage none=no player.\n\
 You can't change the Avatar, because.\nYou also can't change friends to the Avatar, because.",
 				"Changing fellow PCs", MB_OK);
 			break;
@@ -499,7 +503,6 @@ void PaintRoomMap()
 {
 	short i, j;
 	short tempIcon[11][11];
-	short temp, temp2;
 
 	if (curDungeon == 1)
 	{
@@ -639,7 +642,7 @@ void ReadTheDungeons()
 				for (i=0; i <11; i++)
 					roomBase[i][j][k][l] = tempRoom[i][j];
 
-			//now what the squares change to
+			//now handle which squares change which squares to what
 			for (i=0; i < 8; i++)
 			{
 				whatTo[i][k][l] = tempRoom[i+11][0];
@@ -721,5 +724,5 @@ void checkPrevNextRoom()
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_GRAYED);
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_ENABLED);
+	showPushed = newPushed * 8;
 }
-
