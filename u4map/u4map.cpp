@@ -393,6 +393,7 @@ if (!RegisterClass(&winclass))
 	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
 
 	if (resetRoomA)
 		CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);

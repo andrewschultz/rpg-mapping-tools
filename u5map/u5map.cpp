@@ -39,6 +39,24 @@ short wrapHalf = 0;
 short dunTile[8][8][8][8];
 short roomBase[11][11][16][8];
 
+short monsterType[21][16][8];
+short monsterX[21][16][8];
+short monsterY[21][16][8];
+
+short partyNX[6][16][8];
+short partyNY[6][16][8];
+short partySX[6][16][8];
+short partySY[6][16][8];
+short partyEX[6][16][8];
+short partyEY[6][16][8];
+short partyWX[6][16][8];
+short partyWY[6][16][8];
+
+short showMonsters = 0;
+short showParty = 0;
+
+short partyArray[6] = { 332, 324, 328, 320, 320, 320 };
+
 HWND hwnd;
 
 HDC roomdc;
@@ -198,6 +216,46 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
 			break;
 
+		case ID_OPTIONS_MONSTERS:
+			showMonsters = !showMonsters;
+			if (showMonsters)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MONSTERS, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MONSTERS, MF_UNCHECKED);
+			PaintRoomMap();
+			break;
+
+		case ID_OPTIONS_PARTY_NONE:
+		case ID_OPTIONS_PARTY_NORTH:
+		case ID_OPTIONS_PARTY_EAST:
+		case ID_OPTIONS_PARTY_SOUTH:
+		case ID_OPTIONS_PARTY_WEST:
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE + showParty, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
+			showParty = LOWORD(wparam) - ID_OPTIONS_PARTY_NONE;
+			PaintRoomMap();
+			break;
+
+		case ID_OPTIONS_MAGE_2:
+		case ID_OPTIONS_MAGE_3:
+		case ID_OPTIONS_MAGE_4:
+		case ID_OPTIONS_MAGE_5:
+		case ID_OPTIONS_MAGE_6:
+		case ID_OPTIONS_BARD_2:
+		case ID_OPTIONS_BARD_3:
+		case ID_OPTIONS_BARD_4:
+		case ID_OPTIONS_BARD_5:
+		case ID_OPTIONS_BARD_6:
+		case ID_OPTIONS_FIGHTER_2:
+		case ID_OPTIONS_FIGHTER_3:
+		case ID_OPTIONS_FIGHTER_4:
+		case ID_OPTIONS_FIGHTER_5:
+		case ID_OPTIONS_FIGHTER_6:
+			temp = LOWORD(wparam) - ID_OPTIONS_MAGE_2;
+			partyArray[temp % 5 + 1] = 320 + 4 * (temp / 5);
+
+			PaintRoomMap();
+			break;
 			//ABOUT MENU ITEMS
 
 		case ID_ABOUT_BASICS:
@@ -258,7 +316,7 @@ if (!RegisterClass(&winclass))
 // create the window
 	if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, // class
 							  "Ultima 5 Dungeon Simulator",	     // title
-							  WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+							  WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
 					 		  0,0,	   // x,y
 							  20*ICONSIZE, 16*ICONSIZE, // width, height
 							  NULL,	   // handle to parent 
@@ -289,6 +347,7 @@ if (!RegisterClass(&winclass))
 
 	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
 
 	if (resetRoomA)
 		CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
@@ -354,9 +413,50 @@ void PaintRoomMap()
 		Rectangle(localhdc, 288, 0, 640, 352);
 		return;
 	}
+	//first the base icons
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
 			tempIcon[i][j] = roomBase[i][j][curRoom][curDungeon];
+
+	//now show monsters
+	if (showMonsters)
+	{
+		for (i=0; i < 21; i++)
+			if (monsterType[i][curRoom][curDungeon])
+				tempIcon[monsterX[i][curRoom][curDungeon]][monsterY[i][curRoom][curDungeon]] = monsterType[i][curRoom][curDungeon] + 256;
+	}
+
+
+	switch (showParty)
+	{
+	case 1:
+		if (partyNX[0][curRoom][curDungeon] + partyNY[0][curRoom][curDungeon])
+			for (i=0; i < 6; i++)
+				tempIcon[partyNX[0][curRoom][curDungeon]][partyNY[0][curRoom][curDungeon]] = partyArray[i];
+		break;
+
+	case 2:
+		if (partyWX[0][curRoom][curDungeon] + partyWY[0][curRoom][curDungeon])
+			for (i=0; i < 6; i++)
+				tempIcon[partyWX[i][curRoom][curDungeon]][partyWY[i][curRoom][curDungeon]] = partyArray[i];
+		break;
+
+	case 3:
+		if (partySX[0][curRoom][curDungeon] + partySY[0][curRoom][curDungeon])
+			for (i=0; i < 6; i++)
+				tempIcon[partySX[i][curRoom][curDungeon]][partySY[i][curRoom][curDungeon]] = partyArray[i];
+		break;
+
+	case 4:
+		if (partyEX[0][curRoom][curDungeon] + partyEY[0][curRoom][curDungeon])
+			for (i=0; i < 6; i++)
+				tempIcon[partyEX[i][curRoom][curDungeon]][partyEY[i][curRoom][curDungeon]] = partyArray[i];
+		break;
+
+	case 0:
+	default:
+		break;
+	}
 
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
@@ -388,12 +488,36 @@ void ReadTheDungeons()
 			l++;
 		for (k=0; k < 16; k++)
 		{
+			//easier for my sanity to read in the rectangle then sort from there
 			for (j=0; j < 11; j++)
 				for (i=0; i < 32; i++)
 					tempRoom[i][j] = fgetc(F);
+
+			//first, the room basics
 			for (j=0; j < 11; j++)
 				for (i=0; i <11; i++)
 					roomBase[i][j][k][l] = tempRoom[i][j];
+
+			//now who starts where
+			for (i=0; i < 6; i++)
+			{
+				partyNX[i][k][l] = tempRoom[i+11][1];
+				partyNY[i][k][l] = tempRoom[i+17][1];
+				partyWX[i][k][l] = tempRoom[i+11][2];
+				partyWY[i][k][l] = tempRoom[i+17][2];
+				partySX[i][k][l] = tempRoom[i+11][3];
+				partySY[i][k][l] = tempRoom[i+17][3];
+				partyEX[i][k][l] = tempRoom[i+11][4];
+				partyEY[i][k][l] = tempRoom[i+17][4];
+			}
+
+			//now the monsters
+			for (i=0; i < 21; i++)
+			{
+				monsterType[i][k][l] = tempRoom[i+11][5];
+				monsterX[i][k][l] = tempRoom[i+11][6];
+				monsterY[i][k][l] = tempRoom[i+11][7];
+			}
 		}
 	}
 }
