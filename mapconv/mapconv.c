@@ -59,6 +59,14 @@ short NewPIXFile;
 #define MAPCONV_USE_TRANSPARENCY 8
 #define MAPCONV_BIN_FLAG_KNOWN 16
 #define MAPCONV_SORT_PIX 32
+#define MAPCONV_DEBUG_ONLY_FIRST 64
+#define MAPCONV_SHOW_END_STATS 128
+#define MAPCONV_BOTTOMTOP 256
+
+#define NMR_READ_SUCCESS 0
+#define NMR_READ_NOFILE 1
+#define NMR_READ_PIXCORRUPT 2
+#define NMR_READ_NOBMPFILE 3
 
 long MAPCONV_STATUS = 0;
 
@@ -80,8 +88,8 @@ char TheHdr[ADJ_HEADER_SIZE] = {
 	(char)0x00, (char)0xff, (char)0x80, 0x00,
 	(char)0x00, (char)0x80, (char)0x00, 0x00
 };
-//black white red green blue orange purple yellow
-//grey pink DkBlue LtBlue LtBrown Brown LtGrn DkGreen
+//0=black 1=white 2=red 3=green 4=blue 5=orange 6=purple 7=yellow
+//8=grey 9=pink 10=DkBlue 11=LtBlue 12=LtBrown 13=Brown 14=LtGrn 15=DkGreen
 
 typedef struct
 {
@@ -123,7 +131,7 @@ DomesdayBook;
 DomesdayBook BmpHandler;
 
 int ReadInIcons(char [MAXSTRING]);
-void NMRRead(char [MAXSTRING]);
+short NMRRead(char [MAXSTRING]);
 void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
 int LatestNumber(FILE *);
@@ -146,7 +154,7 @@ main(int argc, char * argv[])
 	BmpHandler.TransparencyColor = TRANSPARENCYCOLOR;
 	BmpHandler.LastIconViewed = -1;
 
-	BmpHandler.printHTMLFile = 1;
+	BmpHandler.printHTMLFile = 0;
 
 	if (argc < 2)
 /*	{
@@ -158,6 +166,7 @@ main(int argc, char * argv[])
 	{
 		//MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS;
 		//MAPCONV_STATUS |= MAPCONV_USE_TRANSPARENCY;
+		printf("Trying default file dmdd.nmr.\n");
 		NMRRead("dmdd.nmr");
 		return 0;
 	}
@@ -194,9 +203,14 @@ main(int argc, char * argv[])
 			CurComd++;
 			break;
 
-		case 's':
+		case 'S':
 			MAPCONV_STATUS |= MAPCONV_SORT_PIX;
 			printf("Warning you if PIX file is not sorted.\n");
+			CurComd++;
+			break;
+
+		case 's':
+			MAPCONV_STATUS |= MAPCONV_SHOW_END_STATS;
 			CurComd++;
 			break;
 
@@ -213,6 +227,8 @@ main(int argc, char * argv[])
 
 		case 'u':
 			MAPCONV_STATUS |= MAPCONV_DEBUG_UNKNOWN_SQUARES;
+			if (argv[CurComd][2] == 'f')
+				MAPCONV_STATUS |= MAPCONV_DEBUG_ONLY_FIRST;
 			CurComd++;
 			break;
 
@@ -238,7 +254,11 @@ main(int argc, char * argv[])
 		return 0;
 	}
 
-	NMRRead(argv[CurComd]);
+	if (NMRRead(argv[CurComd]) != NMR_READ_SUCCESS)
+	{
+		printf("Bailing, NMR read failed.\n");
+		return 0;
+	}
 
 	if (BmpHandler.printHTMLFile > 0)
 	{
@@ -268,16 +288,20 @@ void HelpBombOut()
 	printf("Flag -0 so bin file puts 0s for known.\n");
 	printf("Flag -b specifies blank icon.\n");
 	printf("Flag -c to set default blank color, in hexadecimal.\n");
-	printf("Flag -h to output html file.\n");
+	printf("Flag -h to output html file of the output graphic's palettes.\n");
 	printf("Flag -n to turn off default header.\n");
-	printf("Flag -s to print out sort warning for icon files.\n");
+	printf("Flag -r to reverse when IDing unused icons (default is top to bottom).\n");
+	printf("Flag -s to show used/unused icon stats at the end.\n");
+	printf("Flag -S to print out sort warning for icon files.\n");
 	printf("Flag -t(xx) to flag transparency and specify the color. Black=default.\n");
 	printf("Flag -u to debug squares with no icon.\n");
+	printf("Flag -uf to debug squares with no icon, only showing the first.\n");
+	printf("Flag -v to reVerse the default top-down process of -uf.\n");
 	printf("Flag -x to add extra modifications to the base BMP files.\n");
 }
 
 
-void NMRRead(char FileStr[MAXSTRING])
+short NMRRead(char FileStr[MAXSTRING])
 {
 	FILE * G, * F = fopen(FileStr, "r");
 
@@ -292,8 +316,8 @@ void NMRRead(char FileStr[MAXSTRING])
 
 	if (F == NULL)
 	{
-		printf("Empty file.\n");
-		return;
+		printf("Empty NMR file.\n");
+		return NMR_READ_NOFILE;
 	}
 
 	for (i=0; i < 256; i++)
@@ -308,7 +332,7 @@ void NMRRead(char FileStr[MAXSTRING])
 	if (G == NULL)
 	{
 		printf("Empty BMP file.\n");
-		return;
+		return NMR_READ_NOBMPFILE;
 	}
 
 	for (i=0;  i < 0x436;  i++)
@@ -352,8 +376,8 @@ void NMRRead(char FileStr[MAXSTRING])
 
 	if (ReadInIcons(BmpHandler.PixStr) == INVALID)
 	{
-                printf("%s PIX file seems corrupt.\n", BmpHandler.PixStr);
-		return;
+		printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
+		return NMR_READ_PIXCORRUPT;
 	}
 
 	if (BmpHandler.TheWidth == 0)
@@ -430,7 +454,7 @@ void NMRRead(char FileStr[MAXSTRING])
 	}
 
 	if ((ch == '.') || (ch == EOF))
-		return;
+		return NMR_READ_SUCCESS;
 
 	fgetc(F);
 
@@ -610,7 +634,10 @@ void ReadPiece()
 
 void PrintOutUnused()
 {
-	long j, i;
+	long j, i, k;
+	short used[256] = {0};
+	long totalUnused = 0;
+	long totalUsed = 0;
 
 	printf("Roll call for unused icons:\n");
 
@@ -623,12 +650,31 @@ void PrintOutUnused()
 
 	for (j = BmpHandler.Yi; j < BmpHandler.Yf; j++)
 	{
+		k=j;
+		if (MAPCONV_STATUS & MAPCONV_BOTTOMTOP)
+		{
+			k = BmpHandler.Yf + BmpHandler.Yi - k - 1;
+		}
 		for (i = BmpHandler.Xi; i < BmpHandler.Xf; i++)
 		{ //printf("%2x", BmpHandler.ary[i][j]);
-			if (!BmpHandler.IconUsed[BmpHandler.ary[i][j]])
-				printf("%02x %02x Unused icon %x also %d %d.\n", i, j, BmpHandler.ary[i][j], i-BmpHandler.Xi, j-BmpHandler.Yi);
+			if (!BmpHandler.IconUsed[BmpHandler.ary[i][k]])
+			{
+				if ((MAPCONV_STATUS & MAPCONV_DEBUG_ONLY_FIRST) && (used[BmpHandler.ary[i][k]]))
+				{
+				}
+				else
+					printf("%02x %02x Unused icon %x also %d %d.\n", i, k, BmpHandler.ary[i][k], i-BmpHandler.Xi, k-BmpHandler.Yi);
+				used[BmpHandler.ary[i][k]]++;
+				totalUnused++;
+			}
+			else
+				totalUsed++;
 		}
 //		printf("\n");
+	}
+	if (MAPCONV_STATUS & MAPCONV_SHOW_END_STATS)
+	{
+		printf("%d of %d usable icons, for %f percent.\n", totalUsed, totalUsed+totalUnused, (totalUsed*100)/(totalUsed+totalUnused));
 	}
 }
 
