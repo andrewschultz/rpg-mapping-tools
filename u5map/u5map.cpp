@@ -503,6 +503,7 @@ void PaintRoomMap()
 {
 	short i, j;
 	short tempIcon[11][11];
+	short checkAry[11][11] = {0};
 
 	if (curDungeon == 1)
 	{
@@ -581,28 +582,36 @@ void PaintRoomMap()
 	{
 		for (i=0; i < 8; i++) //the "from square"
 			if (whatTo[i][curRoom][curDungeon])
+			{
 				TransparentBlt(localhdc, 288+32*fromSquareX[i][curRoom][curDungeon], 32*fromSquareY[i][curRoom][curDungeon],
 					32, 32, leveldc, 480, 480, 32, 32, 0x000000);
+				checkAry[fromSquareX[i][curRoom][curDungeon]][fromSquareY[i][curRoom][curDungeon]] = 1;
+			}
 
 		for (i=0; i < 8; i++) //the "to squares"
 			if (whatTo[i][curRoom][curDungeon])
 				TransparentBlt(localhdc, 288+32*toSquare1X[i][curRoom][curDungeon], 32*toSquare1Y[i][curRoom][curDungeon],
-					32, 32, leveldc, 480, 448, 32, 32, 0x000000);
+					32, 32, leveldc, 448 + 32 * checkAry[toSquare1X[i][curRoom][curDungeon]][toSquare1Y[i][curRoom][curDungeon]],
+					448, 32, 32, 0x000000);
+		//The horrid looking + 32 * expression is to say, if we already have a yellow square, put an orange inside.
+		//Otherwise, put an orange on the outside.
 		for (i=0; i < 8; i++)
 			if (whatTo[i][curRoom][curDungeon])
 				TransparentBlt(localhdc, 288+32*toSquare2X[i][curRoom][curDungeon], 32*toSquare2Y[i][curRoom][curDungeon],
-					32, 32, leveldc, 480, 448, 32, 32, 0x000000);
+					32, 32, leveldc, 448 + 32 * checkAry[toSquare2X[i][curRoom][curDungeon]][toSquare2Y[i][curRoom][curDungeon]],
+					448, 32, 32, 0x000000);
 	}
 
 	for (i=0; i < 8; i++)
 	{
 		if (!whatTo[i][curRoom][curDungeon])
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_GRAYED);
-		else if (i == 7) //ok, first and last must work if available
+		else if (i == 7) //ok, last must work if available
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_ENABLED);
 		else if ((fromSquareX[i][curRoom][curDungeon] != fromSquareX[i+1][curRoom][curDungeon]) ||
 			(fromSquareY[i][curRoom][curDungeon] != fromSquareY[i+1][curRoom][curDungeon]))
-			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_ENABLED); //if this from square is not the previous
+		//make sure the next push is a different square than this.
+			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_ENABLED);
 		else //oops, same as previous, grey it
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_GRAYED);
 	}
