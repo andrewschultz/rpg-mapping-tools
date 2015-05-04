@@ -264,8 +264,13 @@ main(int argc, char * argv[])
 			H = fopen("256.bmp", "rb");
 			if (H == NULL)
 			{
-				printf("Need 256.bmp. I can't read it. Bailing.\n");
-				return 0;
+				printf("No 256.bmp in current directory. Trying c:\\coding\\games.\n");
+				H = fopen("c:\\coding\\games\\256.bmp", "rb");
+				if (H == NULL)
+				{
+					printf("Need 256.bmp. I can't read it. Bailing.\n");
+					return 0;
+				}
 			}
 			for (i=0; i < 0x436; i++)
 			{
