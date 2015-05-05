@@ -10,6 +10,7 @@ BEGIN
   VK_DOWN, ID_DUNGEON_NEXT, CONTROL, VIRTKEY
   VK_UP, ID_DUNGEON_NEXT, CONTROL, VIRTKEY
   VK_MINUS, ID_OPTIONS_WRAPHALF, VIRTKEY
+  //number = dungeon
   VK_1, ID_DUNGEON_DECEIT, VIRTKEY
   VK_2, ID_DUNGEON_DESPISE, VIRTKEY
   VK_3, ID_DUNGEON_DESTARD, VIRTKEY
@@ -18,6 +19,7 @@ BEGIN
   VK_6, ID_DUNGEON_SHAME, VIRTKEY
   VK_7, ID_DUNGEON_HYTHLOTH, VIRTKEY
   VK_8, ID_DUNGEON_ABYSS, VIRTKEY
+  //control-number = level
   VK_1, ID_NAV_1, CONTROL, VIRTKEY
   VK_2, ID_NAV_2, CONTROL, VIRTKEY
   VK_3, ID_NAV_3, CONTROL, VIRTKEY
@@ -26,6 +28,23 @@ BEGIN
   VK_6, ID_NAV_6, CONTROL, VIRTKEY
   VK_7, ID_NAV_7, CONTROL, VIRTKEY
   VK_8, ID_NAV_8, CONTROL, VIRTKEY
+  //shift-number = swap character with leader
+  VK_2, ID_MINOR_SWAP_2, SHIFT, VIRTKEY
+  VK_3, ID_MINOR_SWAP_3, SHIFT, VIRTKEY
+  VK_4, ID_MINOR_SWAP_4, SHIFT, VIRTKEY
+  VK_5, ID_MINOR_SWAP_5, SHIFT, VIRTKEY
+  VK_6, ID_MINOR_SWAP_6, SHIFT, VIRTKEY
+  VK_7, ID_MINOR_SWAP_7, SHIFT, VIRTKEY
+  VK_8, ID_MINOR_SWAP_8, SHIFT, VIRTKEY
+  //alt-number = toggle character
+  VK_2, ID_MINOR_HIDE_2, ALT, VIRTKEY
+  VK_3, ID_MINOR_HIDE_3, ALT, VIRTKEY
+  VK_4, ID_MINOR_HIDE_4, ALT, VIRTKEY
+  VK_5, ID_MINOR_HIDE_5, ALT, VIRTKEY
+  VK_6, ID_MINOR_HIDE_6, ALT, VIRTKEY
+  VK_7, ID_MINOR_HIDE_7, ALT, VIRTKEY
+  VK_8, ID_MINOR_HIDE_8, ALT, VIRTKEY
+  //a-p is room 0-15
   VK_A, ID_NAV_A, VIRTKEY
   VK_B, ID_NAV_B, VIRTKEY
   VK_C, ID_NAV_C, VIRTKEY
@@ -76,13 +95,30 @@ BEGIN
 		MENUITEM "Level &7\tctrl-7", ID_NAV_7
 		MENUITEM "Level &8\tctrl-8", ID_NAV_8
 		MENUITEM SEPARATOR
-		MENUITEM "Room A\ta", ID_NAV_A
-		MENUITEM "...", ID_NAV_NULL
-		MENUITEM "Room P\tp", ID_NAV_P
+		POPUP "&Room choice"
+		BEGIN
+			MENUITEM "Room A\ta", ID_NAV_A
+			MENUITEM "Room B\tb", ID_NAV_B
+			MENUITEM "Room C\tc", ID_NAV_C
+			MENUITEM "Room D\td", ID_NAV_D
+			MENUITEM "Room E\te", ID_NAV_E
+			MENUITEM "Room F\tf", ID_NAV_F
+			MENUITEM "Room G\tg", ID_NAV_G
+			MENUITEM "Room H\th", ID_NAV_H
+			MENUITEM "Room I\ti", ID_NAV_I
+			MENUITEM "Room J\tj", ID_NAV_J
+			MENUITEM "Room K\tk", ID_NAV_K
+			MENUITEM "Room L\tl", ID_NAV_L
+			MENUITEM "Room M\tm", ID_NAV_M
+			MENUITEM "Room N\tn", ID_NAV_N
+			MENUITEM "Room O\to", ID_NAV_O
+			MENUITEM "Room P\tp", ID_NAV_P
+		END
 		MENUITEM SEPARATOR
-		MENUITEM "Reset to room A", ID_RESET_ROOM_A
+		MENUITEM "Reset new dungeon to room A", ID_RESET_ROOM_A
+		MENUITEM "Reset new dungeon to level 0", ID_RESET_LEVEL_0
 	END
-	POPUP "Showing &Options"
+	POPUP "&Options"
 	BEGIN
 		MENUITEM "&Toggle Spoilers", ID_OPTIONS_SPOIL
 		MENUITEM SEPARATOR
@@ -104,11 +140,30 @@ BEGIN
 		MENUITEM "Show 4th secret path", ID_OPTIONS_SHOW_4TH_SECRET
 		MENUITEM SEPARATOR
 		MENUITEM "Wrap and half-size\t-", ID_OPTIONS_WRAPHALF
+		MENUITEM "&Label rooms in main map", ID_OPTIONS_MAINMAP_LABEL
+	END
+	POPUP "&Minor options"
+	BEGIN
+		MENUITEM "Swap class with player &2\tshift-2", ID_MINOR_SWAP_2
+		MENUITEM "Swap class with player &3\tshift-3", ID_MINOR_SWAP_3
+		MENUITEM "Swap class with player &4\tshift-4", ID_MINOR_SWAP_4
+		MENUITEM "Swap class with player &5\tshift-5", ID_MINOR_SWAP_5
+		MENUITEM "Swap class with player &6\tshift-6", ID_MINOR_SWAP_6
+		MENUITEM "Swap class with player &7\tshift-7", ID_MINOR_SWAP_7
+		MENUITEM "Swap class with player &8\tshift-8", ID_MINOR_SWAP_8
+		MENUITEM SEPARATOR
+		MENUITEM "Hide &2\talt-2", ID_MINOR_HIDE_2
+		MENUITEM "Hide &3\talt-3", ID_MINOR_HIDE_3
+		MENUITEM "Hide &4\talt-4", ID_MINOR_HIDE_4
+		MENUITEM "Hide &5\talt-5", ID_MINOR_HIDE_5
+		MENUITEM "Hide &6\talt-6", ID_MINOR_HIDE_6
+		MENUITEM "Hide &7\talt-7", ID_MINOR_HIDE_7
+		MENUITEM "Hide &8\talt-8", ID_MINOR_HIDE_8
 	END
 	POPUP "&About"
 	BEGIN
 		MENUITEM "&Basics", ID_ABOUT_BASICS
-		MENUITEM "&Basics", ID_ABOUT_THANKS
+		MENUITEM "&Thanks", ID_ABOUT_THANKS
 		MENUITEM SEPARATOR
 		MENUITEM "Visit &Mapping tools repository", ID_ABOUT_REPO
 		MENUITEM "Visit U4 &Mapper sub-repository", ID_ABOUT_REPO_U4

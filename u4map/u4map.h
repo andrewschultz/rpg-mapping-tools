@@ -44,6 +44,7 @@
 #define ID_NAV_P	236
 
 #define ID_RESET_ROOM_A	240
+#define ID_RESET_LEVEL_0 241
 
 #define ID_OPTIONS_SPOIL 301
 
@@ -65,12 +66,31 @@
 #define ID_OPTIONS_SHOW_4TH_SECRET	336
 
 #define ID_OPTIONS_WRAPHALF	340
+#define ID_OPTIONS_MAINMAP_LABEL	341
 
-#define ID_ABOUT_BASICS	401
-#define ID_ABOUT_THANKS	402
+#define ID_MINOR_SWAP_1	401 //not really valid but there for reference
+#define ID_MINOR_SWAP_2	402
+#define ID_MINOR_SWAP_3	403
+#define ID_MINOR_SWAP_4	404
+#define ID_MINOR_SWAP_5	405
+#define ID_MINOR_SWAP_6	406
+#define ID_MINOR_SWAP_7	407
+#define ID_MINOR_SWAP_8	408
 
-#define ID_ABOUT_REPO	403
-#define ID_ABOUT_REPO_U4	404
+#define ID_MINOR_HIDE_1	411 //not really valid but there for reference
+#define ID_MINOR_HIDE_2	412
+#define ID_MINOR_HIDE_3	413
+#define ID_MINOR_HIDE_4	414
+#define ID_MINOR_HIDE_5	415
+#define ID_MINOR_HIDE_6	416
+#define ID_MINOR_HIDE_7	417
+#define ID_MINOR_HIDE_8	418
+
+#define ID_ABOUT_BASICS	501
+#define ID_ABOUT_THANKS	502
+
+#define ID_ABOUT_REPO	503
+#define ID_ABOUT_REPO_U4	504
 
 #define VK_0 0x30
 #define VK_1 0x31

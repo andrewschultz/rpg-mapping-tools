@@ -15,7 +15,7 @@
 
 #include "u4map.h"
 
-//#defines for Windows
+//#defines for Windows plus function calls
 #define WINDOW_CLASS_NAME "WINCLASS1"
 
 void ReadTheDungeons();
@@ -24,6 +24,13 @@ void PaintRoomMap();
 void readDun(char x[20], int q);
 short curDirValid();
 void adjustSecretCheckmarks();
+void adjHeader();
+
+//#defines for in-app use
+#define NORTH 0
+#define EAST 1
+#define SOUTH 2
+#define WEST 3
 
 //###################globals
 
@@ -42,11 +49,14 @@ long showMonsters = 0;
 long showParty = 0;
 long altIcon = 0;
 long showSpoilers = 0;
+long mainLabel = 0;
+
 short hideMimic = 0;
 
 short wrapHalf = 0;
 
-short resetRoomA = 1;
+short resetRoomA = 0;
+short resetLevel0 = 0;
 
 short mainDun[8][8][8][8] = {0};
 
@@ -73,6 +83,12 @@ short partyWestY[8][64][8] = {0};
 short changeByte[16][64][8] = {0};
 
 short showPath[4] = {0};
+
+char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Abyss"};
+
+//Mage down to shepherd. You start as a mage, for simplicity.
+short slotIcon[8] = { 0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e };
+short slotShow[8] = {1, 1, 1, 1, 1, 1, 1, 1};
 
 #define ICONSIZE 32
 
@@ -113,6 +129,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
+				if (resetLevel0)
+					curLevel = 0;
 				PaintRoomMap();
 			}
 			break;
@@ -126,6 +144,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
+				if (resetLevel0)
+					curLevel = 0;
 				PaintRoomMap();
 			}
 			break;
@@ -139,6 +159,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
+				if (resetLevel0)
+					curLevel = 0;
 				PaintRoomMap();
 			}
 			break;
@@ -190,6 +212,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_UNCHECKED);
 			break;
 
+		case ID_RESET_LEVEL_0:
+			resetLevel0 = !resetLevel0;
+			if (resetRoomA)
+				CheckMenuItem( GetMenu(hwnd), ID_RESET_LEVEL_0, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_RESET_LEVEL_0, MF_UNCHECKED);
+			break;
+
 		case ID_NAV_UP:
 			if (curLevel > 0)
 			{
@@ -222,9 +252,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curRoom++;
 				PaintRoomMap();
 			}
-			else if ((curRoom < 31) && (curDungeon == 7))
+			else if ((curRoom < 63) && (curDungeon == 7))
 			{
-				curRoom++; //Abyss has double the rooms of the other dungeons.
+				curRoom++; //Abyss has four times the rooms of the other dungeons.
 				PaintRoomMap();
 			}
 			break;
@@ -300,6 +330,42 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
+			break;
+			
+		case ID_OPTIONS_MAINMAP_LABEL:
+			mainLabel = !mainLabel;
+			if (mainLabel)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_UNCHECKED);
+			break;
+			
+			//MINOR/SILLY OPTIONS
+		case ID_MINOR_SWAP_2:
+		case ID_MINOR_SWAP_3:
+		case ID_MINOR_SWAP_4:
+		case ID_MINOR_SWAP_5:
+		case ID_MINOR_SWAP_6:
+		case ID_MINOR_SWAP_7:
+		case ID_MINOR_SWAP_8:
+			temp = slotIcon[0]; //switch player 1's class with player (SWAP#). ID_MINOR_SWAP_1
+			slotIcon[0] = slotIcon[LOWORD(wparam)-ID_MINOR_SWAP_1];
+			slotIcon[LOWORD(wparam)-ID_MINOR_SWAP_1] = temp;
+			break;
+			
+		case ID_MINOR_HIDE_2:
+		case ID_MINOR_HIDE_3:
+		case ID_MINOR_HIDE_4:
+		case ID_MINOR_HIDE_5:
+		case ID_MINOR_HIDE_6:
+		case ID_MINOR_HIDE_7:
+		case ID_MINOR_HIDE_8:
+			temp = LOWORD(wparam)-ID_MINOR_HIDE_1;
+			slotShow[temp] = !slotShow[temp];
+			if (slotShow[temp])
+				CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_UNCHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			break;
 
 			//ABOUT MENU ITEMS
@@ -398,6 +464,9 @@ if (!RegisterClass(&winclass))
 	if (resetRoomA)
 		CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
 
+	if (resetLevel0)
+		CheckMenuItem( GetMenu(hwnd), ID_RESET_LEVEL_0, MF_CHECKED);
+
 	while (1)
 	{
 	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
@@ -488,20 +557,26 @@ void ReadTheDungeons()
 void PaintDunMap()
 {
 	int i, j;
+	short temp;
+
+	adjHeader();
 
 	if (wrapHalf)
 	{
 		for (j=0; j < 8; j++)
 			for (i=0; i < 8; i++)
 			{
+				temp = mainDun[i][j][curLevel][curDungeon];
+				if ((temp & 0xf0 == 0xf0) && (!mainLabel))
+					temp = 0xef;
 				BitBlt(localhdc, i*16, j*16, 16, 16, level2dc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16+128, j*16, 16, 16, level2dc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16, j*16+128, 16, 16, level2dc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, level2dc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 			}
 		return;
 	}
@@ -509,8 +584,13 @@ void PaintDunMap()
 	for (j=0; j < 8; j++)
 	{
 		for (i=0; i < 8; i++)
+		{
+			temp = mainDun[i][j][curLevel][curDungeon];
+			if ((temp & 0xf0 == 0xf0) && (!mainLabel))
+				temp = 0xef;
 			BitBlt(localhdc, i*32, j*32, 32, 32, leveldc,
 				32*(mainDun[i][j][curLevel][curDungeon] % 0x10), 32*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+		}
 	}
 
 }
@@ -519,6 +599,7 @@ void PaintRoomMap()
 {
 	int i, j, k, temp, temp2;
 	short thisIcon[11][11] = {0};
+	short changedYet[11][11] = {0};
 
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
@@ -545,20 +626,23 @@ void PaintRoomMap()
 	{
 		for (i=0; i < 8; i++)
 		{
-			temp = 0x20 + 2 * i + altIcon;
 			switch (showParty)
 			{
 			case PARTY_NORTH:
-				thisIcon[partyNorthX[i][curRoom][curDungeon]][partyNorthY[i][curRoom][curDungeon]] = temp;
+				if (slotShow[i])
+					thisIcon[partyNorthX[i][curRoom][curDungeon]][partyNorthY[i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			case PARTY_SOUTH:
-				thisIcon[partySouthX[i][curRoom][curDungeon]][partySouthY[i][curRoom][curDungeon]] = temp;
+				if (slotShow[i])
+					thisIcon[partySouthX[i][curRoom][curDungeon]][partySouthY[i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			case PARTY_EAST:
-				thisIcon[partyEastX[i][curRoom][curDungeon]][partyEastY[i][curRoom][curDungeon]] = temp;
+				if (slotShow[i])
+					thisIcon[partyEastX[i][curRoom][curDungeon]][partyEastY[i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			case PARTY_WEST:
-				thisIcon[partyWestX[i][curRoom][curDungeon]][partyWestY[i][curRoom][curDungeon]] = temp;
+				if (slotShow[i])
+					thisIcon[partyWestX[i][curRoom][curDungeon]][partyWestY[i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			}
 		}
@@ -587,7 +671,7 @@ void PaintRoomMap()
 			BitBlt(localhdc, i*32+288, j*32, 32, 32, roomdc,
 				32*(thisIcon[i][j] % 0x10), 32*(thisIcon[i][j] / 0x10), SRCCOPY);
 
-	//After deciding which icon to show, we now decide if we want the transparent spoilers of where to walk
+	//After deciding which icon to show, we now decide if we want the transparent spoilers of where to walk and what it reveals
 
 	if (showSpoilers)
 	{
@@ -596,12 +680,24 @@ void PaintRoomMap()
 			{
 				temp = changeByte[i+1][curRoom][curDungeon] >> 4;
 				temp2 = changeByte[i+1][curRoom][curDungeon] & 0xf;
+				changedYet[temp][temp2] = 1;
 				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
-					i*8+384, 480, 32, 32, 0xffffff);
+					i*8+384, 384, 32, 32, 0xffffff);
+
+			}
+		for (i=0; i < 0x10; i += 4)
+			if (changeByte[i+2][curRoom][curDungeon])
+			{
+				temp = changeByte[i+1][curRoom][curDungeon] >> 4;
+				temp2 = changeByte[i+1][curRoom][curDungeon] & 0xf;
+				// ?? we need to figure a way to print stuff out to see what spoils what, or doesn't. It depends on changeByte.
+				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
+					i*8+384, 448, 32, 32, 0xffffff);
 
 			}
 	}
 
+	adjHeader();
 }
 
 short curDirValid()
@@ -645,5 +741,16 @@ void adjustSecretCheckmarks()
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET+i, MF_CHECKED);
 		else
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET+i, MF_UNCHECKED);
+}
 
+void adjHeader()
+{
+	char buffer[100];
+	long fudgeFactor = 0;
+
+	if (curDungeon == 7)	//new 16 rooms every 2 Abyss levels
+		fudgeFactor += 16 * (curLevel / 2);
+
+	sprintf(buffer, "Ultima IV Dungeon Surfer: %s, level, %d, room %d", dunName[curDungeon], curLevel, curRoom + fudgeFactor);
+	SetWindowText(hwnd, buffer);
 }
