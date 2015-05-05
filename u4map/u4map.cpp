@@ -25,12 +25,23 @@ void readDun(char x[20], int q);
 short curDirValid();
 void adjustSecretCheckmarks();
 void adjHeader();
+void DungeonReset();
+void doRoomCheck();
 
 //#defines for in-app use
 #define NORTH 0
 #define EAST 1
 #define SOUTH 2
 #define WEST 3
+
+#define DECEIT 0
+#define DESPISE 1
+#define DESTARD 2
+#define WRONG 3
+#define COVETOUS 4
+#define SHAME 5
+#define HYTHLOTH 6
+#define ABYSS 7
 
 //###################globals
 
@@ -82,6 +93,8 @@ short partyWestY[8][64][8] = {0};
 
 short changeByte[16][64][8] = {0};
 
+short roomLev[64][8] = {0};
+
 short showPath[4] = {0};
 
 char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Abyss"};
@@ -89,6 +102,8 @@ char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Sha
 //Mage down to shepherd. You start as a mage, for simplicity.
 short slotIcon[8] = { 0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e };
 short slotShow[8] = {1, 1, 1, 1, 1, 1, 1, 1};
+
+long MouseDownX, MouseDownY;
 
 #define ICONSIZE 32
 
@@ -103,7 +118,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
                             WPARAM wparam, 
                             LPARAM lparam)
 {
-	short temp;
+	short temp, temp2, i;
 
 	switch(msg)
 	{
@@ -126,12 +141,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
 				curDungeon = LOWORD(wparam) - ID_DUNGEON_DECEIT;
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
-				PaintDunMap();
-				if (resetRoomA)
-					curRoom = 0;
-				if (resetLevel0)
-					curLevel = 0;
-				PaintRoomMap();
+				DungeonReset();
 			}
 			break;
 
@@ -141,27 +151,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
 				curDungeon--;
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
-				PaintDunMap();
-				if (resetRoomA)
-					curRoom = 0;
-				if (resetLevel0)
-					curLevel = 0;
-				PaintRoomMap();
+				DungeonReset();
 			}
 			break;
 
 		case ID_DUNGEON_NEXT:
-			if (curDungeon < 7)
+			if (curDungeon < ABYSS)
 			{
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
 				curDungeon++;
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
-				PaintDunMap();
-				if (resetRoomA)
-					curRoom = 0;
-				if (resetLevel0)
-					curLevel = 0;
-				PaintRoomMap();
+				DungeonReset();
 			}
 			break;
 
@@ -200,24 +200,41 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_N:
 		case ID_NAV_O:
 		case ID_NAV_P:
-			curRoom = LOWORD(wparam) - ID_NAV_A;
+			curRoom = curRoom & 0x30; //Abyss hack so you don't get kicked to the first floor, oops
+			curRoom += LOWORD(wparam) - ID_NAV_A;
 			PaintDunMap();
 			break;
 
-		case ID_RESET_ROOM_A:
-			resetRoomA = !resetRoomA;
-			if (resetRoomA)
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
-			else
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_UNCHECKED);
+		case ID_NAV_ABYSS_UP2:
+			if ((curDungeon == ABYSS) && (curRoom >= 16))
+			{
+				curRoom -= 16;
+				doRoomCheck();
+			}
 			break;
 
-		case ID_RESET_LEVEL_0:
+		case ID_NAV_ABYSS_DOWN2:
+			if ((curDungeon == ABYSS) && (curRoom <= 47))
+			{
+				curRoom += 16;
+				doRoomCheck();
+			}
+			break;
+
+		case ID_OPTIONS_RESET_ROOM_A:
+			resetRoomA = !resetRoomA;
+			if (resetRoomA)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_A, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_A, MF_UNCHECKED);
+			break;
+
+		case ID_OPTIONS_RESET_LEVEL_0:
 			resetLevel0 = !resetLevel0;
 			if (resetRoomA)
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_LEVEL_0, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_LEVEL_0, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_UNCHECKED);
 			break;
 
 		case ID_NAV_UP:
@@ -231,7 +248,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			break;
 
 		case ID_NAV_DOWN:
-			if (curLevel < 7)
+			if (curLevel < ABYSS)
 			{
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_UNCHECKED);
 				curLevel++;
@@ -243,19 +260,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_PREVRM:
 			if (curRoom > 0)
 				curRoom--;
-				PaintRoomMap();
+				doRoomCheck();
 			break;
 
 		case ID_NAV_NEXTRM:
 			if (curRoom < 15)
 			{
 				curRoom++;
-				PaintRoomMap();
+				doRoomCheck();
 			}
-			else if ((curRoom < 63) && (curDungeon == 7))
+			else if ((curRoom < 63) && (curDungeon == ABYSS))
 			{
 				curRoom++; //Abyss has four times the rooms of the other dungeons.
-				PaintRoomMap();
+				doRoomCheck();
 			}
 			break;
 
@@ -330,6 +347,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
+			PaintDunMap();
 			break;
 			
 		case ID_OPTIONS_MAINMAP_LABEL:
@@ -338,6 +356,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_UNCHECKED);
+			PaintDunMap();
 			break;
 			
 			//MINOR/SILLY OPTIONS
@@ -362,10 +381,47 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_MINOR_HIDE_8:
 			temp = LOWORD(wparam)-ID_MINOR_HIDE_1;
 			slotShow[temp] = !slotShow[temp];
+			temp2 = 0;
+			for (i=1; i < 7; i++)
+				temp2 += slotShow[i];
 			if (slotShow[temp])
+			{
 				CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
+				if (temp2 == 7)
+					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_CHECKED);
+				else
+					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
+			}
 			else
+			{
 				CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
+				if (temp2 == 0)
+					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+				else
+					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
+			}
+			break;
+
+		case ID_MINOR_HIDE_ALL:
+			for (temp=1; temp <= 7; temp++)
+			{
+				slotShow[temp] = 0;
+				CheckMenuItem( GetMenu(hwnd), temp + ID_MINOR_HIDE_1, MF_CHECKED);
+			}
+			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_CHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
+			break;
+
+		case ID_MINOR_HIDE_NONE:
+			for (temp=1; temp <= 7; temp++)
+			{
+				slotShow[temp] = 1;
+				CheckMenuItem( GetMenu(hwnd), temp + ID_MINOR_HIDE_1, MF_UNCHECKED);
+			}
+			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
 			break;
 
 			//ABOUT MENU ITEMS
@@ -389,6 +445,54 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			break;
 
 		}
+
+		case WM_LBUTTONDOWN:
+			MouseDownX = LOWORD(lparam)/16;
+			MouseDownY = HIWORD(lparam)/16;
+			break;
+
+		case WM_LBUTTONUP:
+			{
+				long MouseDownX2 = LOWORD(lparam)/16;
+				long MouseDownY2 = HIWORD(lparam)/16;
+
+				if (wrapHalf)
+				{
+					if ((MouseDownX < 16) && (MouseDownY < 16))
+						if (MouseDownX2 == MouseDownX)
+							if (MouseDownY2 == MouseDownY)
+							{
+								MouseDownX %= 8;
+								MouseDownY %= 8;
+								temp = mainDun[MouseDownX][MouseDownY][curLevel][curDungeon];
+								if ((temp >= 0xd0) && (temp <= 0xdf))
+								{
+									curRoom = temp & 0xf;
+									doRoomCheck();
+								}
+							}
+				}
+				else
+				{
+					MouseDownX /= 2;
+					MouseDownY /= 2;
+					MouseDownX2 /= 2;
+					MouseDownY2 /= 2;
+
+					if (MouseDownX == MouseDownX2)
+						if (MouseDownY == MouseDownY2)
+						{
+							temp = mainDun[MouseDownX][MouseDownY][curLevel][curDungeon];
+							if ((temp >= 0xd0) && (temp <= 0xdf))
+							{
+								curRoom = temp & 0xf;
+								doRoomCheck();
+							}
+						}
+				}
+				break;
+			}
+
 	case WM_PAINT:
 		PaintDunMap();
 		PaintRoomMap();
@@ -461,11 +565,13 @@ if (!RegisterClass(&winclass))
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
 
+	CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+
 	if (resetRoomA)
-		CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_A, MF_CHECKED);
 
 	if (resetLevel0)
-		CheckMenuItem( GetMenu(hwnd), ID_RESET_LEVEL_0, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_CHECKED);
 
 	while (1)
 	{
@@ -488,17 +594,28 @@ if (!RegisterClass(&winclass))
 
 void readDun(char x[20], int q)
 {
-	short i, j, k;
+	short i, j, k, temp, temp2;
 	int numDun = 16;
 	FILE * F = fopen(x, "rb");
 
-	if (q == 7)
-		numDun = 32;
+	if (q == ABYSS)
+		numDun = 64;
 
 	for (k=0; k < 8; k++)
 		for (j=0; j < 8; j++)
 			for (i=0; i < 8; i++)
-				mainDun[i][j][k][q] = fgetc(F);
+			{
+				temp = fgetc(F); //?? 0xd(0-9) & 0xf0 == 
+				if ((temp >= 0xd0) && (temp <= 0xdf))
+				{
+					temp2 = 0;
+					if (q == ABYSS) //in abyss, add 16 for each (level/2)
+						temp2 = 16 * (j / 2);
+					roomLev[temp % 0x10 + temp2][q] = k;
+				}
+				mainDun[i][j][k][q] = temp;
+			}
+
 	for (k=0; k < numDun; k++)
 	{
 		//This determines the special squares that change if you step on them
@@ -551,7 +668,7 @@ void ReadTheDungeons()
 	readDun("COVETOUS.DNG", 4);
 	readDun("SHAME.DNG", 5);
 	readDun("HYTHLOTH.DNG", 6);
-	readDun("ABYSS.DNG", 7);
+	readDun("ABYSS.DNG", ABYSS);
 }
 
 void PaintDunMap()
@@ -567,8 +684,8 @@ void PaintDunMap()
 			for (i=0; i < 8; i++)
 			{
 				temp = mainDun[i][j][curLevel][curDungeon];
-				if ((temp & 0xf0 == 0xf0) && (!mainLabel))
-					temp = 0xef;
+				if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
+					temp = 0xfd;
 				BitBlt(localhdc, i*16, j*16, 16, 16, level2dc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16+128, j*16, 16, 16, level2dc,
@@ -586,10 +703,10 @@ void PaintDunMap()
 		for (i=0; i < 8; i++)
 		{
 			temp = mainDun[i][j][curLevel][curDungeon];
-			if ((temp & 0xf0 == 0xf0) && (!mainLabel))
-				temp = 0xef;
+			if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
+				temp = 0xfd;
 			BitBlt(localhdc, i*32, j*32, 32, 32, leveldc,
-				32*(mainDun[i][j][curLevel][curDungeon] % 0x10), 32*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+				32*(temp % 0x10), 32*(temp / 0x10), SRCCOPY);
 		}
 	}
 
@@ -682,19 +799,30 @@ void PaintRoomMap()
 				temp2 = changeByte[i+1][curRoom][curDungeon] & 0xf;
 				changedYet[temp][temp2] = 1;
 				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
-					i*8+384, 384, 32, 32, 0xffffff);
+					416, 480, 32, 32, 0x000000);
 
 			}
 		for (i=0; i < 0x10; i += 4)
+		{
 			if (changeByte[i+2][curRoom][curDungeon])
 			{
 				temp = changeByte[i+1][curRoom][curDungeon] >> 4;
 				temp2 = changeByte[i+1][curRoom][curDungeon] & 0xf;
 				// ?? we need to figure a way to print stuff out to see what spoils what, or doesn't. It depends on changeByte.
 				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
-					i*8+384, 448, 32, 32, 0xffffff);
+					448 + 32 * changedYet[temp][temp2], 480, 32, 32, 0x000000);
 
 			}
+			if (changeByte[i+3][curRoom][curDungeon])
+			{
+				temp = changeByte[i+1][curRoom][curDungeon] >> 4;
+				temp2 = changeByte[i+1][curRoom][curDungeon] & 0xf;
+				// ?? we need to figure a way to print stuff out to see what spoils what, or doesn't. It depends on changeByte.
+				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
+					480 + 32 * changedYet[temp][temp2], 480, 32, 32, 0x000000);
+
+			}
+		}
 	}
 
 	adjHeader();
@@ -746,11 +874,59 @@ void adjustSecretCheckmarks()
 void adjHeader()
 {
 	char buffer[100];
-	long fudgeFactor = 0;
+	long fudgeFactor = 1;
 
-	if (curDungeon == 7)	//new 16 rooms every 2 Abyss levels
+	if (curDungeon == ABYSS)	//new 16 rooms every 2 Abyss levels
 		fudgeFactor += 16 * (curLevel / 2);
 
-	sprintf(buffer, "Ultima IV Dungeon Surfer: %s, level, %d, room %d", dunName[curDungeon], curLevel, curRoom + fudgeFactor);
+	sprintf(buffer, "Ultima IV Dungeon Surfer: %s, level %d, room %d (L%d)", dunName[curDungeon], curLevel + 1,
+		curRoom + fudgeFactor, roomLev[curRoom][curDungeon]+1);
 	SetWindowText(hwnd, buffer);
+}
+
+void DungeonReset()
+{
+	PaintDunMap();
+	if (resetRoomA)
+		curRoom = 0;
+	if (resetLevel0)
+		curLevel = 0;
+	if ((curRoom > 15) && (curDungeon != ABYSS))
+		curRoom = 15;	//From far down the abyss, room 16+ is not valid, so let's default to the altar room
+
+	//(dis)able Abyss up/down
+	EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_UP2, MF_GRAYED);
+	if (curDungeon == ABYSS)
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_DOWN2, MF_ENABLED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_DOWN2, MF_GRAYED);
+
+	PaintRoomMap();
+}
+
+void doRoomCheck()
+{
+	if ((curDungeon == ABYSS) && (curRoom >= 16))
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_UP2, MF_ENABLED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_UP2, MF_GRAYED);
+
+	if ((curDungeon == ABYSS) && (curRoom <= 47))
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_DOWN2, MF_ENABLED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_DOWN2, MF_GRAYED);
+
+	if (curRoom > 0)
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_ENABLED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_GRAYED);
+
+	if (curRoom < 15)
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_ENABLED);
+	else if ((curRoom < 63) && (curDungeon == ABYSS))
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_ENABLED);
+	else
+		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_GRAYED);
+
+	PaintRoomMap();
 }

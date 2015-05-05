@@ -16,6 +16,9 @@
 #define ID_NAV_PREVRM 203
 #define ID_NAV_NEXTRM	204
 
+#define ID_NAV_ABYSS_UP2	205
+#define ID_NAV_ABYSS_DOWN2	206
+
 #define ID_NAV_1	211
 #define ID_NAV_2	212
 #define ID_NAV_3	213
@@ -43,9 +46,6 @@
 #define ID_NAV_O	235
 #define ID_NAV_P	236
 
-#define ID_RESET_ROOM_A	240
-#define ID_RESET_LEVEL_0 241
-
 #define ID_OPTIONS_SPOIL 301
 
 #define ID_OPTIONS_MONSTERS	311
@@ -68,6 +68,9 @@
 #define ID_OPTIONS_WRAPHALF	340
 #define ID_OPTIONS_MAINMAP_LABEL	341
 
+#define ID_OPTIONS_RESET_ROOM_A	342
+#define ID_OPTIONS_RESET_LEVEL_0 343
+
 #define ID_MINOR_SWAP_1	401 //not really valid but there for reference
 #define ID_MINOR_SWAP_2	402
 #define ID_MINOR_SWAP_3	403
@@ -85,6 +88,9 @@
 #define ID_MINOR_HIDE_6	416
 #define ID_MINOR_HIDE_7	417
 #define ID_MINOR_HIDE_8	418
+
+#define ID_MINOR_HIDE_ALL	419
+#define ID_MINOR_HIDE_NONE	420
 
 #define ID_ABOUT_BASICS	501
 #define ID_ABOUT_THANKS	502
