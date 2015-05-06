@@ -15,8 +15,6 @@
 
 #include "u5map.h"
 
-#define ICONSIZE 32
-
 //#defines for Windows
 #define WINDOW_CLASS_NAME "WINCLASS1"
 
@@ -29,6 +27,28 @@ void adjustSecretCheckmarks();
 void checkPrevNextRoom();
 void checkPrevNextDun();
 void checkPrevNextLvl();
+void adjHeader();
+short toMonster(short icon);
+void doRoomCheck();
+
+//local pound-defines
+#define MIMIC 0xa8
+
+#define DECEIT 0
+#define DESPISE 1
+#define DESTARD 2
+#define WRONG 3
+#define COVETOUS 4
+#define SHAME 5
+#define HYTHLOTH 6
+#define DOOM 7
+
+#define NORTH 0
+#define EAST 1
+#define SOUTH 2
+#define WEST 3
+
+#define ICONSIZE 32
 
 //globals
 long curRoom = 0;
@@ -38,24 +58,27 @@ long curLevel = 0;
 long resetRoomA = 0;
 long resetLvl1 = 0;
 
-short wrapHalf = 0;
+short syncLevelToRoom = 0;
+short restrictRoom = 0;
 
-short dunTile[8][8][8][8];
+short wrapHalf = 0;
+short hideMimic = 0;
+
+long mouseDownX, mouseDownY;
+
+short mainDun[8][8][8][8];
 short roomBase[11][11][16][8];
+
+short roomLev[16][8];
 
 short monsterType[21][16][8];
 short monsterX[21][16][8];
 short monsterY[21][16][8];
 
-short partyNX[6][16][8];
-short partyNY[6][16][8];
-short partySX[6][16][8];
-short partySY[6][16][8];
-short partyEX[6][16][8];
-short partyEY[6][16][8];
-short partyWX[6][16][8];
-short partyWY[6][16][8];
+short partyX[4][6][16][8];
+short partyY[4][6][16][8];
 
+short roomTextSummary = 0;
 short showMonsters = 0;
 short showSpoilers = 0;
 short showParty = 0;
@@ -71,6 +94,11 @@ short toSquare2X[8][16][8];
 short toSquare2Y[8][16][8];
 
 short partyArray[6] = { 332, 324, 328, 320, 320, 320 };
+
+char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Doom"};
+
+#define MONSTERS 46
+char monsterName[MONSTERS][11] = { "Seahorse", "Squid", "Serpent", "Shark", "Rat", "Bat", "Spider", "Ghost", "Slime", "Gremlin", "Mimic", "Reaper", "Gazer", "TREASURE", "Gargoyle", "Insects", "Orc", "Skeleton", "Snake", "Ettin", "Headless", "Wisp", "Mongbat", "Dragon", "Sand Trap", "Troll", "FIELD", "Whorl", "Balrog", "Corpser", "Rotworm", "Shadowlord" }; 
 
 HWND hwnd;
 
@@ -190,20 +218,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			checkPrevNextRoom();
 			break;
 
-		case ID_RESET_ROOM_A:
+		case ID_OPTIONS_ROOM_A:
 			resetRoomA = !resetRoomA;
 			if (resetRoomA)
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOM_A, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOM_A, MF_UNCHECKED);
 			break;
 
-		case ID_RESET_LVL_1:
+		case ID_OPTIONS_LVL_1:
 			resetLvl1 = !resetLvl1;
 			if (resetLvl1)
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_LVL_1, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_LVL_1, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_RESET_LVL_1, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_LVL_1, MF_UNCHECKED);
 			break;
 
 		case ID_NAV_UP:
@@ -254,12 +282,29 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
 			break;
 
+		case ID_OPTIONS_TEXTSUMMARY:
+			roomTextSummary = !roomTextSummary;
+			if (roomTextSummary)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_UNCHECKED);
+			break;
+
 		case ID_OPTIONS_MONSTERS:
 			showMonsters = !showMonsters;
 			if (showMonsters)
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MONSTERS, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MONSTERS, MF_UNCHECKED);
+			PaintRoomMap();
+			break;
+
+		case ID_OPTIONS_HIDE_MIMIC:
+			hideMimic = !hideMimic;
+			if (hideMimic)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_MIMIC, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_MIMIC, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
@@ -277,6 +322,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_PARTY_EAST:
 		case ID_OPTIONS_PARTY_SOUTH:
 		case ID_OPTIONS_PARTY_WEST:
+		case ID_OPTIONS_PARTY_FIRSTVIABLE:
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE + showParty, MF_UNCHECKED);
 			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			showParty = LOWORD(wparam) - ID_OPTIONS_PARTY_NONE;
@@ -350,7 +396,11 @@ You can't change the Avatar, because.\nYou also can't change friends to the Avat
 			break;
 
 		case ID_ABOUT_BASICS:
-			MessageBox(hwnd, "This Ultima V mapper goes through all the dungeons and dungeon rooms.", "About", MB_OK);
+			MessageBox(hwnd, "Ultima V Dungeon Browser\n\
+This application lets the player browse all the dungeons and rooms.\n\
+It features options and accelerators to bypass the usual traps and grinds.\n\
+Your party is customizable for fun, too.\n\
+Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 			break;
 
 		case ID_ABOUT_THANKS:
@@ -372,6 +422,53 @@ You can't change the Avatar, because.\nYou also can't change friends to the Avat
 			break;
 
 		}
+		case WM_LBUTTONDOWN:
+			mouseDownX = LOWORD(lparam)/16;
+			mouseDownY = HIWORD(lparam)/16;
+			break;
+
+		case WM_LBUTTONUP:
+			{
+				long mouseDownX2 = LOWORD(lparam)/16;
+				long mouseDownY2 = HIWORD(lparam)/16;
+
+				if (wrapHalf)
+				{
+					if ((mouseDownX < 16) && (mouseDownY < 16))
+						if (mouseDownX2 == mouseDownX)
+							if (mouseDownY2 == mouseDownY)
+							{
+								mouseDownX %= 8;
+								mouseDownY %= 8;
+								temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
+								if ((temp >= 0xd0) && (temp <= 0xdf))
+								{
+									curRoom = temp & 0xf;
+									doRoomCheck();
+								}
+							}
+				}
+				else
+				{
+					mouseDownX /= 2;
+					mouseDownY /= 2;
+					mouseDownX2 /= 2;
+					mouseDownY2 /= 2;
+
+					if (mouseDownX == mouseDownX2)
+						if (mouseDownY == mouseDownY2)
+						{
+							temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
+							if ((temp >= 0xd0) && (temp <= 0xdf))
+							{
+								curRoom = temp & 0xf;
+								doRoomCheck();
+							}
+						}
+				}
+				break;
+			}
+
 	case WM_PAINT:
 		PaintDunMap();
 		PaintRoomMap();
@@ -413,7 +510,7 @@ if (!RegisterClass(&winclass))
 							  "Ultima 5 Dungeon Simulator",	     // title
 							  WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
 					 		  0,0,	   // x,y
-							  20*ICONSIZE, 16*ICONSIZE, // width, height
+							  20*ICONSIZE, 16*ICONSIZE, // width, height. We want space for text at the bottom to allow room description.
 							  NULL,	   // handle to parent 
 							  NULL,	   // handle to menu
 							  hInstance,// instance
@@ -446,7 +543,7 @@ if (!RegisterClass(&winclass))
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_BARD_2, MF_CHECKED);
 
 	if (resetRoomA)
-		CheckMenuItem( GetMenu(hwnd), ID_RESET_ROOM_A, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOM_A, MF_CHECKED);
 
 	while (1)
 	{
@@ -479,13 +576,13 @@ void PaintDunMap()
 			for (i=0; i < 8; i++)
 			{
 				BitBlt(localhdc, i*16, j*16, 16, 16, level2dc,
-					16*(dunTile[i][j][curLevel][curDungeon] % 0x10), 16*(dunTile[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16+128, j*16, 16, 16, level2dc,
-					16*(dunTile[i][j][curLevel][curDungeon] % 0x10), 16*(dunTile[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16, j*16+128, 16, 16, level2dc,
-					16*(dunTile[i][j][curLevel][curDungeon] % 0x10), 16*(dunTile[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, level2dc,
-					16*(dunTile[i][j][curLevel][curDungeon] % 0x10), 16*(dunTile[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
 			}
 		}
 		return;
@@ -495,25 +592,38 @@ void PaintDunMap()
 	{
 		for (i=0; i < 8; i++)
 			BitBlt(localhdc, i*32, j*32, 32, 32, leveldc,
-				32*(dunTile[i][j][curLevel][curDungeon] % 0x10), 32*(dunTile[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+				32*(mainDun[i][j][curLevel][curDungeon] % 0x10), 32*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
 	}
 }
 
 void PaintRoomMap()
 {
-	short i, j;
+	short i, j, temp;
 	short tempIcon[11][11];
 	short checkAry[11][11] = {0};
 
-	if (curDungeon == 1)
+	if (curDungeon == DESPISE)
 	{
-		Rectangle(localhdc, 288, 0, 640, 352);
+	HDC hdc = GetDC(hwnd);
+	HBRUSH hbrush=CreateSolidBrush(RGB(128,128,128));
+	RECT rect;
+
+	rect.top=0;
+	rect.bottom=11 * ICONSIZE; //yeah I can do math it's 352 but
+	rect.left=288;
+	rect.right=288 + 11 * ICONSIZE;
+
+	FillRect(hdc, &rect, hbrush);
+
+	DeleteObject(hbrush);
 		return;
 	}
 	//first the base icons
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
 			tempIcon[i][j] = roomBase[i][j][curRoom][curDungeon];
+			if ((!hideMimic) && (roomBase[i][j][curRoom][curDungeon] == MIMIC)) //Show the mimic
+				tempIcon[i][j] += 1;
 
 	//now show monsters
 	if (showMonsters)
@@ -524,37 +634,55 @@ void PaintRoomMap()
 	}
 
 
+	//"smart" placement
+	if (showParty == 5)
+	{
+		for (i=NORTH; i <= WEST; i++)
+		{
+			if (partyX[i][0][curRoom][curDungeon] + partyY[i][0][curRoom][curDungeon])
+			{
+				for (j=0; j < 6; j++)
+					if (partyArray[j])
+						tempIcon[partyX[i][j][curRoom][curDungeon]][partyY[i][j][curRoom][curDungeon]] = partyArray[j];
+				break;
+			}
+		}
+		if (i == 4)
+			MessageBox(hwnd, "Choosing a viable direction did not work! Please note the room and dungeon and report it at u4map's github site.", "Probable bug", MB_OK);
+	}
+
 	switch (showParty)
 	{
 	case 1:
-		if (partyNX[0][curRoom][curDungeon] + partyNY[0][curRoom][curDungeon])
+		if (partyX[0][0][curRoom][curDungeon] + partyY[0][0][curRoom][curDungeon])
 			for (i=0; i < 6; i++)
 				if (partyArray[i])
-					tempIcon[partyNX[0][curRoom][curDungeon]][partyNY[0][curRoom][curDungeon]] = partyArray[i];
+					tempIcon[partyX[0][i][curRoom][curDungeon]][partyY[0][i][curRoom][curDungeon]] = partyArray[i];
 		break;
 
 	case 2:
-		if (partyWX[0][curRoom][curDungeon] + partyWY[0][curRoom][curDungeon])
+		if (partyX[3][0][curRoom][curDungeon] + partyY[3][0][curRoom][curDungeon])
 			for (i=0; i < 6; i++)
 				if (partyArray[i])
-					tempIcon[partyWX[i][curRoom][curDungeon]][partyWY[i][curRoom][curDungeon]] = partyArray[i];
+					tempIcon[partyX[3][i][curRoom][curDungeon]][partyY[3][i][curRoom][curDungeon]] = partyArray[i];
 		break;
 
 	case 3:
-		if (partySX[0][curRoom][curDungeon] + partySY[0][curRoom][curDungeon])
+		if (partyX[2][0][curRoom][curDungeon] + partyY[2][0][curRoom][curDungeon])
 			for (i=0; i < 6; i++)
 				if (partyArray[i])
-					tempIcon[partySX[i][curRoom][curDungeon]][partySY[i][curRoom][curDungeon]] = partyArray[i];
+					tempIcon[partyX[2][i][curRoom][curDungeon]][partyY[2][i][curRoom][curDungeon]] = partyArray[i];
 		break;
 
 	case 4:
-		if (partyEX[0][curRoom][curDungeon] + partyEY[0][curRoom][curDungeon])
+		if (partyX[1][0][curRoom][curDungeon] + partyY[1][0][curRoom][curDungeon])
 			for (i=0; i < 6; i++)
 				if (partyArray[i])
-					tempIcon[partyEX[i][curRoom][curDungeon]][partyEY[i][curRoom][curDungeon]] = partyArray[i];
+					tempIcon[partyX[1][i][curRoom][curDungeon]][partyY[1][i][curRoom][curDungeon]] = partyArray[i];
 		break;
 
 	case 0:
+	case 5: //already done above
 	default:
 		break;
 	}
@@ -601,6 +729,43 @@ void PaintRoomMap()
 					32, 32, leveldc, 448 + 32 * checkAry[toSquare2X[i][curRoom][curDungeon]][toSquare2Y[i][curRoom][curDungeon]],
 					448, 32, 32, 0x000000);
 	}
+	
+	//now text list of monsters
+	if (roomTextSummary)
+	{
+	short monInRoom[MONSTERS] = {0};
+	char roomString[300];
+	char buffer[100];
+	RECT rc;
+	HDC hdc = GetDC(hwnd);
+	GetClientRect(hwnd, &rc);
+
+	rc.left = 288;
+	rc.top = 360;
+
+	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	SetBkMode(hdc, TRANSPARENT);
+	SetTextColor(hdc, RGB(255, 255, 0));
+
+	roomString[0] = 0;
+	for (i=0; i < 21; i++)
+	{
+		temp = monsterType[i][curRoom][curDungeon];
+		if (toMonster(temp) != -1)
+			monInRoom[toMonster(temp)]++;
+	}
+	for (i=0; i < MONSTERS; i++)
+		if (monInRoom[i])
+		{
+			sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
+			if (monInRoom[i] > 1)
+				strcat(buffer, "s");
+			strcat(buffer, "\n");
+			strcat(roomString, buffer);
+		}
+	if (strlen(roomString))
+		DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP);
+	}
 
 	for (i=0; i < 8; i++)
 	{
@@ -614,6 +779,15 @@ void PaintRoomMap()
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_ENABLED);
 		else //oops, same as previous, grey it
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_GRAYED);
+	}
+
+	if (syncLevelToRoom)
+	{
+		if (curLevel != roomLev[curRoom][curDungeon])
+		{
+			curLevel = roomLev[curRoom][curDungeon];
+			PaintDunMap();
+		}
 	}
 }
 
@@ -629,7 +803,7 @@ void ReadTheDungeons()
 		for (k=0; k < 8; k++)
 			for (j=0; j < 8; j++)
 				for (i=0; i < 8; i++)
-					dunTile[i][j][k][l] = fgetc(F);
+					mainDun[i][j][k][l] = fgetc(F);
 
 	fclose(F);
 
@@ -666,14 +840,14 @@ void ReadTheDungeons()
 			//now who starts where
 			for (i=0; i < 6; i++)
 			{
-				partyNX[i][k][l] = tempRoom[i+11][1];
-				partyNY[i][k][l] = tempRoom[i+17][1];
-				partyWX[i][k][l] = tempRoom[i+11][2];
-				partyWY[i][k][l] = tempRoom[i+17][2];
-				partySX[i][k][l] = tempRoom[i+11][3];
-				partySY[i][k][l] = tempRoom[i+17][3];
-				partyEX[i][k][l] = tempRoom[i+11][4];
-				partyEY[i][k][l] = tempRoom[i+17][4];
+				partyX[0][i][k][l] = tempRoom[i+11][1];
+				partyY[0][i][k][l] = tempRoom[i+17][1];
+				partyX[3][i][k][l] = tempRoom[i+11][2];
+				partyY[3][i][k][l] = tempRoom[i+17][2];
+				partyX[2][i][k][l] = tempRoom[i+11][3];
+				partyY[2][i][k][l] = tempRoom[i+17][3];
+				partyX[1][i][k][l] = tempRoom[i+11][4];
+				partyY[1][i][k][l] = tempRoom[i+17][4];
 			}
 
 			//now the monsters
@@ -734,4 +908,36 @@ void checkPrevNextRoom()
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_ENABLED);
 	showPushed = newPushed * 8;
+}
+
+void adjHeader()
+{
+	char buffer[100];
+	char buffer2[20];
+	sprintf(buffer, "Ultima IV Dungeon Surfer: %s, level %d", dunName[curDungeon], curLevel + 1);
+	if (curDungeon = DESPISE)
+		strcat(buffer, " (no rooms)");
+	else
+	{
+		sprintf(buffer2, " room %d", curRoom+1);
+		strcat(buffer, buffer2);
+	}
+	SetWindowText(hwnd, buffer);
+}
+
+void doRoomCheck()
+{
+	checkPrevNextLvl();
+	checkPrevNextRoom();
+	PaintRoomMap();
+}
+
+short toMonster(short icon)
+{
+	//This is probably not perfect. One room had kids etc. in it. So I'd need another case for that.
+	if ((icon >= 0x80) && (icon <= 0xff))
+	{
+		return (icon - 0x80) / 4;
+	}
+	return -1;
 }

@@ -113,14 +113,12 @@ BEGIN
 		MENUITEM "Room A\ta", ID_NAV_A
 		MENUITEM "...", ID_NAV_NULL
 		MENUITEM "Room P\tp", ID_NAV_P
-		MENUITEM SEPARATOR
-		MENUITEM "Reset to Room A on dungeon change", ID_RESET_ROOM_A
-		MENUITEM "Reset to Level 1 on dungeon change", ID_RESET_LVL_1
 	END
 	POPUP "&Options"
 	BEGIN
 		MENUITEM "Show &Monsters", ID_OPTIONS_MONSTERS
 		MENUITEM "Show Spoilers", ID_OPTIONS_SHOW_SPOILERS
+		MENUITEM "Hide M&imic", ID_OPTIONS_HIDE_MIMIC
 		MENUITEM "Show &All Pushed by default", ID_OPTIONS_SHOW_PUSHED
 		POPUP "Individual pushed"
 		BEGIN
@@ -140,14 +138,22 @@ BEGIN
 		MENUITEM "Show &West party\talt-left", ID_OPTIONS_PARTY_WEST
 		MENUITEM "Show &South party\talt-south", ID_OPTIONS_PARTY_SOUTH
 		MENUITEM "Show &East party\talt-east", ID_OPTIONS_PARTY_EAST
+		MENUITEM "Show &First viable direction\talt-home", ID_OPTIONS_PARTY_FIRSTVIABLE
 		MENUITEM SEPARATOR
 		MENUITEM "&Wrap and half size\t-", ID_OPTIONS_WRAPHALF
+		MENUITEM "Room te&xt summary", ID_OPTIONS_TEXTSUMMARY
 		MENUITEM SEPARATOR
 		MENUITEM "Player 2 is &Fighter\tctrl-F8", ID_OPTIONS_FIGHTER_2
 		MENUITEM "Player 2 is &Bard\tshift-F8", ID_OPTIONS_BARD_2
 		MENUITEM "Player 2 is &Mage\talt-F8", ID_OPTIONS_MAGE_2
 		MENUITEM "Player 2 is &Vacant\talt-F8", ID_OPTIONS_NOGUY_2
 		MENUITEM "(3-6 are F9-F12)", ID_OPTIONS_FBMDOC
+		MENUITEM SEPARATOR
+		MENUITEM "Reset to Room A on dungeon change", ID_OPTIONS_ROOM_A
+		MENUITEM "Reset to Level 1 on dungeon change", ID_OPTIONS_LVL_1
+		MENUITEM SEPARATOR
+		MENUITEM "Sync level to room", ID_OPTIONS_SYNC_LEVEL_TO_ROOM
+		MENUITEM "Restrict room to current level", ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL
 	END
 	POPUP "&About"
 	BEGIN

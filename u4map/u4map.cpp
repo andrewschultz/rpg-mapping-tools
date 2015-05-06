@@ -27,6 +27,7 @@ void adjustSecretCheckmarks();
 void adjHeader();
 void DungeonReset();
 void doRoomCheck();
+short toMonster(short icon);
 
 //#defines for in-app use
 #define NORTH 0
@@ -42,6 +43,10 @@ void doRoomCheck();
 #define SHAME 5
 #define HYTHLOTH 6
 #define ABYSS 7
+
+#define MIMIC 0xac
+
+#define MONSTERS 50
 
 //###################globals
 
@@ -61,6 +66,7 @@ long showParty = 0;
 long altIcon = 0;
 long showSpoilers = 0;
 long mainLabel = 0;
+short roomTextSummary = 0;
 
 short hideMimic = 0;
 
@@ -68,6 +74,9 @@ short wrapHalf = 0;
 
 short resetRoomA = 0;
 short resetLevel0 = 0;
+
+short syncLevelToRoom = 0;
+short restrictRoom = 0;
 
 short mainDun[8][8][8][8] = {0};
 
@@ -79,17 +88,8 @@ short monsterType[16][64][8] = {0};
 short monsterX[16][64][8] = {0};
 short monsterY[16][64][8] = {0};
 
-short partyEastX[8][64][8] = {0};
-short partyEastY[8][64][8] = {0};
-
-short partyNorthX[8][64][8] = {0};
-short partyNorthY[8][64][8] = {0};
-
-short partySouthX[8][64][8] = {0};
-short partySouthY[8][64][8] = {0};
-
-short partyWestX[8][64][8] = {0};
-short partyWestY[8][64][8] = {0};
+short partyX[4][8][64][8] = {0};
+short partyY[4][8][64][8] = {0};
 
 short changeByte[16][64][8] = {0};
 
@@ -99,11 +99,23 @@ short showPath[4] = {0};
 
 char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Abyss"};
 
+char monsterName[50][12] = { "Mage", "Bard", "Fighter", "Druid", "Tinker", "Paladin", "Ranger", "Shepherd",
+	"Guard", "Townman", "Bard-2", "Jester", "Beggar", "Child", "Bull", "Lord B",
+	"Nixie", "Squid", "Serpent", "Seahorse", "Whorl", "Twister",
+	"Rat", "Bat", "Spider", "Ghost", 
+	"Slime", "Troll", "Gremlin", "Mimic",
+	"Reaper", "Insects", "Gazer", "Phantom",
+	"Orc", "Skeleton", "Rogue", "Snake",
+	"Ettin", "Headless", "Cyclops", "Wisp",
+	"Mage", "Lich", "Lava Lizard", "Zorn",
+	"Demon", "Hydra", "Dragon", "Balron"
+};
+
 //Mage down to shepherd. You start as a mage, for simplicity.
 short slotIcon[8] = { 0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e };
 short slotShow[8] = {1, 1, 1, 1, 1, 1, 1, 1};
 
-long MouseDownX, MouseDownY;
+long mouseDownX, mouseDownY;
 
 #define ICONSIZE 32
 
@@ -231,11 +243,28 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 		case ID_OPTIONS_RESET_LEVEL_0:
 			resetLevel0 = !resetLevel0;
-			if (resetRoomA)
+			if (resetLevel0)
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_UNCHECKED);
 			break;
+			
+		case ID_OPTIONS_SYNC_LEVEL_TO_ROOM:
+			syncLevelToRoom = !syncLevelToRoom;
+			if (syncLevelToRoom)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_UNCHECKED);
+			break;
+
+		case ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL:
+			restrictRoom = !restrictRoom;
+			if (restrictRoom)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
+			break;
+
 
 		case ID_NAV_UP:
 			if (curLevel > 0)
@@ -259,6 +288,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 		case ID_NAV_PREVRM:
 			if (curRoom > 0)
+				if (restrictRoom)
+					if (curLevel != roomLev[curRoom-1][curDungeon])
+						break;
 				curRoom--;
 				doRoomCheck();
 			break;
@@ -266,11 +298,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_NEXTRM:
 			if (curRoom < 15)
 			{
+				if (restrictRoom)
+					if (curLevel != roomLev[curRoom+1][curDungeon])
+						break;
 				curRoom++;
 				doRoomCheck();
 			}
 			else if ((curRoom < 63) && (curDungeon == ABYSS))
 			{
+				if (restrictRoom)
+					if (curLevel != roomLev[curRoom-1][curDungeon])
+						break;
 				curRoom++; //Abyss has four times the rooms of the other dungeons.
 				doRoomCheck();
 			}
@@ -292,12 +330,21 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintRoomMap();
 			break;
 
-		case ID_OPTIONS_HIDEMIMIC:
+		case ID_OPTIONS_HIDE_MIMIC:
 			hideMimic = !hideMimic;
 			if (hideMimic)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDEMIMIC, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_MIMIC, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDEMIMIC, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_MIMIC, MF_UNCHECKED);
+			PaintRoomMap();
+			break;
+
+		case ID_OPTIONS_TEXTSUMMARY:
+			roomTextSummary = !roomTextSummary;
+			if (roomTextSummary)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
@@ -306,6 +353,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_PARTY_EAST:
 		case ID_OPTIONS_PARTY_SOUTH:
 		case ID_OPTIONS_PARTY_WEST:
+		case ID_OPTIONS_PARTY_FIRSTVIABLE:
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE + showParty, MF_UNCHECKED);
 			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			showParty = LOWORD(wparam) - ID_OPTIONS_PARTY_NONE;
@@ -402,6 +450,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				else
 					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
 			}
+			PaintRoomMap();
 			break;
 
 		case ID_MINOR_HIDE_ALL:
@@ -412,6 +461,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			}
 			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_CHECKED);
 			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
+			PaintRoomMap();
 			break;
 
 		case ID_MINOR_HIDE_NONE:
@@ -422,12 +472,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			}
 			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
 			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+			PaintRoomMap();
 			break;
 
 			//ABOUT MENU ITEMS
 
 		case ID_ABOUT_BASICS:
-			MessageBox(hwnd, "This Ultima V mapper goes through all the dungeons and dungeon rooms.", "About", MB_OK);
+			MessageBox(hwnd, "Ultima IV Dungeon Browser\n\
+This application lets the player browse all the dungeons and rooms.\n\
+It features options and accelerators to bypass the usual traps and grinds.\n\
+Your party is customizable for fun, too.\n\
+Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 			break;
 
 		case ID_ABOUT_THANKS:
@@ -447,24 +502,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		}
 
 		case WM_LBUTTONDOWN:
-			MouseDownX = LOWORD(lparam)/16;
-			MouseDownY = HIWORD(lparam)/16;
+			mouseDownX = LOWORD(lparam)/16;
+			mouseDownY = HIWORD(lparam)/16;
 			break;
 
 		case WM_LBUTTONUP:
 			{
-				long MouseDownX2 = LOWORD(lparam)/16;
-				long MouseDownY2 = HIWORD(lparam)/16;
+				long mouseDownX2 = LOWORD(lparam)/16;
+				long mouseDownY2 = HIWORD(lparam)/16;
 
 				if (wrapHalf)
 				{
-					if ((MouseDownX < 16) && (MouseDownY < 16))
-						if (MouseDownX2 == MouseDownX)
-							if (MouseDownY2 == MouseDownY)
+					if ((mouseDownX < 16) && (mouseDownY < 16))
+						if (mouseDownX2 == mouseDownX)
+							if (mouseDownY2 == mouseDownY)
 							{
-								MouseDownX %= 8;
-								MouseDownY %= 8;
-								temp = mainDun[MouseDownX][MouseDownY][curLevel][curDungeon];
+								mouseDownX %= 8;
+								mouseDownY %= 8;
+								temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
 								if ((temp >= 0xd0) && (temp <= 0xdf))
 								{
 									curRoom = temp & 0xf;
@@ -474,15 +529,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				}
 				else
 				{
-					MouseDownX /= 2;
-					MouseDownY /= 2;
-					MouseDownX2 /= 2;
-					MouseDownY2 /= 2;
+					mouseDownX /= 2;
+					mouseDownY /= 2;
+					mouseDownX2 /= 2;
+					mouseDownY2 /= 2;
 
-					if (MouseDownX == MouseDownX2)
-						if (MouseDownY == MouseDownY2)
+					if (mouseDownX == mouseDownX2)
+						if (mouseDownY == mouseDownY2)
 						{
-							temp = mainDun[MouseDownX][MouseDownY][curLevel][curDungeon];
+							temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
 							if ((temp >= 0xd0) && (temp <= 0xdf))
 							{
 								curRoom = temp & 0xf;
@@ -556,7 +611,7 @@ if (!RegisterClass(&winclass))
 	HBITMAP oldlevel2 = (HBITMAP)SelectObject(level2dc, level2bmp);
 
 	ReadTheDungeons();
-	PaintDunMap();
+	DungeonReset();
 
     hAccelTable = LoadAccelerators(hInstance, "MYACCEL");
 
@@ -631,24 +686,24 @@ void readDun(char x[20], int q)
 			monsterY[i][k][q] = fgetc(F);
 
 		for (i=0; i < 8; i++)
-			partyNorthX[i][k][q] = fgetc(F);
+			partyX[0][i][k][q] = fgetc(F);
 		for (i=0; i < 8; i++)
-			partyNorthY[i][k][q] = fgetc(F);
+			partyY[0][i][k][q] = fgetc(F);
 
 		for (i=0; i < 8; i++)
-			partyEastX[i][k][q] = fgetc(F);
+			partyX[1][i][k][q] = fgetc(F);
 		for (i=0; i < 8; i++)
-			partyEastY[i][k][q] = fgetc(F);
+			partyY[1][i][k][q] = fgetc(F);
 
 		for (i=0; i < 8; i++)
-			partySouthX[i][k][q] = fgetc(F);
+			partyX[2][i][k][q] = fgetc(F);
 		for (i=0; i < 8; i++)
-			partySouthY[i][k][q] = fgetc(F);
+			partyY[2][i][k][q] = fgetc(F);
 
 		for (i=0; i < 8; i++)
-			partyWestX[i][k][q] = fgetc(F);
+			partyX[3][i][k][q] = fgetc(F);
 		for (i=0; i < 8; i++)
-			partyWestY[i][k][q] = fgetc(F);
+			partyY[3][i][k][q] = fgetc(F);
 
 		for (j=0; j < 11; j++)
 			for (i=0; i < 11; i++)
@@ -732,11 +787,28 @@ void PaintRoomMap()
 				if (monsterY[i][curRoom][curDungeon] > 0xa)
 					k=0;
 				thisIcon[monsterX[i][curRoom][curDungeon]][monsterY[i][curRoom][curDungeon]] = monsterType[i][curRoom][curDungeon];
-				if ((!hideMimic) && (monsterType[i][curRoom][curDungeon] == 0xac))
-					thisIcon[monsterX[i][curRoom][curDungeon]][monsterY[i][curRoom][curDungeon]] = 0xad;
+				if ((!hideMimic) && (monsterType[i][curRoom][curDungeon] == MIMIC))
+					thisIcon[monsterX[i][curRoom][curDungeon]][monsterY[i][curRoom][curDungeon]]++;
 			}
 	}
 
+	// "smart" party placement
+	if (showParty == 5)
+	{
+		for (i=NORTH; i <= WEST; i++)
+		{
+			if (partyX[0][i][curRoom][curDungeon] + partyY[0][i][curRoom][curDungeon])
+			{
+				for (j=0; j < 8; j++)
+					if (slotShow[j])
+						thisIcon[partyX[i][j][curRoom][curDungeon]][partyY[i][j][curRoom][curDungeon]] = slotIcon[j];
+				break;
+			}
+		}
+		if (i == 4)
+			MessageBox(hwnd, "Choosing a viable direction did not work! Please note the room and dungeon and report it at u4map's github site.", "Probable bug", MB_OK);
+	}
+	else
 	//Do we show where the party is? Can they enter the room from this direction? If so, display all 8 characters.
 
 	if (showParty && curDirValid())
@@ -747,19 +819,19 @@ void PaintRoomMap()
 			{
 			case PARTY_NORTH:
 				if (slotShow[i])
-					thisIcon[partyNorthX[i][curRoom][curDungeon]][partyNorthY[i][curRoom][curDungeon]] = slotIcon[i];
+					thisIcon[partyX[0][i][curRoom][curDungeon]][partyY[0][i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			case PARTY_SOUTH:
 				if (slotShow[i])
-					thisIcon[partySouthX[i][curRoom][curDungeon]][partySouthY[i][curRoom][curDungeon]] = slotIcon[i];
+					thisIcon[partyX[2][i][curRoom][curDungeon]][partyY[2][i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			case PARTY_EAST:
 				if (slotShow[i])
-					thisIcon[partyEastX[i][curRoom][curDungeon]][partyEastY[i][curRoom][curDungeon]] = slotIcon[i];
+					thisIcon[partyX[1][i][curRoom][curDungeon]][partyY[1][i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			case PARTY_WEST:
 				if (slotShow[i])
-					thisIcon[partyWestX[i][curRoom][curDungeon]][partyWestY[i][curRoom][curDungeon]] = slotIcon[i];
+					thisIcon[partyX[3][i][curRoom][curDungeon]][partyY[3][i][curRoom][curDungeon]] = slotIcon[i];
 				break;
 			}
 		}
@@ -823,7 +895,56 @@ void PaintRoomMap()
 
 			}
 		}
+		
 	}
+
+	if (syncLevelToRoom)
+	{
+		if (curLevel != roomLev[curRoom][curDungeon])
+		{
+			curLevel = roomLev[curRoom][curDungeon];
+			PaintDunMap();
+		}
+	}
+
+	//now text list of monsters
+	if (roomTextSummary)
+	{
+		short monInRoom[MONSTERS] = {0};
+	char roomString[300];
+	char buffer[100];
+	RECT rc;
+	HDC hdc = GetDC(hwnd);
+	GetClientRect(hwnd, &rc);
+
+	rc.left = 288;
+	rc.top = 360;
+
+	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	SetBkMode(hdc, TRANSPARENT);
+	SetTextColor(hdc, RGB(255, 255, 0));
+
+	roomString[0] = 0;
+	for (i=0; i < 16; i++)
+	{
+		temp = monsterType[i][curRoom][curDungeon];
+		if (toMonster(temp) != -1)
+			monInRoom[toMonster(temp)]++;
+	}
+	for (i=0; i < MONSTERS; i++)
+		if (monInRoom[i])
+		{
+			sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
+			if (monInRoom[i] > 1)
+				strcat(buffer, "s");
+			strcat(buffer, "\n");
+			strcat(roomString, buffer);
+		}
+	if (strlen(roomString))
+		DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP);
+	ReleaseDC(hwnd, hdc);
+	}
+
 
 	adjHeader();
 }
@@ -836,13 +957,13 @@ short curDirValid()
 	for (i=0; i < 8; i++)
 	{
 		 if (showParty==PARTY_NORTH)
-			 runTotal += partyNorthX[i][curRoom][curDungeon] + partyNorthY[i][curRoom][curDungeon];
+			 runTotal += partyX[0][i][curRoom][curDungeon] + partyY[0][i][curRoom][curDungeon];
 		 if (showParty==PARTY_SOUTH)
-			 runTotal += partySouthX[i][curRoom][curDungeon] + partySouthY[i][curRoom][curDungeon];
+			 runTotal += partyX[2][i][curRoom][curDungeon] + partyY[2][i][curRoom][curDungeon];
 		 if (showParty==PARTY_EAST)
-			 runTotal += partyEastX[i][curRoom][curDungeon] + partyEastY[i][curRoom][curDungeon];
+			 runTotal += partyX[1][i][curRoom][curDungeon] + partyY[1][i][curRoom][curDungeon];
 		 if (showParty==PARTY_WEST)
-			 runTotal += partyWestX[i][curRoom][curDungeon] + partyWestY[i][curRoom][curDungeon];
+			 runTotal += partyX[3][i][curRoom][curDungeon] + partyY[3][i][curRoom][curDungeon];
 	}
 	return (runTotal != 0);
 }
@@ -879,7 +1000,7 @@ void adjHeader()
 	if (curDungeon == ABYSS)	//new 16 rooms every 2 Abyss levels
 		fudgeFactor += 16 * (curLevel / 2);
 
-	sprintf(buffer, "Ultima IV Dungeon Surfer: %s, level %d, room %d (L%d)", dunName[curDungeon], curLevel + 1,
+	sprintf(buffer, "Ultima IV Dungeon Browser: %s, level %d, room %d (L%d)", dunName[curDungeon], curLevel + 1,
 		curRoom + fudgeFactor, roomLev[curRoom][curDungeon]+1);
 	SetWindowText(hwnd, buffer);
 }
@@ -901,7 +1022,7 @@ void DungeonReset()
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_DOWN2, MF_GRAYED);
 
-	PaintRoomMap();
+	doRoomCheck();
 }
 
 void doRoomCheck()
@@ -929,4 +1050,25 @@ void doRoomCheck()
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_GRAYED);
 
 	PaintRoomMap();
+}
+
+short toMonster(short icon)
+{
+	if ((icon >= 0x20) && (icon <= 0x2f))
+	{ //class enemies
+		return (icon - 0x20) / 2;
+	}
+	if ((icon >= 0x50) && (icon <= 0x5f))
+	{ //townfolk, including Lord British
+		return 8 + (icon - 0x50) / 2;
+	}
+	if ((icon >= 0x84) && (icon <= 0x8f))
+	{ //sea monsters
+		return 16 + (icon - 0x50) / 2;
+	}
+	if ((icon >= 0x90) && (icon <= 0xff))
+	{
+		return 22 + (icon - 0x90) / 4;
+	}
+	return -1; //No monster icon found
 }
