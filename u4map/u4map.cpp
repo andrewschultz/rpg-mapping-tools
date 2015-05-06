@@ -265,7 +265,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
 			break;
 
-
 		case ID_NAV_UP:
 			if (curLevel > 0)
 			{

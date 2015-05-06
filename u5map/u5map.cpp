@@ -258,6 +258,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 		case ID_NAV_PREVRM:
 			if (curRoom > 0)
+				if (restrictRoom)
+					if (curLevel != roomLev[curRoom-1][curDungeon])
+						break;
 				curRoom--;
 				PaintRoomMap();
 				checkPrevNextRoom();
@@ -266,6 +269,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_NEXTRM:
 			if (curRoom < 15)
 			{
+				if (restrictRoom)
+					if (curLevel != roomLev[curRoom+1][curDungeon])
+						break;
 				curRoom++;
 				PaintRoomMap();
 				checkPrevNextRoom();
@@ -327,6 +333,22 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			showParty = LOWORD(wparam) - ID_OPTIONS_PARTY_NONE;
 			PaintRoomMap();
+			break;
+
+		case ID_OPTIONS_SYNC_LEVEL_TO_ROOM:
+			syncLevelToRoom = !syncLevelToRoom;
+			if (syncLevelToRoom)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_UNCHECKED);
+			break;
+
+		case ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL:
+			restrictRoom = !restrictRoom;
+			if (restrictRoom)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
 			break;
 
 		case ID_OPTIONS_PSGS_0:
@@ -441,7 +463,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 								mouseDownX %= 8;
 								mouseDownY %= 8;
 								temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
-								if ((temp >= 0xd0) && (temp <= 0xdf))
+								if ((temp >= 0xf0) && (temp <= 0xff))
 								{
 									curRoom = temp & 0xf;
 									doRoomCheck();
@@ -459,7 +481,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 						if (mouseDownY == mouseDownY2)
 						{
 							temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
-							if ((temp >= 0xd0) && (temp <= 0xdf))
+							if ((temp >= 0xf0) && (temp <= 0xff))
 							{
 								curRoom = temp & 0xf;
 								doRoomCheck();
@@ -594,6 +616,7 @@ void PaintDunMap()
 			BitBlt(localhdc, i*32, j*32, 32, 32, leveldc,
 				32*(mainDun[i][j][curLevel][curDungeon] % 0x10), 32*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
 	}
+	adjHeader();
 }
 
 void PaintRoomMap()
@@ -789,13 +812,14 @@ void PaintRoomMap()
 			PaintDunMap();
 		}
 	}
+	adjHeader();
 }
 
 void ReadTheDungeons()
 {
 	short tempRoom[32][11];
 
-	short i, j, k, l;
+	short i, j, k, l, temp;
 
 	FILE * F = fopen("DUNGEON.DAT", "rb");
 
@@ -803,7 +827,12 @@ void ReadTheDungeons()
 		for (k=0; k < 8; k++)
 			for (j=0; j < 8; j++)
 				for (i=0; i < 8; i++)
-					mainDun[i][j][k][l] = fgetc(F);
+				{
+					temp = fgetc(F);
+					if ((temp < 0xff) && (temp >= 0xf0))
+						roomLev[temp-0xf0][l] = k;
+					mainDun[i][j][k][l] = temp;
+				}
 
 	fclose(F);
 
@@ -915,11 +944,11 @@ void adjHeader()
 	char buffer[100];
 	char buffer2[20];
 	sprintf(buffer, "Ultima IV Dungeon Surfer: %s, level %d", dunName[curDungeon], curLevel + 1);
-	if (curDungeon = DESPISE)
+	if (curDungeon == DESPISE)
 		strcat(buffer, " (no rooms)");
 	else
 	{
-		sprintf(buffer2, " room %d", curRoom+1);
+		sprintf(buffer2, " room %d (L%d)", curRoom+1, roomLev[curRoom][curDungeon]);
 		strcat(buffer, buffer2);
 	}
 	SetWindowText(hwnd, buffer);
