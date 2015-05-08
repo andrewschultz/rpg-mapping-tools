@@ -16,5 +16,4 @@ You will probably want the DSW file to build the app, if you wish to build it, t
 
 At the moment, you definitely need all the BMP files to build it. And you need the BMP files to run it, too.
 
-You do not need the u4d.* maps. They are only there to show you how I extracted the dungeon data. They are used by mapconv and mapcpy.
-
+You do not need the u4d.* maps. They are only there to show you how I extracted the dungeon data. They are used by mapconv and mapcpy. Also, u4shapes.c is not useful for the main executable. It only builds the shape-map.
