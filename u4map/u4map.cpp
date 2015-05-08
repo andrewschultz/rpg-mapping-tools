@@ -564,6 +564,8 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 				long mouseDownX2 = LOWORD(lparam)/16;
 				long mouseDownY2 = HIWORD(lparam)/16;
 
+				if ((mouseDownX < 16) && (mouseDownY < 16))
+				{
 				if (wrapHalf)
 				{
 					if ((mouseDownX < 16) && (mouseDownY < 16))
@@ -572,12 +574,8 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 							{
 								mouseDownX %= 8;
 								mouseDownY %= 8;
-								temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
-								if ((temp >= 0xd0) && (temp <= 0xdf))
-								{
-									curRoom = temp & 0xf;
-									doRoomCheck();
-								}
+								mouseDownX2 %= 8;
+								mouseDownY2 %= 8;
 							}
 				}
 				else
@@ -586,17 +584,22 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 					mouseDownY /= 2;
 					mouseDownX2 /= 2;
 					mouseDownY2 /= 2;
-
-					if (mouseDownX == mouseDownX2)
-						if (mouseDownY == mouseDownY2)
+				}
+				if (mouseDownX == mouseDownX2)
+					if (mouseDownY == mouseDownY2)
+					{
+						temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
+						if ((temp >= 0xd0) && (temp <= 0xdf))
 						{
-							temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
-							if ((temp >= 0xd0) && (temp <= 0xdf))
-							{
-								curRoom = temp & 0xf;
-								doRoomCheck();
-							}
+							curRoom = temp & 0xf;
+							doRoomCheck();
 						}
+						if ((temp % 16 >.8) && (temp <= 0x7f))
+						{
+							curRoom = (temp & 0x7) + 8 * (temp / 0x10);
+							doRoomCheck();
+						}
+				}
 				}
 				break;
 			}
@@ -716,10 +719,21 @@ void readDun(char x[20], int q)
 				temp = fgetc(F); //?? 0xd(0-9) & 0xf0 == 
 				if ((temp >= 0xd0) && (temp <= 0xdf))
 				{
-					temp2 = 0;
 					if (q == ABYSS) //in abyss, add 16 for each (level/2)
-						temp2 = 16 * (k/ 2);
-					roomLev[temp % 0x10 + temp2][q] = k;
+					{
+						temp2 = temp % 0x10;
+						if (k >= 2)
+						{
+							temp %= 0x10;
+							if (temp >= 8)
+								temp += 8;
+							temp += 8;
+							temp += (0x20 * (k/2));
+							temp2 += 16 * (k / 2);
+						}
+					}
+
+					roomLev[temp2][q] = k;
 				}
 				mainDun[i][j][k][q] = temp;
 			}
@@ -793,7 +807,9 @@ void PaintDunMap()
 			{
 				temp = mainDun[i][j][curLevel][curDungeon];
 				if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
-					temp = 0xfd;
+					temp = 0xfd; // rooms 1-16
+				if (((temp % 16 >= 0x8) && (temp <= 0x7f)) && (!mainLabel))
+					temp = 0xfd; // rooms 17-64
 				BitBlt(localhdc, i*16, j*16, 16, 16, level2dc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 				BitBlt(localhdc, i*16+128, j*16, 16, 16, level2dc,
