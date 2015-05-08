@@ -85,6 +85,8 @@ short showParty = 0;
 short newPushed = 0;
 short showPushed = 0;
 
+short curDir = 0;
+
 short whatTo[8][16][8];
 short fromSquareX[8][16][8];
 short fromSquareY[8][16][8];
@@ -93,7 +95,7 @@ short toSquare1Y[8][16][8];
 short toSquare2X[8][16][8];
 short toSquare2Y[8][16][8];
 
-short partyArray[6] = { 332, 324, 328, 320, 320, 320 };
+short partyArray[6] = { 0x14c, 0x144, 0x148, 0x140, 0x140, 0x140 };
 
 char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Doom"};
 
@@ -452,35 +454,49 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 		case WM_LBUTTONUP:
 			{
-				long mouseDownX2 = LOWORD(lparam)/16;
-				long mouseDownY2 = HIWORD(lparam)/16;
+				long mouseUpX = LOWORD(lparam)/16;
+				long mouseUpY = HIWORD(lparam)/16;
 
-				if ((mouseDownX2 < 16) && (mouseDownY2 < 16))
+				if ((mouseUpX != mouseDownX) || (mouseUpY != mouseDownY))
+					break;
+
+				if ((mouseUpX < 16) && (mouseUpY < 16))
 				{
 					if (wrapHalf)
 					{
 						mouseDownX %= 8;
 						mouseDownY %= 8;
-						mouseDownX2 %= 8;
-						mouseDownY2 %= 8;
+						mouseUpX %= 8;
+						mouseUpY %= 8;
 					}
 					else
 					{
 						mouseDownX /= 2;
 						mouseDownY /= 2;
-						mouseDownX2 /= 2;
-						mouseDownY2 /= 2;
+						mouseUpX /= 2;
+						mouseUpY /= 2;
 					}
-					if (mouseDownX2 == mouseDownX)
-						if (mouseDownY2 == mouseDownY)
+					temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
+					if ((temp >= 0xf0) && (temp <= 0xff))
+					{
+						curRoom = temp & 0xf;
+						doRoomCheck();
+					}
+				}
+				if ((mouseUpX >= 18) && (mouseUpX < 40) && (mouseUpY < 22) && (showParty))
+				{
+					short i;
+					mouseUpX /= 2;
+					mouseUpX -= 9;
+					mouseUpY /= 2;
+					for (i=1; i < 6; i++)
+						if ((partyX[curDir][i][curRoom][curDungeon] == mouseUpX) && (partyY[curDir][i][curRoom][curDungeon] == mouseUpY))
 						{
-							temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
-							if ((temp >= 0xf0) && (temp <= 0xff))
-							{
-								curRoom = temp & 0xf;
-								doRoomCheck();
-							}
+							partyArray[i] += 4;
+							if (partyArray[i] == 0x14c)
+								partyArray[i] = 0x140;
 						}
+					doRoomCheck();
 				}
 			}
 			break;
@@ -661,41 +677,26 @@ void PaintRoomMap()
 				for (j=0; j < 6; j++)
 					if (partyArray[j])
 						tempIcon[partyX[i][j][curRoom][curDungeon]][partyY[i][j][curRoom][curDungeon]] = partyArray[j];
+				curDir = i;
 				break;
 			}
 		}
 		if (i == 4)
 			MessageBox(hwnd, "Choosing a viable direction did not work! Please note the room and dungeon and report it at u4map's github site.", "Probable bug", MB_OK);
 	}
+	else if (showParty > 0)
+		curDir = showParty - 1;
 
 	switch (showParty)
 	{
-	case 1:
-		if (partyX[0][0][curRoom][curDungeon] + partyY[0][0][curRoom][curDungeon])
+	case NORTH + 1:
+	case SOUTH + 1:
+	case EAST + 1:
+	case WEST + 1:
+		if (partyX[showParty-1][0][curRoom][curDungeon] + partyY[showParty-1][0][curRoom][curDungeon])
 			for (i=0; i < 6; i++)
 				if (partyArray[i])
-					tempIcon[partyX[0][i][curRoom][curDungeon]][partyY[0][i][curRoom][curDungeon]] = partyArray[i];
-		break;
-
-	case 2:
-		if (partyX[3][0][curRoom][curDungeon] + partyY[3][0][curRoom][curDungeon])
-			for (i=0; i < 6; i++)
-				if (partyArray[i])
-					tempIcon[partyX[3][i][curRoom][curDungeon]][partyY[3][i][curRoom][curDungeon]] = partyArray[i];
-		break;
-
-	case 3:
-		if (partyX[2][0][curRoom][curDungeon] + partyY[2][0][curRoom][curDungeon])
-			for (i=0; i < 6; i++)
-				if (partyArray[i])
-					tempIcon[partyX[2][i][curRoom][curDungeon]][partyY[2][i][curRoom][curDungeon]] = partyArray[i];
-		break;
-
-	case 4:
-		if (partyX[1][0][curRoom][curDungeon] + partyY[1][0][curRoom][curDungeon])
-			for (i=0; i < 6; i++)
-				if (partyArray[i])
-					tempIcon[partyX[1][i][curRoom][curDungeon]][partyY[1][i][curRoom][curDungeon]] = partyArray[i];
+					tempIcon[partyX[showParty-1][i][curRoom][curDungeon]][partyY[showParty-1][i][curRoom][curDungeon]] = partyArray[i];
 		break;
 
 	case 0:
@@ -823,7 +824,7 @@ void ReadTheDungeons()
 				for (i=0; i < 8; i++)
 				{
 					temp = fgetc(F);
-					if ((temp < 0xff) && (temp >= 0xf0))
+					if ((temp <= 0xff) && (temp >= 0xf0))
 						roomLev[temp-0xf0][l] = k;
 					mainDun[i][j][k][l] = temp;
 				}
@@ -863,14 +864,14 @@ void ReadTheDungeons()
 			//now who starts where
 			for (i=0; i < 6; i++)
 			{
-				partyX[0][i][k][l] = tempRoom[i+11][1];
-				partyY[0][i][k][l] = tempRoom[i+17][1];
-				partyX[3][i][k][l] = tempRoom[i+11][2];
-				partyY[3][i][k][l] = tempRoom[i+17][2];
+				partyX[1][i][k][l] = tempRoom[i+11][2];
+				partyY[1][i][k][l] = tempRoom[i+17][2];
+				partyX[3][i][k][l] = tempRoom[i+11][1]; //U5 is counterclockwise but I copied lots of U4 code
+				partyY[3][i][k][l] = tempRoom[i+17][2]; //so this makes it clockwise
 				partyX[2][i][k][l] = tempRoom[i+11][3];
 				partyY[2][i][k][l] = tempRoom[i+17][3];
-				partyX[1][i][k][l] = tempRoom[i+11][4];
-				partyY[1][i][k][l] = tempRoom[i+17][4];
+				partyX[0][i][k][l] = tempRoom[i+11][4];
+				partyY[0][i][k][l] = tempRoom[i+17][4];
 			}
 
 			//now the monsters
@@ -942,7 +943,7 @@ void adjHeader()
 		strcat(buffer, " (no rooms)");
 	else
 	{
-		sprintf(buffer2, " room %d (L%d)", curRoom+1, roomLev[curRoom][curDungeon]);
+		sprintf(buffer2, " room %d (L%d)", curRoom+1, roomLev[curRoom][curDungeon]+1);
 		strcat(buffer, buffer2);
 	}
 	SetWindowText(hwnd, buffer);

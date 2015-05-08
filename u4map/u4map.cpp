@@ -28,6 +28,7 @@ void adjHeader();
 void DungeonReset();
 void doRoomCheck();
 short toMonster(short icon);
+void rlsDebug(char x[50]);
 
 //#defines for in-app use
 #define NORTH 0
@@ -67,6 +68,8 @@ long altIcon = 0;
 long showSpoilers = 0;
 long mainLabel = 0;
 short roomTextSummary = 0;
+
+short curDir = 0; //?? what about when things are turned off
 
 short hideMimic = 0;
 
@@ -563,8 +566,41 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 		case WM_LBUTTONUP:
 			{
-				long mouseDownX2 = LOWORD(lparam)/16;
-				long mouseDownY2 = HIWORD(lparam)/16;
+				long mouseUpX = LOWORD(lparam)/16;
+				long mouseUpY = HIWORD(lparam)/16;
+
+				if (showParty)
+					if ((mouseDownX >= 18) && (mouseDownX < 40) && (mouseDownY < 22))
+						if ((mouseUpX >= 18) && (mouseUpX < 40) && (mouseUpY < 22))
+						{
+							short froms = 0, tos = 0;
+							mouseDownX -= 18;
+							mouseDownX /= 2;
+							mouseDownY /= 2;
+							mouseUpX -= 18;
+							mouseUpX /= 2;
+							mouseUpY /= 2;
+
+							for (temp = 0; temp < 8; temp++)
+							{
+								if (partyX[curDir][temp][curRoom][curLevel] == mouseDownX)
+									if (partyY[curDir][temp][curRoom][curLevel] == mouseDownY)
+										froms = temp;
+								if (partyX[curDir][temp][curRoom][curLevel] == mouseUpX)
+									if (partyY[curDir][temp][curRoom][curLevel] == mouseUpY)
+										tos = temp;
+							}
+
+							if (froms && tos)
+								if (froms != tos)
+								{
+									temp = slotIcon[froms];
+									slotIcon[froms] = slotIcon[tos];
+									slotIcon[tos] = temp;
+
+								}
+
+						}
 
 				if ((mouseDownX < 16) && (mouseDownY < 16))
 				{
@@ -572,18 +608,18 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 				{//this allows us to move from 1 quadrant to another
 					mouseDownX %= 8;
 					mouseDownY %= 8;
-					mouseDownX2 %= 8;
-					mouseDownY2 %= 8;
+					mouseUpX %= 8;
+					mouseUpY %= 8;
 				}
 				else
 				{
 					mouseDownX /= 2;
 					mouseDownY /= 2;
-					mouseDownX2 /= 2;
-					mouseDownY2 /= 2;
+					mouseUpX /= 2;
+					mouseUpY /= 2;
 				}
-				if (mouseDownX == mouseDownX2)
-					if (mouseDownY == mouseDownY2)
+				if (mouseDownX == mouseUpX)
+					if (mouseDownY == mouseUpY)
 					{
 						temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
 						if ((temp >= 0xd0) && (temp <= 0xdf))
@@ -714,6 +750,7 @@ void readDun(char x[20], int q)
 			for (i=0; i < 8; i++)
 			{
 				temp = fgetc(F); //?? 0xd(0-9) & 0xf0 == 
+				temp2 = temp;
 				if ((temp >= 0xd0) && (temp <= 0xdf))
 				{
 					if (q == ABYSS) //in abyss, add 16 for each (level/2)
@@ -1138,4 +1175,13 @@ short toMonster(short icon)
 		return 22 + (icon - 0x90) / 4;
 	}
 	return -1; //No monster icon found
+}
+
+void rlsDebug(char x[50])
+{
+	FILE * F = fopen("debug.txt", "a");
+
+	fputs(x, F);
+	fputs("\n", F);
+	fclose(F);
 }
