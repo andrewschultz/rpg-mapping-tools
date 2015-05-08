@@ -424,11 +424,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 		case ID_OPTIONS_REVEAL_ALL_SECRET:
 			showPath[0] = showPath[1] = showPath[2] = showPath[3] = 1;
+			adjustSecretCheckmarks();
 			PaintRoomMap();
 			break;
 
 		case ID_OPTIONS_HIDE_ALL_SECRET:
 			showPath[0] = showPath[1] = showPath[2] = showPath[3] = 0;
+			adjustSecretCheckmarks();
 			PaintRoomMap();
 			break;
 
@@ -567,16 +569,11 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 				if ((mouseDownX < 16) && (mouseDownY < 16))
 				{
 				if (wrapHalf)
-				{
-					if ((mouseDownX < 16) && (mouseDownY < 16))
-						if (mouseDownX2 == mouseDownX)
-							if (mouseDownY2 == mouseDownY)
-							{
-								mouseDownX %= 8;
-								mouseDownY %= 8;
-								mouseDownX2 %= 8;
-								mouseDownY2 %= 8;
-							}
+				{//this allows us to move from 1 quadrant to another
+					mouseDownX %= 8;
+					mouseDownY %= 8;
+					mouseDownX2 %= 8;
+					mouseDownY2 %= 8;
 				}
 				else
 				{
@@ -1048,17 +1045,22 @@ void adjustSecretCheckmarks()
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_UNCHECKED);
 
 	if (temp == 4)
+	{
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_CHECKED);
 		return;
+	}
+
 	if (temp == 0)
+	{
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
 		return;
+	}
 
 	for (i=0; i < 4; i++)
 		if (showPath[i])
-			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET+i, MF_CHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_CHECKED);
 		else
-			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET+i, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_UNCHECKED);
 }
 
 void adjHeader()

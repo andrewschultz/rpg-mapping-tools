@@ -286,6 +286,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
+			PaintDunMap();
 			break;
 
 		case ID_OPTIONS_TEXTSUMMARY:
@@ -454,31 +455,24 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 				long mouseDownX2 = LOWORD(lparam)/16;
 				long mouseDownY2 = HIWORD(lparam)/16;
 
-				if (wrapHalf)
+				if ((mouseDownX2 < 16) && (mouseDownY2 < 16))
 				{
-					if ((mouseDownX < 16) && (mouseDownY < 16))
-						if (mouseDownX2 == mouseDownX)
-							if (mouseDownY2 == mouseDownY)
-							{
-								mouseDownX %= 8;
-								mouseDownY %= 8;
-								temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
-								if ((temp >= 0xf0) && (temp <= 0xff))
-								{
-									curRoom = temp & 0xf;
-									doRoomCheck();
-								}
-							}
-				}
-				else
-				{
-					mouseDownX /= 2;
-					mouseDownY /= 2;
-					mouseDownX2 /= 2;
-					mouseDownY2 /= 2;
-
-					if (mouseDownX == mouseDownX2)
-						if (mouseDownY == mouseDownY2)
+					if (wrapHalf)
+					{
+						mouseDownX %= 8;
+						mouseDownY %= 8;
+						mouseDownX2 %= 8;
+						mouseDownY2 %= 8;
+					}
+					else
+					{
+						mouseDownX /= 2;
+						mouseDownY /= 2;
+						mouseDownX2 /= 2;
+						mouseDownY2 /= 2;
+					}
+					if (mouseDownX2 == mouseDownX)
+						if (mouseDownY2 == mouseDownY)
 						{
 							temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
 							if ((temp >= 0xf0) && (temp <= 0xff))
@@ -488,8 +482,8 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 							}
 						}
 				}
-				break;
 			}
+			break;
 
 	case WM_PAINT:
 		PaintDunMap();
