@@ -943,7 +943,7 @@ void adjHeader()
 {
 	char buffer[100];
 	char buffer2[20];
-	sprintf(buffer, "Ultima IV Dungeon Surfer: %s, level %d", dunName[curDungeon], curLevel + 1);
+	sprintf(buffer, "Ultima V Dungeon Surfer: %s, level %d", dunName[curDungeon], curLevel + 1);
 	if (curDungeon == DESPISE)
 		strcat(buffer, " (no rooms)");
 	else
