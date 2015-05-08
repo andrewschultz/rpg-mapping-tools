@@ -413,6 +413,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE + showParty, MF_UNCHECKED);
 			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			showParty = LOWORD(wparam) - ID_OPTIONS_PARTY_NONE;
+			if (showParty)
+				curDir = showParty - 1;
 			PaintRoomMap();
 			break;
 
@@ -591,14 +593,12 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 										tos = temp;
 							}
 
-							if (froms && tos)
-								if (froms != tos)
-								{
-									temp = slotIcon[froms];
-									slotIcon[froms] = slotIcon[tos];
-									slotIcon[tos] = temp;
-
-								}
+							if (froms != tos)
+							{
+								temp = slotIcon[froms];
+								slotIcon[froms] = slotIcon[tos];
+								slotIcon[tos] = temp;
+							}
 
 						}
 
@@ -905,6 +905,7 @@ void PaintRoomMap()
 				for (j=0; j < 8; j++)
 					if (slotShow[j])
 						thisIcon[partyX[i][j][curRoom][curDungeon]][partyY[i][j][curRoom][curDungeon]] = slotIcon[j];
+				curDir = i;
 				break;
 			}
 		}
