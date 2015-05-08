@@ -80,7 +80,7 @@ short restrictRoom = 0;
 
 short mainDun[8][8][8][8] = {0};
 
-short roomMap[11][11][32][8] = {0};
+short roomMap[11][11][64][8] = {0};
 
 short roomMonster[16][64][8][8] = {0};
 
@@ -212,9 +212,63 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_N:
 		case ID_NAV_O:
 		case ID_NAV_P:
-			curRoom = curRoom & 0x30; //Abyss hack so you don't get kicked to the first floor, oops
-			curRoom += LOWORD(wparam) - ID_NAV_A;
+			curRoom = LOWORD(wparam) - ID_NAV_A;
 			PaintDunMap();
+			break;
+
+		case ID_NAV_SHIFT_A:
+		case ID_NAV_SHIFT_B:
+		case ID_NAV_SHIFT_C:
+		case ID_NAV_SHIFT_D:
+		case ID_NAV_SHIFT_E:
+		case ID_NAV_SHIFT_F:
+		case ID_NAV_SHIFT_G:
+		case ID_NAV_SHIFT_H:
+		case ID_NAV_SHIFT_I:
+		case ID_NAV_SHIFT_J:
+		case ID_NAV_SHIFT_K:
+		case ID_NAV_SHIFT_L:
+		case ID_NAV_SHIFT_M:
+		case ID_NAV_SHIFT_N:
+		case ID_NAV_SHIFT_O:
+		case ID_NAV_SHIFT_P:
+		case ID_NAV_ALT_A:
+		case ID_NAV_ALT_B:
+		case ID_NAV_ALT_C:
+		case ID_NAV_ALT_D:
+		case ID_NAV_ALT_E:
+		case ID_NAV_ALT_F:
+		case ID_NAV_ALT_G:
+		case ID_NAV_ALT_H:
+		case ID_NAV_ALT_I:
+		case ID_NAV_ALT_J:
+		case ID_NAV_ALT_K:
+		case ID_NAV_ALT_L:
+		case ID_NAV_ALT_M:
+		case ID_NAV_ALT_N:
+		case ID_NAV_ALT_O:
+		case ID_NAV_ALT_P:
+		case ID_NAV_ALT_SHIFT_A:
+		case ID_NAV_ALT_SHIFT_B:
+		case ID_NAV_ALT_SHIFT_C:
+		case ID_NAV_ALT_SHIFT_D:
+		case ID_NAV_ALT_SHIFT_E:
+		case ID_NAV_ALT_SHIFT_F:
+		case ID_NAV_ALT_SHIFT_G:
+		case ID_NAV_ALT_SHIFT_H:
+		case ID_NAV_ALT_SHIFT_I:
+		case ID_NAV_ALT_SHIFT_J:
+		case ID_NAV_ALT_SHIFT_K:
+		case ID_NAV_ALT_SHIFT_L:
+		case ID_NAV_ALT_SHIFT_M:
+		case ID_NAV_ALT_SHIFT_N:
+		case ID_NAV_ALT_SHIFT_O:
+		case ID_NAV_ALT_SHIFT_P:
+			if (curDungeon == ABYSS)
+			{
+				curRoom = LOWORD(wparam) - ID_NAV_A;
+				doRoomCheck();
+			}
 			break;
 
 		case ID_NAV_ABYSS_UP2:
@@ -664,7 +718,7 @@ void readDun(char x[20], int q)
 				{
 					temp2 = 0;
 					if (q == ABYSS) //in abyss, add 16 for each (level/2)
-						temp2 = 16 * (j / 2);
+						temp2 = 16 * (k/ 2);
 					roomLev[temp % 0x10 + temp2][q] = k;
 				}
 				mainDun[i][j][k][q] = temp;
@@ -994,13 +1048,9 @@ void adjustSecretCheckmarks()
 void adjHeader()
 {
 	char buffer[100];
-	long fudgeFactor = 1;
-
-	if (curDungeon == ABYSS)	//new 16 rooms every 2 Abyss levels
-		fudgeFactor += 16 * (curLevel / 2);
 
 	sprintf(buffer, "Ultima IV Dungeon Browser: %s, level %d, room %d (L%d)", dunName[curDungeon], curLevel + 1,
-		curRoom + fudgeFactor, roomLev[curRoom][curDungeon]+1);
+		curRoom + 1, roomLev[curRoom][curDungeon]+1);
 	SetWindowText(hwnd, buffer);
 }
 

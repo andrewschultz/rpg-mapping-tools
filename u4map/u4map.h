@@ -46,6 +46,57 @@
 #define ID_NAV_O	235
 #define ID_NAV_P	236
 
+#define ID_NAV_SHIFT_A	237
+#define ID_NAV_SHIFT_B	238
+#define ID_NAV_SHIFT_C	239
+#define ID_NAV_SHIFT_D	240
+#define ID_NAV_SHIFT_E	241
+#define ID_NAV_SHIFT_F	242
+#define ID_NAV_SHIFT_G	243
+#define ID_NAV_SHIFT_H	244
+#define ID_NAV_SHIFT_I	245
+#define ID_NAV_SHIFT_J	246
+#define ID_NAV_SHIFT_K	247
+#define ID_NAV_SHIFT_L	248
+#define ID_NAV_SHIFT_M	249
+#define ID_NAV_SHIFT_N	250
+#define ID_NAV_SHIFT_O	251
+#define ID_NAV_SHIFT_P	252
+
+#define ID_NAV_ALT_A	253
+#define ID_NAV_ALT_B	254
+#define ID_NAV_ALT_C	255
+#define ID_NAV_ALT_D	256
+#define ID_NAV_ALT_E	257
+#define ID_NAV_ALT_F	258
+#define ID_NAV_ALT_G	259
+#define ID_NAV_ALT_H	260
+#define ID_NAV_ALT_I	261
+#define ID_NAV_ALT_J	262
+#define ID_NAV_ALT_K	263
+#define ID_NAV_ALT_L	264
+#define ID_NAV_ALT_M	265
+#define ID_NAV_ALT_N	266
+#define ID_NAV_ALT_O	267
+#define ID_NAV_ALT_P	268
+
+#define ID_NAV_ALT_SHIFT_A	269
+#define ID_NAV_ALT_SHIFT_B	270
+#define ID_NAV_ALT_SHIFT_C	271
+#define ID_NAV_ALT_SHIFT_D	272
+#define ID_NAV_ALT_SHIFT_E	273
+#define ID_NAV_ALT_SHIFT_F	274
+#define ID_NAV_ALT_SHIFT_G	275
+#define ID_NAV_ALT_SHIFT_H	276
+#define ID_NAV_ALT_SHIFT_I	277
+#define ID_NAV_ALT_SHIFT_J	278
+#define ID_NAV_ALT_SHIFT_K	279
+#define ID_NAV_ALT_SHIFT_L	280
+#define ID_NAV_ALT_SHIFT_M	281
+#define ID_NAV_ALT_SHIFT_N	282
+#define ID_NAV_ALT_SHIFT_O	283
+#define ID_NAV_ALT_SHIFT_P	284
+
 #define ID_OPTIONS_SPOIL 301
 
 #define ID_OPTIONS_MONSTERS	311
