@@ -55,7 +55,6 @@ HWND hwnd;
 
 HDC roomdc;
 HDC leveldc;
-HDC level2dc;
 
 HDC localhdc;
 
@@ -599,6 +598,8 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 								slotIcon[froms] = slotIcon[tos];
 								slotIcon[tos] = temp;
 							}
+							doRoomCheck();
+							break;
 
 						}
 
@@ -689,15 +690,12 @@ if (!RegisterClass(&winclass))
 
 	HBITMAP roombmp = (HBITMAP)LoadImage(hInstance,"room.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
 	HBITMAP levelbmp = (HBITMAP)LoadImage(hInstance,"level.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
-	HBITMAP level2bmp = (HBITMAP)LoadImage(hInstance,"level2.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
 
 	roomdc = CreateCompatibleDC(localhdc);
 	leveldc = CreateCompatibleDC(localhdc);
-	level2dc = CreateCompatibleDC(localhdc);
 
 	HBITMAP oldroom = (HBITMAP)SelectObject(roomdc, roombmp);
 	HBITMAP oldlevel = (HBITMAP)SelectObject(leveldc, levelbmp);
-	HBITMAP oldlevel2 = (HBITMAP)SelectObject(level2dc, level2bmp);
 
 	ReadTheDungeons();
 	DungeonReset();
@@ -844,13 +842,13 @@ void PaintDunMap()
 					temp = 0xfd; // rooms 1-16
 				if (((temp % 16 >= 0x8) && (temp <= 0x7f)) && (!mainLabel))
 					temp = 0xfd; // rooms 17-64
-				BitBlt(localhdc, i*16, j*16, 16, 16, level2dc,
+				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16, 16, 16, level2dc,
+				BitBlt(localhdc, i*16+128, j*16, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16, j*16+128, 16, 16, level2dc,
+				BitBlt(localhdc, i*16, j*16+128, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, level2dc,
+				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 			}
 		return;
@@ -863,8 +861,8 @@ void PaintDunMap()
 			temp = mainDun[i][j][curLevel][curDungeon];
 			if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
 				temp = 0xfd;
-			BitBlt(localhdc, i*32, j*32, 32, 32, leveldc,
-				32*(temp % 0x10), 32*(temp / 0x10), SRCCOPY);
+			StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
+				16*(temp % 0x10), 16*(temp / 0x10), 16, 16, SRCCOPY);
 		}
 	}
 
@@ -900,7 +898,7 @@ void PaintRoomMap()
 	{
 		for (i=NORTH; i <= WEST; i++)
 		{
-			if (partyX[0][i][curRoom][curDungeon] + partyY[0][i][curRoom][curDungeon])
+			if (partyX[i][0][curRoom][curDungeon] + partyY[i][0][curRoom][curDungeon])
 			{
 				for (j=0; j < 8; j++)
 					if (slotShow[j])
@@ -975,7 +973,7 @@ void PaintRoomMap()
 				temp2 = changeByte[i+1][curRoom][curDungeon] & 0xf;
 				changedYet[temp][temp2] = 1;
 				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
-					416, 480, 32, 32, 0x000000);
+					208, 240, 16, 16, 0x000000);
 
 			}
 		for (i=0; i < 0x10; i += 4)
