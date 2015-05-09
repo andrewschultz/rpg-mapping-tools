@@ -55,14 +55,15 @@ short NewPIXFile;
 #define ADJ_HEADER_SIZE 0x40
 
 #define MAPCONV_NO_HEADER_FLAG 1
-#define MAPCONV_XTRA_AMENDMENTS 2
-#define MAPCONV_DEBUG_UNKNOWN_SQUARES 4
-#define MAPCONV_USE_TRANSPARENCY 8
-#define MAPCONV_BIN_FLAG_KNOWN 16
-#define MAPCONV_SORT_PIX 32
-#define MAPCONV_DEBUG_ONLY_FIRST 64
-#define MAPCONV_SHOW_END_STATS 128
-#define MAPCONV_BOTTOMTOP 256
+#define MAPCONV_USE_EGA_HEADER 2
+#define MAPCONV_XTRA_AMENDMENTS 4
+#define MAPCONV_DEBUG_UNKNOWN_SQUARES 8
+#define MAPCONV_USE_TRANSPARENCY 16
+#define MAPCONV_BIN_FLAG_KNOWN 32
+#define MAPCONV_SORT_PIX 64
+#define MAPCONV_DEBUG_ONLY_FIRST 128
+#define MAPCONV_SHOW_END_STATS 256
+#define MAPCONV_BOTTOMTOP 512
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -91,6 +92,25 @@ char TheHdr[ADJ_HEADER_SIZE] = {
 };
 //0=black 1=white 2=red 3=green 4=blue 5=orange 6=purple 7=yellow
 //8=grey 9=pink 10=DkBlue 11=LtBlue 12=LtBrown 13=Brown 14=LtGrn 15=DkGreen
+
+char EgaHdr[ADJ_HEADER_SIZE] = {
+	0x00, 0x00, 0x00,
+	0x00, 0x00, (char)0xaa,
+	0x00, (char)0xaa, 0x00,
+	0x00, (char)0xaa, (char)0xaa,
+	(char)0xaa, 0x00, 0x00,
+	(char)0xaa, 0x00, (char)0xaa,
+	(char)0xaa, 0x55, 0x00,
+	(char)0xaa, (char)0xaa, (char)0xaa,
+	0x55, 0x55, 0x55,
+	0x55, 0x55, (char)0xff,
+	0x55, (char)0xff, 0x55,
+	(char)0xff, 0x55, 0x55,
+	0x55, (char)0xff, (char)0xff,
+	(char)0xff, 0x55, (char)0xff,
+	(char)0xff, (char)0xff, 0x55,
+	(char)0xff, (char)0xff, (char)0xff,
+};
 
 typedef struct
 {
@@ -191,6 +211,12 @@ main(int argc, char * argv[])
 			BmpHandler.BlankColor = (short)strtol(argv[CurComd+1], NULL, 16);
 			printf("Use default color %x for blank icons.\n", BmpHandler.BlankColor);
 			CurComd+=2;
+			break;
+
+		case 'e':
+			CurComd++;
+			MAPCONV_STATUS |= MAPCONV_USE_EGA_HEADER;
+			printf("Using EGA header.\n");
 			break;
 
 		case 'h':
@@ -608,6 +634,14 @@ void ReadPiece()
 					case 0x36:
 						if (MAPCONV_STATUS & MAPCONV_NO_HEADER_FLAG)
 							fputc(fgetc(F1), F3);
+						else if (MAPCONV_STATUS & MAPCONV_USE_EGA_HEADER)
+						{
+							for (j=0; j < ADJ_HEADER_SIZE; j++)
+							{
+								fgetc(F1);
+								fputc(EgaHdr[j], F3);
+							}
+						}
 						else
 						{
 						for (j=0;  j < ADJ_HEADER_SIZE;  j++)
