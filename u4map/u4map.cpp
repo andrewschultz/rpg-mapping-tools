@@ -47,7 +47,7 @@ void rlsDebug(char x[50]);
 
 #define MIMIC 0xac
 
-#define MONSTERS 50
+#define MONSTERS 52
 
 //###################globals
 
@@ -101,16 +101,16 @@ short showPath[4] = {0};
 
 char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Abyss"};
 
-char monsterName[50][12] = { "Mage", "Bard", "Fighter", "Druid", "Tinker", "Paladin", "Ranger", "Shepherd",
-	"Guard", "Townman", "Bard-2", "Jester", "Beggar", "Child", "Bull", "Lord B",
-	"Nixie", "Squid", "Serpent", "Seahorse", "Whorl", "Twister",
+char monsterName[52][13] = { "Mage", "Bard", "Fighter", "Druid", "Tinker", "Paladin", "Ranger", "Shepherd",
+	"Guard", "Merchant", "Bard(2)", "Jester", "Beggar", "Child", "Bull", "Lord British",
+	"Pirate ship", "Pirate ship", "Nixie", "Squid", "Serpent", "Seahorse", "Whirlpool", "Twister",
 	"Rat", "Bat", "Spider", "Ghost", 
 	"Slime", "Troll", "Gremlin", "Mimic",
 	"Reaper", "Insects", "Gazer", "Phantom",
-	"Orc", "Skeleton", "Rogue", "Snake",
+	"Orc", "Skeleton", "Rogue", "Python",
 	"Ettin", "Headless", "Cyclops", "Wisp",
-	"Mage", "Lich", "Lava Lizard", "Zorn",
-	"Demon", "Hydra", "Dragon", "Balron"
+	"Mage", "Liche", "Lava Lizard", "Zorn",
+	"Daemon", "Hydra", "Dragon", "Balron"
 };
 
 //Mage down to shepherd. You start as a mage, for simplicity.
@@ -444,6 +444,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_SHOW_4TH_SECRET:
 			temp = LOWORD(wparam)-ID_OPTIONS_SHOW_1ST_SECRET;
 			showPath[temp] = !showPath[temp];
+			for (i=0; i < 4; i++)
+				if (changeByte[4*i+1][curRoom][curDungeon] == changeByte[4*temp+1][curRoom][curDungeon])
+					showPath[i] = showPath[temp];
 			adjustSecretCheckmarks();
 			PaintRoomMap();
 			break;
@@ -1077,20 +1080,15 @@ void adjustSecretCheckmarks()
 	for (i=0; i < 4; i++)
 		temp += showPath[i];
 
-	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_UNCHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_UNCHECKED);
-
 	if (temp == 4)
-	{
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_CHECKED);
-		return;
-	}
+	else
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_UNCHECKED);
 
 	if (temp == 0)
-	{
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
-		return;
-	}
+	else
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_UNCHECKED);
 
 	for (i=0; i < 4; i++)
 		if (showPath[i])
@@ -1158,20 +1156,20 @@ void doRoomCheck()
 short toMonster(short icon)
 {
 	if ((icon >= 0x20) && (icon <= 0x2f))
-	{ //class enemies
+	{ //class enemies, 2 icons per
 		return (icon - 0x20) / 2;
 	}
 	if ((icon >= 0x50) && (icon <= 0x5f))
-	{ //townfolk, including Lord British
+	{ //townfolk, including Lord British, 2 icons per
 		return 8 + (icon - 0x50) / 2;
 	}
-	if ((icon >= 0x84) && (icon <= 0x8f))
-	{ //sea monsters
-		return 16 + (icon - 0x50) / 2;
+	if ((icon >= 0x80) && (icon <= 0x8f))
+	{ //sea monsters, 2 icons per
+		return 16 + (icon - 0x80) / 2;
 	}
 	if ((icon >= 0x90) && (icon <= 0xff))
-	{
-		return 22 + (icon - 0x90) / 4;
+	{ //other monsters, 4 icons per
+		return 24 + (icon - 0x90) / 4;
 	}
 	return -1; //No monster icon found
 }
