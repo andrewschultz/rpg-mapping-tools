@@ -30,6 +30,7 @@ void checkPrevNextLvl();
 void adjHeader();
 short toMonster(short icon);
 void doRoomCheck();
+void adjustRoomCheckmarks();
 
 //local pound-defines
 #define MIMIC 0xa8
@@ -51,6 +52,7 @@ void doRoomCheck();
 #define ICONSIZE 32
 
 //globals
+
 long curRoom = 0;
 long curDungeon = 0;
 long curLevel = 0;
@@ -83,7 +85,7 @@ short showMonsters = 0;
 short showSpoilers = 0;
 short showParty = 0;
 short newPushed = 0;
-short showPushed = 0;
+short showPushed[8] = {0};
 
 short curDir = 0;
 
@@ -99,8 +101,13 @@ short partyArray[6] = { 0x14c, 0x144, 0x148, 0x140, 0x140, 0x140 };
 
 char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Doom"};
 
-#define MONSTERS 46
-char monsterName[MONSTERS][11] = { "Seahorse", "Squid", "Serpent", "Shark", "Rat", "Bat", "Spider", "Ghost", "Slime", "Gremlin", "Mimic", "Reaper", "Gazer", "TREASURE", "Gargoyle", "Insects", "Orc", "Skeleton", "Snake", "Ettin", "Headless", "Wisp", "Mongbat", "Dragon", "Sand Trap", "Troll", "FIELD", "Whorl", "Balrog", "Corpser", "Rotworm", "Shadowlord" }; 
+#define MONSTERS 32
+char monsterName[MONSTERS][13] = {
+	"Sea Horse", "Squid", "Serpent", "Shark", "Giant Rat", "Bat", "Giant Spider", "Ghost",
+	"Slime", "Gremlin", "Mimic", "Reaper", "Gazer", "TREASURE", "Gargoyle", "Insect Swarm",
+	"Orc", "Skeleton", "Python", "Ettin", "Headless", "Wisp", "Daemon", "Dragon",
+	"Sand Trap", "Troll", "FIELD", "WHIRLPOOL", "Mongbat", "Corpser", "Rot Worm", "Shadow Lord"
+};  //technically treasure/field/whirlpool aren't monsters but I'd have to muck with array counts otherwise
 
 HWND hwnd;
 
@@ -354,7 +361,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
 			break;
 
-		case ID_OPTIONS_PSGS_0:
 		case ID_OPTIONS_PSGS_1:
 		case ID_OPTIONS_PSGS_2:
 		case ID_OPTIONS_PSGS_3:
@@ -363,17 +369,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_PSGS_6:
 		case ID_OPTIONS_PSGS_7:
 		case ID_OPTIONS_PSGS_8:
-			showPushed = LOWORD(wparam) - ID_OPTIONS_PSGS_0;
+			temp = LOWORD(wparam) - ID_OPTIONS_PSGS_1;
+			showPushed[temp] = 1 - showPushed[temp];
+			{
+				short i;
+				for (i = 0; i < 8; i++)
+					if (fromSquareX[temp][curRoom][curDungeon] == fromSquareX[i][curRoom][curDungeon])
+						if (fromSquareY[temp][curRoom][curDungeon] == fromSquareY[i][curRoom][curDungeon])
+							showPushed[i] = showPushed[temp];
+			}
+			adjustRoomCheckmarks();
 			PaintRoomMap();
 			break;
 
 		case ID_OPTIONS_SHOW_PUSHED:
 			newPushed = !newPushed;
-			showPushed = 8 * newPushed;
-			if (showPushed)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_CHECKED);
-			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_UNCHECKED);
+			for (temp = 0; temp < 8; temp++)
+				showPushed[temp] = newPushed;
+			adjustRoomCheckmarks();
 			PaintRoomMap();
 			break;
 
@@ -707,19 +720,16 @@ void PaintRoomMap()
 			BitBlt(localhdc, i*32+288, j*32, 32, 32, roomdc,
 				32*(tempIcon[i][j] % 0x20), 32*(tempIcon[i][j] / 0x20), SRCCOPY);
 
-	if (showPushed)
-	{
-		for (i=0; i < showPushed; i++)
-			if (whatTo[i][curRoom][curDungeon])
-			{
-				BitBlt(localhdc, toSquare1X[i][curRoom][curDungeon]*32+288, toSquare1Y[i][curRoom][curDungeon]*32,
-					32, 32, roomdc,
-					32*(whatTo[i][curRoom][curDungeon] % 0x20), 32*(whatTo[i][curRoom][curDungeon] / 0x20), SRCCOPY);
-				BitBlt(localhdc, toSquare2X[i][curRoom][curDungeon]*32+288, toSquare2Y[i][curRoom][curDungeon]*32,
-					32, 32, roomdc,
-					32*(whatTo[i][curRoom][curDungeon] % 0x20), 32*(whatTo[i][curRoom][curDungeon] / 0x20), SRCCOPY);
-			}
-	}
+	for (i=0; i < 8; i++)
+		if (showPushed[i] && whatTo[i][curRoom][curDungeon])
+		{
+			BitBlt(localhdc, toSquare1X[i][curRoom][curDungeon]*32+288, toSquare1Y[i][curRoom][curDungeon]*32,
+				32, 32, roomdc,
+				32*(whatTo[i][curRoom][curDungeon] % 0x20), 32*(whatTo[i][curRoom][curDungeon] / 0x20), SRCCOPY);
+			BitBlt(localhdc, toSquare2X[i][curRoom][curDungeon]*32+288, toSquare2Y[i][curRoom][curDungeon]*32,
+				32, 32, roomdc,
+				32*(whatTo[i][curRoom][curDungeon] % 0x20), 32*(whatTo[i][curRoom][curDungeon] / 0x20), SRCCOPY);
+		}
 
 	if (showSpoilers)
 	{
@@ -786,14 +796,8 @@ void PaintRoomMap()
 	{
 		if (!whatTo[i][curRoom][curDungeon])
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_GRAYED);
-		else if (i == 7) //ok, last must work if available
+		else
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_ENABLED);
-		else if ((fromSquareX[i][curRoom][curDungeon] != fromSquareX[i+1][curRoom][curDungeon]) ||
-			(fromSquareY[i][curRoom][curDungeon] != fromSquareY[i+1][curRoom][curDungeon]))
-		//make sure the next push is a different square than this.
-			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_ENABLED);
-		else //oops, same as previous, grey it
-			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_GRAYED);
 	}
 
 	if (syncLevelToRoom)
@@ -805,6 +809,8 @@ void PaintRoomMap()
 		}
 	}
 	adjHeader();
+
+	adjustRoomCheckmarks();
 }
 
 void ReadTheDungeons()
@@ -920,6 +926,8 @@ void checkPrevNextLvl()
 
 void checkPrevNextRoom()
 {
+	short i;
+
 	if (curRoom == 15)
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_GRAYED);
 	else
@@ -928,7 +936,8 @@ void checkPrevNextRoom()
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_GRAYED);
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_PREVRM, MF_ENABLED);
-	showPushed = newPushed * 8;
+	for (i=0; i < 8; i++)
+		showPushed[i] = newPushed;
 }
 
 void adjHeader()
@@ -961,4 +970,22 @@ short toMonster(short icon)
 		return (icon - 0x80) / 4;
 	}
 	return -1;
+}
+
+void adjustRoomCheckmarks()
+{
+	short i;
+
+	for (i=0; i < 8; i++)
+	{
+		if (showPushed[i] && (fromSquareX[i][curRoom][curDungeon] + fromSquareY[i][curRoom][curDungeon]))
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_CHECKED);
+		else
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_UNCHECKED);
+	}
+
+	if (newPushed)
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_CHECKED);
+	else
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_UNCHECKED);
 }

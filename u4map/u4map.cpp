@@ -958,6 +958,12 @@ void PaintRoomMap()
 			}
 		}
 
+	for (i=0; i < 4; i++)
+		if (changeByte[4*i][curRoom][curDungeon])
+			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_ENABLED);
+		else
+			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_GRAYED);
+
 	//Okay, print everything out
 
 	for (j=0; j < 11; j++)
@@ -1091,7 +1097,7 @@ void adjustSecretCheckmarks()
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_UNCHECKED);
 
 	for (i=0; i < 4; i++)
-		if (showPath[i])
+		if (showPath[i] && changeByte[4*i+1][curRoom][curDungeon])
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_CHECKED);
 		else
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_UNCHECKED);
@@ -1150,6 +1156,7 @@ void doRoomCheck()
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_GRAYED);
 
+	adjustSecretCheckmarks();
 	PaintRoomMap();
 }
 
