@@ -12,7 +12,8 @@ In order to process a bitmap successfully, we need the following files:
   1e. each line of the form [Xi,Yi,Xf,Yf,x.bin,x.bmp]
     1e1. x.bin is a binary dump of the icon numbers, as the bitmap is upside down
     1e2. x.bmp is the name of the output bmp file that shows the detailed map.
-  1f. period, followed by semicolon. Later this will be reworked to allow multiple bitmaps/PIX files
+  1f. period followed by semicolon. Later this will be reworked to allow multiple bitmaps/PIX files.
+  1g. You can also have > to specify a command to run.
 2. an optional XTR file with the same base name as the NMR file. The XTR file has the following format:
   > =10
   > =16 base 10/16
@@ -284,22 +285,38 @@ main(int argc, char * argv[])
 
 void HelpBombOut()
 {
-	printf("Flag -? for this help command.\n");
-	printf("Flag -0 so bin file puts 0s for known.\n");
-	printf("Flag -b specifies blank icon.\n");
-	printf("Flag -c to set default blank color, in hexadecimal.\n");
-	printf("Flag -h to output html file of the output graphic's palettes.\n");
-	printf("Flag -n to turn off default header.\n");
-	printf("Flag -r to reverse when IDing unused icons (default is top to bottom).\n");
-	printf("Flag -s to show used/unused icon stats at the end.\n");
-	printf("Flag -S to print out sort warning for icon files.\n");
-	printf("Flag -t(xx) to flag transparency and specify the color. Black=default.\n");
-	printf("Flag -u to debug squares with no icon.\n");
-	printf("Flag -uf to debug squares with no icon, only showing the first.\n");
-	printf("Flag -v to reVerse the default top-down process of -uf.\n");
-	printf("Flag -x to add extra modifications to the base BMP files.\n");
+	printf("Flag -? for this help command.\n\
+Flag -0 so bin file puts 0s for known.\n\
+Flag -b specifies blank icon.\n\
+Flag -c to set default blank color, in hexadecimal.\n\
+Flag -h to output html file of the output graphic's palettes.\n\
+Flag -n to turn off default header.\n\
+Flag -nh to show NMR help.\n\
+Flag -r to reverse when IDing unused icons (default is top to bottom).\n\
+Flag -s to show used/unused icon stats at the end.\n\
+Flag -S to print out sort warning for icon files.\n\
+Flag -t(xx) to flag transparency and specify the color. Black=default.\n\
+Flag -u to debug squares with no icon.\n\
+Flag -uf to debug squares with no icon, only showing the first.\n\
+Flag -v to reVerse the default top-down process of -uf.\n\
+Flag -x to add extra modifications to the base BMP files.\n");
+
 }
 
+void NMRHelp()
+{
+	printf("NMR Help\n\
+A quick and dirty guide to NMR files. #'s are comments, which are not allowed, yet.\n\
+my-in.bmp\n\
+my-in.pix #doesn't need the same prefix\n\
+x-init,y-init,x-final,y-final,BINFILE,BMPFILE\n\
+Additional lines make more maps\n\
+. #flushes the buffer\n\
+GT #optional command line stuff\n\
+semicolon #ends input\n");
+
+	printf("NMR Help\n");
+}
 
 short NMRRead(char FileStr[MAXSTRING])
 {
@@ -316,8 +333,25 @@ short NMRRead(char FileStr[MAXSTRING])
 
 	if (F == NULL)
 	{
-		printf("Empty NMR file.\n");
-		return NMR_READ_NOFILE;
+		for (i=0; i < (short)strlen(FileStr); i++)
+			if (FileStr[i] == '.')
+			{
+				printf("Empty NMR file.\n");
+				return NMR_READ_NOFILE;
+			}
+		//okay, let's tack on an NMR extension if the file had no extension
+		strcpy(BufStr, FileStr);
+		strcat(BufStr, ".nmr");
+		F = fopen(BufStr, "r");
+		if (!F)
+		{
+			printf("Couldn't find %s or %s. Returning.\n");
+			return NMR_READ_NOFILE;
+		}
+		else
+		{
+			printf("Tacking on extension.\n");
+		}
 	}
 
 	for (i=0; i < 256; i++)
@@ -524,6 +558,10 @@ int ReadInIcons(char yzzy[MAXSTRING])
 					return INVALID;
 				}
 				OneIcon(strtol(buffer+3, NULL, 16), buffer+3, F);
+				break;
+				
+			case '>': //command line
+				system(buffer+1);
 				break;
 
 			case ';':
