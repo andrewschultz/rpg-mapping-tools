@@ -553,15 +553,12 @@ if (!RegisterClass(&winclass))
 
 	HBITMAP roombmp = (HBITMAP)LoadImage(hInstance,"room.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
 	HBITMAP levelbmp = (HBITMAP)LoadImage(hInstance,"level.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
-	HBITMAP level2bmp = (HBITMAP)LoadImage(hInstance,"level2.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
 
 	roomdc = CreateCompatibleDC(localhdc);
 	leveldc = CreateCompatibleDC(localhdc);
-	level2dc = CreateCompatibleDC(localhdc);
 
 	HBITMAP oldroom = (HBITMAP)SelectObject(roomdc, roombmp);
 	HBITMAP oldlevel = (HBITMAP)SelectObject(leveldc, levelbmp);
-	HBITMAP oldlevel2 = (HBITMAP)SelectObject(level2dc, level2bmp);
 
 	ReadTheDungeons();
 	PaintDunMap();
@@ -607,13 +604,13 @@ void PaintDunMap()
 		{
 			for (i=0; i < 8; i++)
 			{
-				BitBlt(localhdc, i*16, j*16, 16, 16, level2dc,
+				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
 					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16, 16, 16, level2dc,
+				BitBlt(localhdc, i*16+128, j*16, 16, 16, leveldc,
 					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16, j*16+128, 16, 16, level2dc,
+				BitBlt(localhdc, i*16, j*16+128, 16, 16, leveldc,
 					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, level2dc,
+				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, leveldc,
 					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
 			}
 		}
@@ -623,8 +620,8 @@ void PaintDunMap()
 	for (j=0; j < 8; j++)
 	{
 		for (i=0; i < 8; i++)
-			BitBlt(localhdc, i*32, j*32, 32, 32, leveldc,
-				32*(mainDun[i][j][curLevel][curDungeon] % 0x10), 32*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
+			StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
+				16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), 16, 16, SRCCOPY);
 	}
 	adjHeader();
 }
@@ -705,7 +702,7 @@ void PaintRoomMap()
 		break;
 	}
 
-	for (j=0; j < 11; j++)
+	for (j=0; j < 11; j++) //Put out the main squares here.
 		for (i=0; i < 11; i++)
 			BitBlt(localhdc, i*32+288, j*32, 32, 32, roomdc,
 				32*(tempIcon[i][j] % 0x20), 32*(tempIcon[i][j] / 0x20), SRCCOPY);
@@ -730,7 +727,7 @@ void PaintRoomMap()
 			if (whatTo[i][curRoom][curDungeon])
 			{
 				TransparentBlt(localhdc, 288+32*fromSquareX[i][curRoom][curDungeon], 32*fromSquareY[i][curRoom][curDungeon],
-					32, 32, leveldc, 480, 480, 32, 32, 0x000000);
+					32, 32, leveldc, 208, 224, 16, 16, 0x000000);
 				checkAry[fromSquareX[i][curRoom][curDungeon]][fromSquareY[i][curRoom][curDungeon]] = 1;
 			}
 
