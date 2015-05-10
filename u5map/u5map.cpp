@@ -32,6 +32,8 @@ short toMonster(short icon);
 void doRoomCheck();
 void adjustRoomCheckmarks();
 void checkTheParty();
+short thisLevelWraps();
+short openSpace(short x);
 void initMenu();
 
 //local pound-defines
@@ -56,7 +58,7 @@ void initMenu();
 //globals
 
 long curRoom = 0;
-long curDungeon = 0;
+long curDun = 0;
 long curLevel = 0;
 
 long resetRoomA = 0;
@@ -65,7 +67,7 @@ long resetLvl1 = 0;
 short syncLevelToRoom = 0;
 short restrictRoom = 0;
 
-short wrapHalf = 0;
+short wrapType = 2;
 short mainLabel = 1;
 short hideMimic = 0;
 
@@ -74,7 +76,7 @@ long mouseDownX, mouseDownY;
 short mainDun[8][8][8][8];
 short roomBase[11][11][16][8];
 
-short roomLev[16][8];
+long roomLev[16][8];
 
 short monsterType[21][16][8];
 short monsterX[21][16][8];
@@ -99,6 +101,8 @@ short toSquare1X[8][16][8];
 short toSquare1Y[8][16][8];
 short toSquare2X[8][16][8];
 short toSquare2Y[8][16][8];
+
+short levelWraps[8][8] = {0};
 
 short partyArray[6] = { 0x14c, 0x144, 0x148, 0x140, 0x140, 0x140 };
 
@@ -142,11 +146,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_DUNGEON_SHAME:
 		case ID_DUNGEON_HYTHLOTH:
 		case ID_DUNGEON_DOOM:
-			if (curDungeon != LOWORD(wparam) - ID_DUNGEON_DECEIT)
+			if (curDun != LOWORD(wparam) - ID_DUNGEON_DECEIT)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
-				curDungeon = LOWORD(wparam) - ID_DUNGEON_DECEIT;
-				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_UNCHECKED);
+				curDun = LOWORD(wparam) - ID_DUNGEON_DECEIT;
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_CHECKED);
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
@@ -158,11 +162,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			break;
 
 		case ID_DUNGEON_PREV:
-			if (curDungeon > 0)
+			if (curDun > 0)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
-				curDungeon--;
-				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_UNCHECKED);
+				curDun--;
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_CHECKED);
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
@@ -174,11 +178,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			break;
 
 		case ID_DUNGEON_NEXT:
-			if (curDungeon < 7)
+			if (curDun < 7)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_UNCHECKED);
-				curDungeon++;
-				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDungeon, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_UNCHECKED);
+				curDun++;
+				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_CHECKED);
 				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
@@ -271,7 +275,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_PREVRM:
 			if (curRoom > 0)
 				if (restrictRoom)
-					if (curLevel != roomLev[curRoom-1][curDungeon])
+					if (curLevel != roomLev[curRoom-1][curDun])
 						break;
 				curRoom--;
 				PaintRoomMap();
@@ -282,7 +286,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			if (curRoom < 15)
 			{
 				if (restrictRoom)
-					if (curLevel != roomLev[curRoom+1][curDungeon])
+					if (curLevel != roomLev[curRoom+1][curDun])
 						break;
 				curRoom++;
 				PaintRoomMap();
@@ -292,12 +296,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 			//OPTIONS MENU ITEMS
 
-		case ID_OPTIONS_WRAPHALF:
-			wrapHalf = !wrapHalf;
-			if (wrapHalf)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_CHECKED);
-			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_WRAPHALF, MF_UNCHECKED);
+		case ID_OPTIONS_SIZE_HALF:
+		case ID_OPTIONS_SIZE_FULL:
+		case ID_OPTIONS_SIZE_AUTO:
+		case ID_OPTIONS_SIZE_BORDERED:
+			wrapType = LOWORD(wparam) - ID_OPTIONS_SIZE_HALF;
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SIZE_HALF, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SIZE_FULL, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SIZE_AUTO, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			PaintDunMap();
 			break;
 
@@ -386,8 +393,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			{
 				short i;
 				for (i = 0; i < 8; i++)
-					if (fromSquareX[temp][curRoom][curDungeon] == fromSquareX[i][curRoom][curDungeon])
-						if (fromSquareY[temp][curRoom][curDungeon] == fromSquareY[i][curRoom][curDungeon])
+					if (fromSquareX[temp][curRoom][curDun] == fromSquareX[i][curRoom][curDun])
+						if (fromSquareY[temp][curRoom][curDun] == fromSquareY[i][curRoom][curDun])
 							showPushed[i] = showPushed[temp];
 			}
 			adjustRoomCheckmarks();
@@ -437,7 +444,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			//ABOUT MENU ITEMS
 
 		case ID_ABOUT_BASICS:
-			MessageBox(hwnd, "Ultima V Dungeon Browser\n\
+			MessageBox(hwnd, "Ultima V Dungeon Surfer\n\
 This application lets the player browse all the dungeons and rooms.\n\
 It features options and accelerators to bypass the usual traps and grinds.\n\
 Your party is customizable for fun, too.\n\
@@ -478,7 +485,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 				if ((mouseUpX < 16) && (mouseUpY < 16))
 				{
-					if (wrapHalf)
+					if (thisLevelWraps())
 					{
 						mouseDownX %= 8;
 						mouseDownY %= 8;
@@ -492,7 +499,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 						mouseUpX /= 2;
 						mouseUpY /= 2;
 					}
-					temp = mainDun[mouseDownX][mouseDownY][curLevel][curDungeon];
+					temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
 					if ((temp >= 0xf0) && (temp <= 0xff))
 					{
 						curRoom = temp & 0xf;
@@ -506,7 +513,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 					mouseUpX -= 9;
 					mouseUpY /= 2;
 					for (i=1; i < 6; i++)
-						if ((partyX[curDir][i][curRoom][curDungeon] == mouseUpX) && (partyY[curDir][i][curRoom][curDungeon] == mouseUpY))
+						if ((partyX[curDir][i][curRoom][curDun] == mouseUpX) && (partyY[curDir][i][curRoom][curDun] == mouseUpY))
 						{
 							partyArray[i] += 4;
 							if (partyArray[i] == 0x14c)
@@ -609,15 +616,36 @@ void PaintDunMap()
 	int j = 0;
 	short temp;
 
+	if (wrapType == 3)
+	{
+		for (j=0; j < 16; j++)
+			for (i=0; i < 16; i++)
+			{
+				if ((i < 3) || (j < 3) || (j > 12) || (i > 12))
+					temp = 1;
+				else
+				{
+					temp = mainDun[(i+4)%8][(j+4)%8][curLevel][curDun];
+					if (!mainLabel)
+						if ((temp >= 0xf0) && (temp <= 0xff))
+							temp = 0xed;
+				}
+				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
+			}
+		adjHeader();
+		return;
+	}
+
 	for (j=0; j < 8; j++)
 	{
 		for (i=0; i < 8; i++)
 		{
-			temp = mainDun[i][j][curLevel][curDungeon];
+			temp = mainDun[i][j][curLevel][curDun];
 			if (!mainLabel)
 				if ((temp >= 0xf0) && (temp <= 0xff))
 					temp = 0xed;
-			if (wrapHalf)
+			if (thisLevelWraps())
 			{
 				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
@@ -643,7 +671,7 @@ void PaintRoomMap()
 	short tempIcon[11][11];
 	short checkAry[11][11] = {0};
 
-	if (curDungeon == DESPISE)
+	if (curDun == DESPISE)
 	{
 	HDC hdc = GetDC(hwnd);
 	HBRUSH hbrush=CreateSolidBrush(RGB(128,128,128));
@@ -662,16 +690,16 @@ void PaintRoomMap()
 	//first the base icons
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
-			tempIcon[i][j] = roomBase[i][j][curRoom][curDungeon];
-			if ((!hideMimic) && (roomBase[i][j][curRoom][curDungeon] == MIMIC)) //Show the mimic
+			tempIcon[i][j] = roomBase[i][j][curRoom][curDun];
+			if ((!hideMimic) && (roomBase[i][j][curRoom][curDun] == MIMIC)) //Show the mimic
 				tempIcon[i][j] += 1;
 
 	//now show monsters
 	if (showMonsters)
 	{
 		for (i=0; i < 21; i++)
-			if (monsterType[i][curRoom][curDungeon])
-				tempIcon[monsterX[i][curRoom][curDungeon]][monsterY[i][curRoom][curDungeon]] = monsterType[i][curRoom][curDungeon] + 256;
+			if (monsterType[i][curRoom][curDun])
+				tempIcon[monsterX[i][curRoom][curDun]][monsterY[i][curRoom][curDun]] = monsterType[i][curRoom][curDun] + 256;
 	}
 
 
@@ -680,11 +708,11 @@ void PaintRoomMap()
 	{
 		for (i=NORTH; i <= WEST; i++)
 		{
-			if (partyX[i][0][curRoom][curDungeon] + partyY[i][0][curRoom][curDungeon])
+			if (partyX[i][0][curRoom][curDun] + partyY[i][0][curRoom][curDun])
 			{
 				for (j=0; j < 6; j++)
 					if (partyArray[j])
-						tempIcon[partyX[i][j][curRoom][curDungeon]][partyY[i][j][curRoom][curDungeon]] = partyArray[j];
+						tempIcon[partyX[i][j][curRoom][curDun]][partyY[i][j][curRoom][curDun]] = partyArray[j];
 				curDir = i;
 				break;
 			}
@@ -701,10 +729,10 @@ void PaintRoomMap()
 	case SOUTH + 1:
 	case EAST + 1:
 	case WEST + 1:
-		if (partyX[showParty-1][0][curRoom][curDungeon] + partyY[showParty-1][0][curRoom][curDungeon])
+		if (partyX[showParty-1][0][curRoom][curDun] + partyY[showParty-1][0][curRoom][curDun])
 			for (i=0; i < 6; i++)
 				if (partyArray[i])
-					tempIcon[partyX[showParty-1][i][curRoom][curDungeon]][partyY[showParty-1][i][curRoom][curDungeon]] = partyArray[i];
+					tempIcon[partyX[showParty-1][i][curRoom][curDun]][partyY[showParty-1][i][curRoom][curDun]] = partyArray[i];
 		break;
 
 	case 0:
@@ -723,37 +751,37 @@ void PaintRoomMap()
 		}
 
 	for (i=0; i < 8; i++)
-		if (showPushed[i] && whatTo[i][curRoom][curDungeon])
+		if (showPushed[i] && whatTo[i][curRoom][curDun])
 		{
-			BitBlt(localhdc, toSquare1X[i][curRoom][curDungeon]*32+288, toSquare1Y[i][curRoom][curDungeon]*32,
+			BitBlt(localhdc, toSquare1X[i][curRoom][curDun]*32+288, toSquare1Y[i][curRoom][curDun]*32,
 				32, 32, roomdc,
-				32*(whatTo[i][curRoom][curDungeon] % 0x20), 32*(whatTo[i][curRoom][curDungeon] / 0x20), SRCCOPY);
-			BitBlt(localhdc, toSquare2X[i][curRoom][curDungeon]*32+288, toSquare2Y[i][curRoom][curDungeon]*32,
+				32*(whatTo[i][curRoom][curDun] % 0x20), 32*(whatTo[i][curRoom][curDun] / 0x20), SRCCOPY);
+			BitBlt(localhdc, toSquare2X[i][curRoom][curDun]*32+288, toSquare2Y[i][curRoom][curDun]*32,
 				32, 32, roomdc,
-				32*(whatTo[i][curRoom][curDungeon] % 0x20), 32*(whatTo[i][curRoom][curDungeon] / 0x20), SRCCOPY);
+				32*(whatTo[i][curRoom][curDun] % 0x20), 32*(whatTo[i][curRoom][curDun] / 0x20), SRCCOPY);
 		}
 
 	if (showSpoilers)
 	{
 		for (i=0; i < 8; i++) //the "from square"
-			if (whatTo[i][curRoom][curDungeon])
+			if (whatTo[i][curRoom][curDun])
 			{
-				TransparentBlt(localhdc, 288+32*fromSquareX[i][curRoom][curDungeon], 32*fromSquareY[i][curRoom][curDungeon],
+				TransparentBlt(localhdc, 288+32*fromSquareX[i][curRoom][curDun], 32*fromSquareY[i][curRoom][curDun],
 					32, 32, leveldc, 208, 224, 16, 16, 0x000000);
-				checkAry[fromSquareX[i][curRoom][curDungeon]][fromSquareY[i][curRoom][curDungeon]] = 1;
+				checkAry[fromSquareX[i][curRoom][curDun]][fromSquareY[i][curRoom][curDun]] = 1;
 			}
 
 		for (i=0; i < 8; i++) //the "to squares"
-			if (whatTo[i][curRoom][curDungeon])
-				TransparentBlt(localhdc, 288+32*toSquare1X[i][curRoom][curDungeon], 32*toSquare1Y[i][curRoom][curDungeon],
-					32, 32, leveldc, 448 + 32 * checkAry[toSquare1X[i][curRoom][curDungeon]][toSquare1Y[i][curRoom][curDungeon]],
+			if (whatTo[i][curRoom][curDun])
+				TransparentBlt(localhdc, 288+32*toSquare1X[i][curRoom][curDun], 32*toSquare1Y[i][curRoom][curDun],
+					32, 32, leveldc, 448 + 32 * checkAry[toSquare1X[i][curRoom][curDun]][toSquare1Y[i][curRoom][curDun]],
 					448, 32, 32, 0x000000);
 		//The horrid looking + 32 * expression is to say, if we already have a yellow square, put an orange inside.
 		//Otherwise, put an orange on the outside.
 		for (i=0; i < 8; i++)
-			if (whatTo[i][curRoom][curDungeon])
-				TransparentBlt(localhdc, 288+32*toSquare2X[i][curRoom][curDungeon], 32*toSquare2Y[i][curRoom][curDungeon],
-					32, 32, leveldc, 448 + 32 * checkAry[toSquare2X[i][curRoom][curDungeon]][toSquare2Y[i][curRoom][curDungeon]],
+			if (whatTo[i][curRoom][curDun])
+				TransparentBlt(localhdc, 288+32*toSquare2X[i][curRoom][curDun], 32*toSquare2Y[i][curRoom][curDun],
+					32, 32, leveldc, 448 + 32 * checkAry[toSquare2X[i][curRoom][curDun]][toSquare2Y[i][curRoom][curDun]],
 					448, 32, 32, 0x000000);
 	}
 	
@@ -777,7 +805,7 @@ void PaintRoomMap()
 	roomString[0] = 0;
 	for (i=0; i < 21; i++)
 	{
-		temp = monsterType[i][curRoom][curDungeon];
+		temp = monsterType[i][curRoom][curDun];
 		if (toMonster(temp) != -1)
 			monInRoom[toMonster(temp)]++;
 	}
@@ -796,7 +824,7 @@ void PaintRoomMap()
 
 	for (i=0; i < 8; i++)
 	{
-		if (!whatTo[i][curRoom][curDungeon])
+		if (!whatTo[i][curRoom][curDun])
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_GRAYED);
 		else
 			EnableMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_ENABLED);
@@ -804,9 +832,9 @@ void PaintRoomMap()
 
 	if (syncLevelToRoom)
 	{
-		if (curLevel != roomLev[curRoom][curDungeon])
+		if (curLevel != roomLev[curRoom][curDun])
 		{
-			curLevel = roomLev[curRoom][curDungeon];
+			curLevel = roomLev[curRoom][curDun];
 			PaintDunMap();
 		}
 	}
@@ -825,14 +853,32 @@ void ReadTheDungeons()
 
 	for (l=0; l < 8; l++)
 		for (k=0; k < 8; k++)
+		{
+			levelWraps[k][l] = 0;
 			for (j=0; j < 8; j++)
 				for (i=0; i < 8; i++)
 				{
 					temp = fgetc(F);
+					if (openSpace(temp))
+					{
+						if ((i == 0) || (i == 7))
+							levelWraps[k][l] = 1;
+						if ((j == 0) || (j == 7))
+							levelWraps[k][l] = 1;
+					}
 					if ((temp <= 0xff) && (temp >= 0xf0))
-						roomLev[temp-0xf0][l] = k;
+					{
+						if (!roomLev[temp-0xf0][l])
+							roomLev[temp-0xf0][l]= k;
+						else if (roomLev[temp-0xf0][l] % 16 != k)
+						{
+							roomLev[temp-0xf0][l] <<= 4;
+							roomLev[temp-0xf0][l] += k;
+						}
+					}
 					mainDun[i][j][k][l] = temp;
 				}
+		}
 
 	fclose(F);
 
@@ -901,11 +947,11 @@ void adjustSecretCheckmarks()
 
 void checkPrevNextDun()
 {
-	if (curDungeon == 7)
+	if (curDun == 7)
 		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_NEXT, MF_GRAYED);
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_NEXT, MF_ENABLED);
-	if (curDungeon == 0)
+	if (curDun == 0)
 		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_PREV, MF_GRAYED);
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_DUNGEON_PREV, MF_ENABLED);
@@ -945,13 +991,37 @@ void checkPrevNextRoom()
 void adjHeader()
 {
 	char buffer[100];
-	char buffer2[20];
-	sprintf(buffer, "Ultima V Dungeon Surfer: %s, level %d", dunName[curDungeon], curLevel + 1);
-	if (curDungeon == DESPISE)
+	char buffer2[30];
+	char buffer3[30];
+
+	sprintf(buffer, "Ultima V Dungeon Surfer: %s, level %d ", dunName[curDun], curLevel + 1);
+	if (curDun == DESPISE)
 		strcat(buffer, " (no rooms)");
 	else
 	{
-		sprintf(buffer2, " room %d (L%d)", curRoom+1, roomLev[curRoom][curDungeon]+1);
+		if (roomLev[curRoom][curDun] <= 8)
+		{
+			sprintf(buffer2, "room %d (L%d)", curRoom+1, roomLev[curRoom][curDun]+1);
+		}
+		else
+		{
+			long oddTemp = roomLev[curRoom][curDun];
+			short i;
+
+			buffer2[0] = 0;
+
+			for (i=7; i >= 0; i--)
+				if (oddTemp >> (4*i))
+					if (!buffer2[0])
+						sprintf(buffer2, "room %d (%d", curRoom+1, oddTemp >> (4*i));
+					else
+					{
+						sprintf(buffer3, ", %d", (oddTemp>>(4*i)) & 0xf);
+						strcat(buffer2, buffer3);
+					}
+
+			strcat(buffer2, ")");
+		}
 		strcat(buffer, buffer2);
 	}
 	SetWindowText(hwnd, buffer);
@@ -980,7 +1050,7 @@ void adjustRoomCheckmarks()
 
 	for (i=0; i < 8; i++)
 	{
-		if (showPushed[i] && (fromSquareX[i][curRoom][curDungeon] + fromSquareY[i][curRoom][curDungeon]))
+		if (showPushed[i] && (fromSquareX[i][curRoom][curDun] + fromSquareY[i][curRoom][curDun]))
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_CHECKED);
 		else
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_UNCHECKED);
@@ -1029,8 +1099,30 @@ void checkTheParty()
 		CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_CHECKED);
 }
 
+short thisLevelWraps()
+{
+	if (wrapType == 0)
+		return 1;
+	if (wrapType == 1)
+		return 0;
+	if (levelWraps[curRoom][curDun])
+		return 1;
+	return 0;
+}
+
+short openSpace(short x)
+{
+	if (x == 0xb0)
+		return 0;
+	if ((x <= 0xc3) && (x >= 0xc0))
+		return 0;
+	return 1;
+}
+
 void initMenu()
 {
+	CheckMenuItem( GetMenu(hwnd), wrapType + ID_OPTIONS_SIZE_HALF, MF_CHECKED);
+
 	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
