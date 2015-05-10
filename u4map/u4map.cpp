@@ -109,6 +109,9 @@ short showTripsquare[4] = {0};
 
 short levelWraps[64][8] = {0};
 
+short stoneLoc[8] = {0};
+short dunBall[8] = {0};
+
 char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Abyss"};
 
 char monsterName[52][13] = { "Mage", "Bard", "Fighter", "Druid", "Tinker", "Paladin", "Ranger", "Shepherd",
@@ -189,6 +192,30 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			}
 			break;
 
+		case ID_DUNGEON_INFO:
+			{
+				char buffer[400]="";
+				char buffer2[200]="";
+
+				sprintf(buffer, "Information for %s:\n", dunName[curDun]);
+
+				if (stoneLoc[curDun])
+					sprintf(buffer2, "stone at L%d (%d, %d) from upper left\n", (stoneLoc[curDun]>>8)+1, stoneLoc[curDun] & 0xf, (stoneLoc[curDun]>>4) & 0xf);
+				else
+					sprintf(buffer2, "No stone.\n");
+
+				strcat(buffer, buffer2);
+
+				if (!dunBall[curDun])
+					sprintf(buffer2, "No dungeon balls.\n");
+				else
+					sprintf(buffer2, "%d dungeon balls.\n", dunBall[curDun]);
+
+				strcat(buffer, buffer2);
+				MessageBox(hwnd, buffer, "Dungeon info", MB_OK);
+			}
+			break;
+
 			//NAVIGATION MENU ITEMS
 
 		case ID_NAV_1:
@@ -244,38 +271,38 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_SHIFT_N:
 		case ID_NAV_SHIFT_O:
 		case ID_NAV_SHIFT_P:
-		case ID_NAV_ALT_A:
-		case ID_NAV_ALT_B:
-		case ID_NAV_ALT_C:
-		case ID_NAV_ALT_D:
-		case ID_NAV_ALT_E:
-		case ID_NAV_ALT_F:
-		case ID_NAV_ALT_G:
-		case ID_NAV_ALT_H:
-		case ID_NAV_ALT_I:
-		case ID_NAV_ALT_J:
-		case ID_NAV_ALT_K:
-		case ID_NAV_ALT_L:
-		case ID_NAV_ALT_M:
-		case ID_NAV_ALT_N:
-		case ID_NAV_ALT_O:
-		case ID_NAV_ALT_P:
-		case ID_NAV_ALT_SHIFT_A:
-		case ID_NAV_ALT_SHIFT_B:
-		case ID_NAV_ALT_SHIFT_C:
-		case ID_NAV_ALT_SHIFT_D:
-		case ID_NAV_ALT_SHIFT_E:
-		case ID_NAV_ALT_SHIFT_F:
-		case ID_NAV_ALT_SHIFT_G:
-		case ID_NAV_ALT_SHIFT_H:
-		case ID_NAV_ALT_SHIFT_I:
-		case ID_NAV_ALT_SHIFT_J:
-		case ID_NAV_ALT_SHIFT_K:
-		case ID_NAV_ALT_SHIFT_L:
-		case ID_NAV_ALT_SHIFT_M:
-		case ID_NAV_ALT_SHIFT_N:
-		case ID_NAV_ALT_SHIFT_O:
-		case ID_NAV_ALT_SHIFT_P:
+		case ID_NAV_CTRL_A:
+		case ID_NAV_CTRL_B:
+		case ID_NAV_CTRL_C:
+		case ID_NAV_CTRL_D:
+		case ID_NAV_CTRL_E:
+		case ID_NAV_CTRL_F:
+		case ID_NAV_CTRL_G:
+		case ID_NAV_CTRL_H:
+		case ID_NAV_CTRL_I:
+		case ID_NAV_CTRL_J:
+		case ID_NAV_CTRL_K:
+		case ID_NAV_CTRL_L:
+		case ID_NAV_CTRL_M:
+		case ID_NAV_CTRL_N:
+		case ID_NAV_CTRL_O:
+		case ID_NAV_CTRL_P:
+		case ID_NAV_CTRL_SHIFT_A:
+		case ID_NAV_CTRL_SHIFT_B:
+		case ID_NAV_CTRL_SHIFT_C:
+		case ID_NAV_CTRL_SHIFT_D:
+		case ID_NAV_CTRL_SHIFT_E:
+		case ID_NAV_CTRL_SHIFT_F:
+		case ID_NAV_CTRL_SHIFT_G:
+		case ID_NAV_CTRL_SHIFT_H:
+		case ID_NAV_CTRL_SHIFT_I:
+		case ID_NAV_CTRL_SHIFT_J:
+		case ID_NAV_CTRL_SHIFT_K:
+		case ID_NAV_CTRL_SHIFT_L:
+		case ID_NAV_CTRL_SHIFT_M:
+		case ID_NAV_CTRL_SHIFT_N:
+		case ID_NAV_CTRL_SHIFT_O:
+		case ID_NAV_CTRL_SHIFT_P:
 			if (curDun == ABYSS)
 			{
 				curRoom = LOWORD(wparam) - ID_NAV_A;
@@ -442,15 +469,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintRoomMap();
 			break;
 
-		case ID_OPTIONS_ALT_ICONS:
-			altIcon = !altIcon;
-			if (altIcon)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ALT_ICONS, MF_CHECKED);
-			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ALT_ICONS, MF_UNCHECKED);
-			PaintRoomMap();
-			break;
-
 		case ID_OPTIONS_SHOW_1ST_SECRET:
 		case ID_OPTIONS_SHOW_2ND_SECRET:
 		case ID_OPTIONS_SHOW_3RD_SECRET:
@@ -551,6 +569,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			}
 			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
 			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+			PaintRoomMap();
+			break;
+
+		case ID_MINOR_ALT_ICONS:
+			altIcon = !altIcon;
+			if (altIcon)
+				CheckMenuItem( GetMenu(hwnd), ID_MINOR_ALT_ICONS, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_MINOR_ALT_ICONS, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
@@ -764,6 +791,12 @@ void readDun(char x[20], int q)
 			{
 				temp = fgetc(F); //?? 0xd(0-9) & 0xf0 == 
 				temp2 = temp;
+
+				if (temp == 0x70)
+					dunBall[q]++;
+
+				if (temp == 0xb0)
+					stoneLoc[q] = (k<<8)+(j<<4)+i;
 
 				if ((i == 0) || (j == 0) || (i == 7) || (j == 7))
 					if (temp != 0xf0)
@@ -1249,6 +1282,7 @@ void initMenuCheck()
 	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
+	EnableMenuItem( GetMenu(hwnd), ID_NAV_INSTR, MF_GRAYED);
 }
 
 short wrapHalf()

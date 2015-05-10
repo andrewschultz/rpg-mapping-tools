@@ -102,6 +102,9 @@ short toSquare1Y[8][16][8];
 short toSquare2X[8][16][8];
 short toSquare2Y[8][16][8];
 
+short levSecret[8] = {0};
+short levChest[8] = {0};
+
 short levelWraps[8][8] = {0};
 
 short partyArray[6] = { 0x14c, 0x144, 0x148, 0x140, 0x140, 0x140 };
@@ -160,6 +163,27 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				checkPrevNextDun();
 			}
 			break;
+
+		case ID_DUNGEON_INFO:
+			{
+				char buffer[400] = "";
+				char buffer2[200];
+
+				if (levSecret[curDun])
+					sprintf(buffer, "%d secret passages\n", levSecret[curDun]);
+				else
+					sprintf(buffer, "No secret passages\n");
+
+				if (levChest[curDun])
+					sprintf(buffer2, "%d chests\n", levChest[curDun]);
+				else
+					sprintf(buffer2, "No chests\n");
+
+				strcat(buffer, buffer2);
+
+				MessageBox(hwnd, buffer, "Dungeon Info", MB_OK);
+
+			}
 
 		case ID_DUNGEON_PREV:
 			if (curDun > 0)
@@ -859,6 +883,13 @@ void ReadTheDungeons()
 				for (i=0; i < 8; i++)
 				{
 					temp = fgetc(F);
+
+					if (temp == 0xd0)
+						levSecret[l]++;
+
+					if (temp == 0x41)
+						levChest[l]++;
+
 					if (openSpace(temp))
 					{
 						if ((i == 0) || (i == 7))
