@@ -31,6 +31,8 @@ void adjHeader();
 short toMonster(short icon);
 void doRoomCheck();
 void adjustRoomCheckmarks();
+void checkTheParty();
+void initMenu();
 
 //local pound-defines
 #define MIMIC 0xa8
@@ -64,6 +66,7 @@ short syncLevelToRoom = 0;
 short restrictRoom = 0;
 
 short wrapHalf = 0;
+short mainLabel = 1;
 short hideMimic = 0;
 
 long mouseDownX, mouseDownY;
@@ -227,20 +230,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			checkPrevNextRoom();
 			break;
 
-		case ID_OPTIONS_ROOM_A:
+		case ID_OPTIONS_RESET_ROOM_1:
 			resetRoomA = !resetRoomA;
 			if (resetRoomA)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOM_A, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_1, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOM_A, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_1, MF_UNCHECKED);
 			break;
 
-		case ID_OPTIONS_LVL_1:
+		case ID_OPTIONS_RESET_LEVEL_1:
 			resetLvl1 = !resetLvl1;
 			if (resetLvl1)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_LVL_1, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_1, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_LVL_1, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_1, MF_UNCHECKED);
 			break;
 
 		case ID_NAV_UP:
@@ -298,6 +301,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintDunMap();
 			break;
 
+		case ID_OPTIONS_MAINMAP_LABEL:
+			mainLabel = !mainLabel;
+			if (mainLabel)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_UNCHECKED);
+			PaintDunMap();
+			break;
+
 		case ID_OPTIONS_TEXTSUMMARY:
 			roomTextSummary = !roomTextSummary;
 			if (roomTextSummary)
@@ -324,12 +336,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintRoomMap();
 			break;
 
-		case ID_OPTIONS_SHOW_SPOILERS:
+		case ID_OPTIONS_OUTLINE_SPOILER_SQUARES:
 			showSpoilers = !showSpoilers;
 			if (showSpoilers)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_SPOILERS, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_SPOILER_SQUARES, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_SPOILERS, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_SPOILER_SQUARES, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
@@ -382,56 +394,47 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintRoomMap();
 			break;
 
-		case ID_OPTIONS_SHOW_PUSHED:
+		case ID_OPTIONS_OUTLINE_CHANGED_SQUARES:
 			newPushed = !newPushed;
 			for (temp = 0; temp < 8; temp++)
 				showPushed[temp] = newPushed;
+			if (newPushed)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_CHANGED_SQUARES, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_CHANGED_SQUARES, MF_UNCHECKED);
 			adjustRoomCheckmarks();
 			PaintRoomMap();
 			break;
 
-		case ID_OPTIONS_NOGUY_2:
-		case ID_OPTIONS_NOGUY_3:
-		case ID_OPTIONS_NOGUY_4:
-		case ID_OPTIONS_NOGUY_5:
-		case ID_OPTIONS_NOGUY_6:
-		case ID_OPTIONS_MAGE_2:
-		case ID_OPTIONS_MAGE_3:
-		case ID_OPTIONS_MAGE_4:
-		case ID_OPTIONS_MAGE_5:
-		case ID_OPTIONS_MAGE_6:
-		case ID_OPTIONS_BARD_2:
-		case ID_OPTIONS_BARD_3:
-		case ID_OPTIONS_BARD_4:
-		case ID_OPTIONS_BARD_5:
-		case ID_OPTIONS_BARD_6:
-		case ID_OPTIONS_FIGHTER_2:
-		case ID_OPTIONS_FIGHTER_3:
-		case ID_OPTIONS_FIGHTER_4:
-		case ID_OPTIONS_FIGHTER_5:
-		case ID_OPTIONS_FIGHTER_6:
-			temp = LOWORD(wparam) - ID_OPTIONS_NOGUY_2;
-			if (temp / 5) //ignore this if there is no guy;
-				partyArray[temp % 5 + 1] = 316 + 4 * (temp / 5);
-			else
-				partyArray[temp % 5 + 1] = 0;
+		case ID_MINOR_NOGUY_2:
+		case ID_MINOR_NOGUY_3:
+		case ID_MINOR_NOGUY_4:
+		case ID_MINOR_NOGUY_5:
+		case ID_MINOR_NOGUY_6:
+		case ID_MINOR_MAGE_2:
+		case ID_MINOR_MAGE_3:
+		case ID_MINOR_MAGE_4:
+		case ID_MINOR_MAGE_5:
+		case ID_MINOR_MAGE_6:
+		case ID_MINOR_BARD_2:
+		case ID_MINOR_BARD_3:
+		case ID_MINOR_BARD_4:
+		case ID_MINOR_BARD_5:
+		case ID_MINOR_BARD_6:
+		case ID_MINOR_FIGHTER_2:
+		case ID_MINOR_FIGHTER_3:
+		case ID_MINOR_FIGHTER_4:
+		case ID_MINOR_FIGHTER_5:
+		case ID_MINOR_FIGHTER_6:
+			temp = LOWORD(wparam) - ID_MINOR_NOGUY_2;
+			if (temp / 10) //This is kind of a bad hack. The IDs in u5map.h are 411-415, 421-415, etc.
+				partyArray[temp % 10 + 1] = 0x13c + 4 * (temp / 10);
+			else //It's one of the "Noguy" settings
+				partyArray[temp % 10 + 1] = 0;
+			checkTheParty();
 			PaintRoomMap();
-			if (temp % 5 == 0)
-			{
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAGE_2, MF_UNCHECKED);
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_FIGHTER_2, MF_UNCHECKED);
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_BARD_2, MF_UNCHECKED);
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_NOGUY_2, MF_UNCHECKED);
-				CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
-			}
 			break;
 			//ABOUT MENU ITEMS
-
-		case ID_OPTIONS_FBMDOC:
-			MessageBox(hwnd, "F8-F12 are players 2-6.\nCtrl=fighter, shift=bard, alt=mage none=no player.\n\
-You can't change the Avatar, because.\nYou also can't change friends to the Avatar, because.",
-				"Changing fellow PCs", MB_OK);
-			break;
 
 		case ID_ABOUT_BASICS:
 			MessageBox(hwnd, "Ultima V Dungeon Browser\n\
@@ -450,7 +453,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
 
-		case ID_ABOUT_REPO_U5:
+		case ID_ABOUT_REPO_THISAPP:
 			ShellExecute(hwnd, "open", "https://github.com/andrewschultz/rpg-mapping-tools/tree/master/u5map",
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
@@ -579,13 +582,7 @@ if (!RegisterClass(&winclass))
 
     hAccelTable = LoadAccelerators(hInstance, "MYACCEL");
 
-	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_BARD_2, MF_CHECKED);
-
-	if (resetRoomA)
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOM_A, MF_CHECKED);
+	initMenu();
 
 	while (1)
 	{
@@ -610,32 +607,33 @@ void PaintDunMap()
 {
 	int i = 0;
 	int j = 0;
-
-	if (wrapHalf)
-	{
-		for (j=0; j < 8; j++)
-		{
-			for (i=0; i < 8; i++)
-			{
-				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16, 16, 16, leveldc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16, j*16+128, 16, 16, leveldc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, leveldc,
-					16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), SRCCOPY);
-			}
-		}
-		return;
-	}
+	short temp;
 
 	for (j=0; j < 8; j++)
 	{
 		for (i=0; i < 8; i++)
-			StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
-				16*(mainDun[i][j][curLevel][curDungeon] % 0x10), 16*(mainDun[i][j][curLevel][curDungeon] / 0x10), 16, 16, SRCCOPY);
+		{
+			temp = mainDun[i][j][curLevel][curDungeon];
+			if (!mainLabel)
+				if ((temp >= 0xf0) && (temp <= 0xff))
+					temp = 0xed;
+			if (wrapHalf)
+			{
+				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
+				BitBlt(localhdc, i*16+128, j*16, 16, 16, leveldc,
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
+				BitBlt(localhdc, i*16, j*16+128, 16, 16, leveldc,
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
+				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, leveldc,
+					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
+			}
+			else
+				StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
+					16*(temp % 0x10), 16*(temp / 0x10), 16, 16, SRCCOPY);
+		}
 	}
+
 	adjHeader();
 }
 
@@ -717,8 +715,12 @@ void PaintRoomMap()
 
 	for (j=0; j < 11; j++) //Put out the main squares here.
 		for (i=0; i < 11; i++)
+		{
+			if ((i == 5) && (j == 3))
+			{ temp = 5; }
 			BitBlt(localhdc, i*32+288, j*32, 32, 32, roomdc,
 				32*(tempIcon[i][j] % 0x20), 32*(tempIcon[i][j] / 0x20), SRCCOPY);
+		}
 
 	for (i=0; i < 8; i++)
 		if (showPushed[i] && whatTo[i][curRoom][curDungeon])
@@ -867,14 +869,14 @@ void ReadTheDungeons()
 			//now who starts where
 			for (i=0; i < 6; i++)
 			{
-				partyX[1][i][k][l] = tempRoom[i+11][2];
-				partyY[1][i][k][l] = tempRoom[i+17][2];
-				partyX[3][i][k][l] = tempRoom[i+11][1]; //U5 is counterclockwise but I copied lots of U4 code
-				partyY[3][i][k][l] = tempRoom[i+17][2]; //so this makes it clockwise
-				partyX[2][i][k][l] = tempRoom[i+11][3];
-				partyY[2][i][k][l] = tempRoom[i+17][3];
-				partyX[0][i][k][l] = tempRoom[i+11][4];
-				partyY[0][i][k][l] = tempRoom[i+17][4];
+				partyX[NORTH][i][k][l] = tempRoom[i+11][4];
+				partyY[NORTH][i][k][l] = tempRoom[i+17][4];
+				partyX[EAST][i][k][l] = tempRoom[i+11][1];
+				partyY[EAST][i][k][l] = tempRoom[i+17][1];
+				partyX[SOUTH][i][k][l] = tempRoom[i+11][3];
+				partyY[SOUTH][i][k][l] = tempRoom[i+17][3];
+				partyX[WEST][i][k][l] = tempRoom[i+11][2];
+				partyY[WEST][i][k][l] = tempRoom[i+17][2];
 			}
 
 			//now the monsters
@@ -984,8 +986,60 @@ void adjustRoomCheckmarks()
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PSGS_1 + i, MF_UNCHECKED);
 	}
 
-	if (newPushed)
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_CHECKED);
+}
+
+void checkTheParty()
+{
+	short i;
+	short temp;
+
+	short foundAnyone = 0;
+	short missedAnyone = 0;
+
+	for (i=1; i < 6; i++)
+	{
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_NOGUY_2 + i - 1, MF_UNCHECKED);  //Vacant
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_NOGUY_2 + i + 9, MF_UNCHECKED);  //Mage
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_NOGUY_2 + i + 19, MF_UNCHECKED); //Bard
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_NOGUY_2 + i + 29, MF_UNCHECKED); //Fighter
+
+		if (!partyArray[i])
+			temp = 0;
+		else
+			temp = ((partyArray[i] - 0x13c) / 4) * 10;
+
+		temp += ID_MINOR_NOGUY_2 + i - 1;
+
+		CheckMenuItem( GetMenu(hwnd), temp, MF_CHECKED);
+
+		if (partyArray[i] == 0)
+			missedAnyone = 1;
+		if (partyArray[i] != 0)
+			foundAnyone = 1;
+	}
+
+	if (missedAnyone)
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
 	else
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_PUSHED, MF_UNCHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+
+	if (foundAnyone)
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
+	else
+		CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_CHECKED);
+}
+
+void initMenu()
+{
+	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
+
+	checkTheParty();
+	if (mainLabel)
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_CHECKED);
+
+	if (resetRoomA)
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_1, MF_CHECKED);
+
 }

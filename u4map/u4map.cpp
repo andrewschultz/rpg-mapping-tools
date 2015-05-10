@@ -28,6 +28,7 @@ void adjHeader();
 void DungeonReset();
 void doRoomCheck();
 short toMonster(short icon);
+void initMenuCheck();
 void rlsDebug(char x[50]);
 
 //#defines for in-app use
@@ -64,7 +65,8 @@ long curRoom = 0;
 long showMonsters = 0;
 long showParty = 0;
 long altIcon = 0;
-long showSpoilers = 0;
+short showSpoilers = 0;
+short showChanged = 0;
 long mainLabel = 0;
 short roomTextSummary = 0;
 
@@ -98,6 +100,7 @@ short changeByte[16][64][8] = {0};
 short roomLev[64][8] = {0};
 
 short showPath[4] = {0};
+short showTripsquare[4] = {0};
 
 char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Shame", "Hythloth", "Abyss"};
 
@@ -297,12 +300,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_A, MF_UNCHECKED);
 			break;
 
-		case ID_OPTIONS_RESET_LEVEL_0:
+		case ID_OPTIONS_RESET_LEVEL_1:
 			resetLevel0 = !resetLevel0;
 			if (resetLevel0)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_1, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_1, MF_UNCHECKED);
 			break;
 			
 		case ID_OPTIONS_SYNC_LEVEL_TO_ROOM:
@@ -371,8 +374,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 			//OPTIONS MENU ITEMS
 
-		case ID_OPTIONS_SPOIL:
+		case ID_OPTIONS_OUTLINE_SPOILER_SQUARES:
 			showSpoilers = !showSpoilers;
+			if (showSpoilers)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_SPOILER_SQUARES, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_SPOILER_SQUARES, MF_UNCHECKED);
+			adjustSecretCheckmarks();
+			PaintRoomMap();
+			break;
+
+		case ID_OPTIONS_OUTLINE_CHANGED_SQUARES:
+			showChanged = !showChanged;
+			if (showChanged)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_CHANGED_SQUARES, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_OUTLINE_CHANGED_SQUARES, MF_UNCHECKED);
+			adjustSecretCheckmarks();
 			PaintRoomMap();
 			break;
 
@@ -426,27 +444,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintRoomMap();
 			break;
 
-		case ID_OPTIONS_REVEAL_ALL_SECRET:
-			showPath[0] = showPath[1] = showPath[2] = showPath[3] = 1;
-			adjustSecretCheckmarks();
-			PaintRoomMap();
-			break;
-
-		case ID_OPTIONS_HIDE_ALL_SECRET:
-			showPath[0] = showPath[1] = showPath[2] = showPath[3] = 0;
-			adjustSecretCheckmarks();
-			PaintRoomMap();
-			break;
-
 		case ID_OPTIONS_SHOW_1ST_SECRET:
 		case ID_OPTIONS_SHOW_2ND_SECRET:
 		case ID_OPTIONS_SHOW_3RD_SECRET:
 		case ID_OPTIONS_SHOW_4TH_SECRET:
 			temp = LOWORD(wparam)-ID_OPTIONS_SHOW_1ST_SECRET;
-			showPath[temp] = !showPath[temp];
+			showTripsquare[temp] = !showTripsquare[temp];
 			for (i=0; i < 4; i++)
 				if (changeByte[4*i+1][curRoom][curDungeon] == changeByte[4*temp+1][curRoom][curDungeon])
-					showPath[i] = showPath[temp];
+					showTripsquare[i] = showTripsquare[temp];
 			adjustSecretCheckmarks();
 			PaintRoomMap();
 			break;
@@ -556,7 +562,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
 
-		case ID_ABOUT_REPO_U4:
+		case ID_ABOUT_REPO_THISAPP:
 			ShellExecute(hwnd, "open", "https://github.com/andrewschultz/rpg-mapping-tools/tree/master/u5map",
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
@@ -705,18 +711,13 @@ if (!RegisterClass(&winclass))
 
     hAccelTable = LoadAccelerators(hInstance, "MYACCEL");
 
-	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
-	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
-
-	CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+	initMenuCheck();
 
 	if (resetRoomA)
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_A, MF_CHECKED);
 
 	if (resetLevel0)
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_0, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_1, MF_CHECKED);
 
 	while (1)
 	{
@@ -945,7 +946,7 @@ void PaintRoomMap()
 	//How much of the spoiler paths do we show?
 
 	for (i=0; i < 4; i++)
-		if (showPath[i])
+		if (showTripsquare[i])
 		{
 			temp = changeByte[4*i][curRoom][curDungeon];
 			if (changeByte[4*i+2][curRoom][curDungeon])
@@ -1007,6 +1008,27 @@ void PaintRoomMap()
 			}
 		}
 		
+	}
+
+	if (showChanged)
+	{
+		for (i=0; i < 0x10; i += 4)
+		{
+			if (changeByte[i+2][curRoom][curDungeon])
+			{
+				temp = changeByte[i+2][curRoom][curDungeon] >> 4;
+				temp2 = changeByte[i+2][curRoom][curDungeon] & 0xf;
+				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
+					224 + 16 * changedYet[temp][temp2], 240, 16, 16, 0x000000);
+			}
+			if (changeByte[i+3][curRoom][curDungeon])
+			{
+				temp = changeByte[i+2][curRoom][curDungeon] >> 4;
+				temp2 = changeByte[i+2][curRoom][curDungeon] & 0xf;
+				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
+					224 + 16 * changedYet[temp][temp2], 240, 16, 16, 0x000000);
+			}
+		}
 	}
 
 	if (syncLevelToRoom)
@@ -1084,20 +1106,20 @@ void adjustSecretCheckmarks()
 	short i;
 	short temp = 0;
 	for (i=0; i < 4; i++)
-		temp += showPath[i];
+		temp += showTripsquare[i];
 
 	if (temp == 4)
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_THIS_ROOM, MF_CHECKED);
 	else
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REVEAL_ALL_SECRET, MF_UNCHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_THIS_ROOM, MF_UNCHECKED);
 
 	if (temp == 0)
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_CHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_THIS_ROOM, MF_CHECKED);
 	else
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_ALL_SECRET, MF_UNCHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_THIS_ROOM, MF_UNCHECKED);
 
 	for (i=0; i < 4; i++)
-		if (showPath[i] && changeByte[4*i+1][curRoom][curDungeon])
+		if (showTripsquare[i] && changeByte[4*i+1][curRoom][curDungeon])
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_CHECKED);
 		else
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_UNCHECKED);
@@ -1132,8 +1154,11 @@ void DungeonReset()
 	doRoomCheck();
 }
 
+//this function is for moving about rooms. It should not be called when internally tweaking a room.
 void doRoomCheck()
 {
+	short i;
+
 	if ((curDungeon == ABYSS) && (curRoom >= 16))
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_ABYSS_UP2, MF_ENABLED);
 	else
@@ -1155,6 +1180,9 @@ void doRoomCheck()
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_ENABLED);
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_NEXTRM, MF_GRAYED);
+
+	for (i=0; i < 4; i++)
+		showTripsquare[i] = showSpoilers;
 
 	adjustSecretCheckmarks();
 	PaintRoomMap();
@@ -1179,6 +1207,13 @@ short toMonster(short icon)
 		return 24 + (icon - 0x90) / 4;
 	}
 	return -1; //No monster icon found
+}
+
+void initMenuCheck()
+{
+	CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT, MF_CHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
 }
 
 void rlsDebug(char x[50])

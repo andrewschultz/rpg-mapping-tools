@@ -1,3 +1,7 @@
+//u4map.h: the list of constants for menu items.
+//
+//This is organized so that u4map roughly matches u5map.h. Game-specific variables are labeled as such.
+//
 
 #define ID_DUNGEON_DECEIT 101
 #define ID_DUNGEON_DESPISE 102
@@ -16,6 +20,7 @@
 #define ID_NAV_PREVRM 203
 #define ID_NAV_NEXTRM	204
 
+//Ultima IV specific options, since the Abyss is bigger than Doom
 #define ID_NAV_ABYSS_UP2	205
 #define ID_NAV_ABYSS_DOWN2	206
 
@@ -46,6 +51,8 @@
 #define ID_NAV_O	235
 #define ID_NAV_P	236
 
+//This whole chunk is U4-specific, since it involves picking out a specific Abyss room.
+//The user may not use too many of these, but they are there.
 #define ID_NAV_SHIFT_A	237
 #define ID_NAV_SHIFT_B	238
 #define ID_NAV_SHIFT_C	239
@@ -97,12 +104,14 @@
 #define ID_NAV_ALT_SHIFT_O	283
 #define ID_NAV_ALT_SHIFT_P	284
 
-#define ID_OPTIONS_SPOIL 301
 
-#define ID_OPTIONS_MONSTERS	311
-#define ID_OPTIONS_HIDE_MIMIC 312
+#define ID_OPTIONS_MONSTERS	301
+#define ID_OPTIONS_HIDE_MIMIC 302
+#define ID_OPTIONS_OUTLINE_SPOILER_SQUARES 303
+#define ID_OPTIONS_OUTLINE_CHANGED_SQUARES	304
 
-#define ID_OPTIONS_TEXTSUMMARY 313
+//Oh, to be able to call this 411!
+#define ID_OPTIONS_TEXTSUMMARY	311
 
 #define ID_OPTIONS_PARTY_NONE	321
 #define ID_OPTIONS_PARTY_NORTH	322
@@ -112,49 +121,52 @@
 #define ID_OPTIONS_PARTY_FIRSTVIABLE	326
 #define ID_OPTIONS_ALT_ICONS	329
 
-#define ID_OPTIONS_REVEAL_ALL_SECRET	331
-#define ID_OPTIONS_HIDE_ALL_SECRET	332
-#define ID_OPTIONS_SHOW_1ST_SECRET	333
-#define ID_OPTIONS_SHOW_2ND_SECRET	334
-#define ID_OPTIONS_SHOW_3RD_SECRET	335
-#define ID_OPTIONS_SHOW_4TH_SECRET	336
-
 #define ID_OPTIONS_WRAPHALF	340
 #define ID_OPTIONS_MAINMAP_LABEL	341
-
 #define ID_OPTIONS_RESET_ROOM_A	342
-#define ID_OPTIONS_RESET_LEVEL_0 343
-
+#define ID_OPTIONS_RESET_LEVEL_1	343
 #define ID_OPTIONS_SYNC_LEVEL_TO_ROOM	344
 #define ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL	345
 
-#define ID_MINOR_SWAP_1	401 //not really valid but there for reference
-#define ID_MINOR_SWAP_2	402
-#define ID_MINOR_SWAP_3	403
-#define ID_MINOR_SWAP_4	404
-#define ID_MINOR_SWAP_5	405
-#define ID_MINOR_SWAP_6	406
-#define ID_MINOR_SWAP_7	407
-#define ID_MINOR_SWAP_8	408
+#define ID_OPTIONS_DEFAULT_SHOW_SECRET_PSG 361
+//U4 has 4 possible, U5 has 8. In either case, we want to be able to toggle any
+#define ID_OPTIONS_SHOW_THIS_ROOM	362
+#define ID_OPTIONS_HIDE_THIS_ROOM	363
+#define ID_OPTIONS_SHOW_1ST_SECRET	364
+#define ID_OPTIONS_SHOW_2ND_SECRET	365
+#define ID_OPTIONS_SHOW_3RD_SECRET	366
+#define ID_OPTIONS_SHOW_4TH_SECRET	367
 
-#define ID_MINOR_HIDE_1	411 //not really valid but there for reference
-#define ID_MINOR_HIDE_2	412
-#define ID_MINOR_HIDE_3	413
-#define ID_MINOR_HIDE_4	414
-#define ID_MINOR_HIDE_5	415
-#define ID_MINOR_HIDE_6	416
-#define ID_MINOR_HIDE_7	417
-#define ID_MINOR_HIDE_8	418
+//Game specific options being able to swap characters at will
+#define ID_MINOR_HIDE_ALL	401
+#define ID_MINOR_HIDE_NONE	402
 
-#define ID_MINOR_HIDE_ALL	419
-#define ID_MINOR_HIDE_NONE	420
+#define ID_MINOR_SWAP_1	411 //not really valid but there for reference
+#define ID_MINOR_SWAP_2	412
+#define ID_MINOR_SWAP_3	413
+#define ID_MINOR_SWAP_4	414
+#define ID_MINOR_SWAP_5	415
+#define ID_MINOR_SWAP_6	416
+#define ID_MINOR_SWAP_7	417
+#define ID_MINOR_SWAP_8	418
 
+#define ID_MINOR_HIDE_1	421 //not really valid but there for reference
+#define ID_MINOR_HIDE_2	422
+#define ID_MINOR_HIDE_3	423
+#define ID_MINOR_HIDE_4	424
+#define ID_MINOR_HIDE_5	425
+#define ID_MINOR_HIDE_6	426
+#define ID_MINOR_HIDE_7	427
+#define ID_MINOR_HIDE_8	428
+
+//ABOUT menu
 #define ID_ABOUT_BASICS	501
 #define ID_ABOUT_THANKS	502
-
 #define ID_ABOUT_REPO	503
-#define ID_ABOUT_REPO_U4	504
+#define ID_ABOUT_REPO_THISAPP	504
+#define ID_ABOUT_README	505
 
+//Just defining VK_ stuff so there are fewer magic numbers
 #define VK_0 0x30
 #define VK_1 0x31
 #define VK_2 0x32
