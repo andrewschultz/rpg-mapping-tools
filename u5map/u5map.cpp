@@ -35,6 +35,11 @@ void checkTheParty();
 short thisLevelWraps();
 short openSpace(short x);
 void initMenu();
+void tryGoingUp();
+short wrapHalf();
+void checkWrapHalf();
+void tryGoingDown();
+void tryGoingUp();
 
 //local pound-defines
 #define MIMIC 0xa8
@@ -55,6 +60,10 @@ void initMenu();
 
 #define ICONSIZE 32
 
+#define WRAP_HALF 0
+#define WRAP_FULL 1
+#define WRAP_IF_THERE 2
+
 //globals
 
 long curRoom = 0;
@@ -72,6 +81,7 @@ short mainLabel = 1;
 short hideMimic = 0;
 
 long mouseDownX, mouseDownY;
+long mouseUpX, mouseUpY;
 
 short mainDun[8][8][8][8];
 short roomBase[11][11][16][8];
@@ -494,6 +504,23 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 			break;
 
 		}
+
+		case WM_RBUTTONDOWN:
+			mouseDownX = LOWORD(lparam)/16;
+			mouseDownY = HIWORD(lparam)/16;
+			checkWrapHalf();
+			
+			temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
+			if (temp == 0x30)
+			{
+				if (!syncLevelToRoom)
+				{
+				tryGoingUp();
+				PaintDunMap();
+				}
+			}
+			break;
+			
 		case WM_LBUTTONDOWN:
 			mouseDownX = LOWORD(lparam)/16;
 			mouseDownY = HIWORD(lparam)/16;
@@ -501,34 +528,25 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 		case WM_LBUTTONUP:
 			{
-				long mouseUpX = LOWORD(lparam)/16;
-				long mouseUpY = HIWORD(lparam)/16;
+				mouseUpX = LOWORD(lparam)/16;
+				mouseUpY = HIWORD(lparam)/16;
 
 				if ((mouseUpX != mouseDownX) || (mouseUpY != mouseDownY))
 					break;
 
-				if ((mouseUpX < 16) && (mouseUpY < 16))
+				if ((mouseDownX < 16) && (mouseDownY < 16))
 				{
-					if (thisLevelWraps())
-					{
-						mouseDownX %= 8;
-						mouseDownY %= 8;
-						mouseUpX %= 8;
-						mouseUpY %= 8;
-					}
-					else
-					{
-						mouseDownX /= 2;
-						mouseDownY /= 2;
-						mouseUpX /= 2;
-						mouseUpY /= 2;
-					}
+					checkWrapHalf();
 					temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
 					if ((temp >= 0xf0) && (temp <= 0xff))
 					{
 						curRoom = temp & 0xf;
 						doRoomCheck();
 					}
+					if ((temp == 0x20) || (temp == 0x30))
+						tryGoingDown();
+					if (temp == 0x10)
+						tryGoingUp();
 				}
 				if ((mouseUpX >= 18) && (mouseUpX < 40) && (mouseUpY < 22) && (showParty))
 				{
@@ -1166,3 +1184,56 @@ void initMenu()
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_1, MF_CHECKED);
 
 }
+
+short wrapHalf()
+{
+	if (wrapType == WRAP_HALF)
+		return 1;
+	if (wrapType == WRAP_FULL)
+		return 0;
+	if (levelWraps[curRoom][curDun])
+		return 1;
+	else
+		return 0;
+}
+
+void checkWrapHalf()
+{
+	if (wrapHalf())
+	{//this allows us to move from 1 quadrant to another
+		mouseDownX %= 8;
+		mouseDownY %= 8;
+		mouseUpX %= 8;
+		mouseUpY %= 8;
+	}
+	else
+	{
+		mouseDownX /= 2;
+		mouseDownY /= 2;
+		mouseUpX /= 2;
+		mouseUpY /= 2;
+	}
+}
+
+void tryGoingUp()
+{
+	if (curLevel == 0)
+		MessageBox(hwnd, "That would lead back to Brittania!", "There is no escape!", MB_OK);
+	else if (!syncLevelToRoom)
+	{
+		curLevel--;
+		PaintDunMap();
+	}
+}
+
+void tryGoingDown()
+{
+	if (curLevel == 7)
+		MessageBox(hwnd, "That would lead to the underworld, which is too big for this app!", "There is no escape!", MB_OK);
+	else if (!syncLevelToRoom)
+	{
+		curLevel++;
+		PaintDunMap();
+	}
+}
+

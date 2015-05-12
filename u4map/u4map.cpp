@@ -30,6 +30,8 @@ void doRoomCheck();
 short toMonster(short icon);
 void initMenuCheck();
 void rlsDebug(char x[50]);
+void checkWrapHalf();
+void tryGoingUp();
 short wrapHalf();
 
 //#defines for in-app use
@@ -131,6 +133,7 @@ short slotIcon[8] = { 0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e };
 short slotShow[8] = {1, 1, 1, 1, 1, 1, 1, 1};
 
 long mouseDownX, mouseDownY;
+long mouseUpX, mouseUpY;
 
 #define ICONSIZE 32
 
@@ -607,6 +610,22 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 		}
 
+		case WM_RBUTTONDOWN:
+			mouseDownX = LOWORD(lparam)/16;
+			mouseDownY = HIWORD(lparam)/16;
+			checkWrapHalf();
+			
+			temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
+			if (temp == 0x30)
+			{
+				if (!syncLevelToRoom)
+				{
+				curLevel++;
+				PaintDunMap();
+				}
+			}
+			break;
+			
 		case WM_LBUTTONDOWN:
 			mouseDownX = LOWORD(lparam)/16;
 			mouseDownY = HIWORD(lparam)/16;
@@ -614,8 +633,8 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 		case WM_LBUTTONUP:
 			{
-				long mouseUpX = LOWORD(lparam)/16;
-				long mouseUpY = HIWORD(lparam)/16;
+				mouseUpX = LOWORD(lparam)/16;
+				mouseUpY = HIWORD(lparam)/16;
 
 				if (showParty)
 					if ((mouseDownX >= 18) && (mouseDownX < 40) && (mouseDownY < 22))
@@ -652,24 +671,22 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 				if ((mouseDownX < 16) && (mouseDownY < 16))
 				{
-				if (wrapHalf())
-				{//this allows us to move from 1 quadrant to another
-					mouseDownX %= 8;
-					mouseDownY %= 8;
-					mouseUpX %= 8;
-					mouseUpY %= 8;
-				}
-				else
-				{
-					mouseDownX /= 2;
-					mouseDownY /= 2;
-					mouseUpX /= 2;
-					mouseUpY /= 2;
-				}
+					checkWrapHalf();
 				if (mouseDownX == mouseUpX)
 					if (mouseDownY == mouseUpY)
 					{
 						temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
+						
+						if (temp == 0x10 || temp == 0x30)
+							tryGoingUp();
+						
+						if (temp == 0x20)
+							if (!syncLevelToRoom)
+							{
+							curLevel++;
+							PaintDunMap();
+							}
+						
 						if ((temp >= 0xd0) && (temp <= 0xdf))
 						{
 							curRoom = temp & 0xf;
@@ -1295,6 +1312,35 @@ short wrapHalf()
 		return 1;
 	else
 		return 0;
+}
+
+void checkWrapHalf()
+{
+	if (wrapHalf())
+	{//this allows us to move from 1 quadrant to another
+		mouseDownX %= 8;
+		mouseDownY %= 8;
+		mouseUpX %= 8;
+		mouseUpY %= 8;
+	}
+	else
+	{
+		mouseDownX /= 2;
+		mouseDownY /= 2;
+		mouseUpX /= 2;
+		mouseUpY /= 2;
+	}
+}
+
+void tryGoingUp()
+{
+	if (curLevel == 0)
+		MessageBox(hwnd, "That would lead back to Brittania!", "There is no escape!", MB_OK);
+	else if (!syncLevelToRoom)
+	{
+		curLevel--;
+		PaintDunMap();
+	}
 }
 
 void rlsDebug(char x[50])
