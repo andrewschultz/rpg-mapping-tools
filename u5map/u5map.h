@@ -54,7 +54,8 @@
 #define ID_OPTIONS_OUTLINE_CHANGED_SQUARES	304
 
 //Oh, to be able to call this 411!
-#define ID_OPTIONS_TEXTSUMMARY	311
+#define ID_OPTIONS_DUNTEXTSUMMARY	311
+#define ID_OPTIONS_ROOMTEXTSUMMARY	312
 
 #define ID_OPTIONS_PARTY_NONE	321
 #define ID_OPTIONS_PARTY_NORTH	322
@@ -145,6 +146,8 @@
 #define VK_O 0x4f
 #define VK_P 0x50
 
+#ifndef VK_OEM_PLUS
 #define VK_OEM_PLUS	0xbb
+#endif
 #define VK_MINUS	0xbd
 #define VK_OEM_BACKSLASH	0xdc

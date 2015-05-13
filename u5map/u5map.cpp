@@ -35,11 +35,6 @@ void checkTheParty();
 short thisLevelWraps();
 short openSpace(short x);
 void initMenu();
-void tryGoingUp();
-short wrapHalf();
-void checkWrapHalf();
-void tryGoingDown();
-void tryGoingUp();
 
 //local pound-defines
 #define MIMIC 0xa8
@@ -60,10 +55,6 @@ void tryGoingUp();
 
 #define ICONSIZE 32
 
-#define WRAP_HALF 0
-#define WRAP_FULL 1
-#define WRAP_IF_THERE 2
-
 //globals
 
 long curRoom = 0;
@@ -81,7 +72,6 @@ short mainLabel = 1;
 short hideMimic = 0;
 
 long mouseDownX, mouseDownY;
-long mouseUpX, mouseUpY;
 
 short mainDun[8][8][8][8];
 short roomBase[11][11][16][8];
@@ -95,6 +85,29 @@ short monsterY[21][16][8];
 short partyX[4][6][16][8];
 short partyY[4][6][16][8];
 
+#define DUNTRACKING 14
+#define CHEST 0
+#define HEAL_FOUNTAIN 1
+#define POISON_FOUNTAIN 2
+#define HURT_FOUNTAIN 3
+#define VISIBLE_PIT 4
+#define HIDDEN_PIT 5
+#define SOMETHING 6
+#define POISON_FIELD 7
+#define SLEEP_FIELD 8
+#define LIGHTNING_FIELD 9
+#define FIRE_FIELD 10
+#define WRITING 11
+#define CAVEIN 12
+#define SECRET_DOOR 13
+
+short dunSpoil[14][8] = {0};
+short dunIconVal[14] = {0x41, 0x51, 0x52, 0x53, 0x60, 0x61, 0x62, 0x80, 0x81, 0x82, 0x83, 0xb1, 0xc0, 0xd0};
+
+char fountStr[3][7] = { "Heal", "Poison", "Hurt" };
+char fieldStr[4][10] = { "Poison", "Sleep", "Lightning", "Fire" };
+
+short dunTextSummary = 0;
 short roomTextSummary = 0;
 short showMonsters = 0;
 short showSpoilers = 0;
@@ -351,12 +364,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintDunMap();
 			break;
 
-		case ID_OPTIONS_TEXTSUMMARY:
+		case ID_OPTIONS_DUNTEXTSUMMARY:
+			dunTextSummary = !dunTextSummary;
+			if (dunTextSummary)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_DUNTEXTSUMMARY, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_DUNTEXTSUMMARY, MF_UNCHECKED);
+			break;
+
+		case ID_OPTIONS_ROOMTEXTSUMMARY:
 			roomTextSummary = !roomTextSummary;
 			if (roomTextSummary)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOMTEXTSUMMARY, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOMTEXTSUMMARY, MF_UNCHECKED);
 			break;
 
 		case ID_OPTIONS_MONSTERS:
@@ -504,23 +525,6 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 			break;
 
 		}
-
-		case WM_RBUTTONDOWN:
-			mouseDownX = LOWORD(lparam)/16;
-			mouseDownY = HIWORD(lparam)/16;
-			checkWrapHalf();
-			
-			temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
-			if (temp == 0x30)
-			{
-				if (!syncLevelToRoom)
-				{
-				tryGoingUp();
-				PaintDunMap();
-				}
-			}
-			break;
-			
 		case WM_LBUTTONDOWN:
 			mouseDownX = LOWORD(lparam)/16;
 			mouseDownY = HIWORD(lparam)/16;
@@ -528,25 +532,34 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 
 		case WM_LBUTTONUP:
 			{
-				mouseUpX = LOWORD(lparam)/16;
-				mouseUpY = HIWORD(lparam)/16;
+				long mouseUpX = LOWORD(lparam)/16;
+				long mouseUpY = HIWORD(lparam)/16;
 
 				if ((mouseUpX != mouseDownX) || (mouseUpY != mouseDownY))
 					break;
 
-				if ((mouseDownX < 16) && (mouseDownY < 16))
+				if ((mouseUpX < 16) && (mouseUpY < 16))
 				{
-					checkWrapHalf();
+					if (thisLevelWraps())
+					{
+						mouseDownX %= 8;
+						mouseDownY %= 8;
+						mouseUpX %= 8;
+						mouseUpY %= 8;
+					}
+					else
+					{
+						mouseDownX /= 2;
+						mouseDownY /= 2;
+						mouseUpX /= 2;
+						mouseUpY /= 2;
+					}
 					temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
 					if ((temp >= 0xf0) && (temp <= 0xff))
 					{
 						curRoom = temp & 0xf;
 						doRoomCheck();
 					}
-					if ((temp == 0x20) || (temp == 0x30))
-						tryGoingDown();
-					if (temp == 0x10)
-						tryGoingUp();
 				}
 				if ((mouseUpX >= 18) && (mouseUpX < 40) && (mouseUpY < 22) && (showParty))
 				{
@@ -715,18 +728,18 @@ void PaintRoomMap()
 
 	if (curDun == DESPISE)
 	{
-	HDC hdc = GetDC(hwnd);
-	HBRUSH hbrush=CreateSolidBrush(RGB(128,128,128));
-	RECT rect;
+		HDC hdc = GetDC(hwnd);
+		HBRUSH hbrush=CreateSolidBrush(RGB(128,128,128));
+		RECT rect;
 
-	rect.top=0;
-	rect.bottom=11 * ICONSIZE; //yeah I can do math it's 352 but
-	rect.left=288;
-	rect.right=288 + 11 * ICONSIZE;
+		rect.top=0;
+		rect.bottom=11 * ICONSIZE; //yeah I can do math it's 352 but
+		rect.left=288;
+		rect.right=288 + 11 * ICONSIZE;
 
-	FillRect(hdc, &rect, hbrush);
+		FillRect(hdc, &rect, hbrush);
 
-	DeleteObject(hbrush);
+		DeleteObject(hbrush);
 		return;
 	}
 	//first the base icons
@@ -885,13 +898,106 @@ void PaintRoomMap()
 	adjustRoomCheckmarks();
 }
 
+//This lumps together stuff like similar walls
+short iconRedir (int x)
+{
+	if ((x >= 0xb2) && (x <= 0xb4))
+		return 0xb1;
+	if ((x == 0x68) || (x == 0x69))
+		return x - 8;
+	return x;
+}
+
+void spoilDungeon(short thisDun)
+{
+	char buffer[400] = "";
+	char buffer2[100] = "";
+	short i, temp = 0;
+	short needComma = 0;
+	
+	RECT rc;
+	HDC hdc = GetDC(hwnd);
+	
+	GetClientRect(hwnd, &rc);
+
+	rc.left = 0;
+	rc.right = 8 * ICONSIZE;
+	rc.top = 288;
+	rc.bottom = 480;
+
+	if (dunTextSummary == 0)
+	{//I suppose we could cheat here and StretchBlt Icon #0
+		HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
+		FillRect(hdc, &rc, hbrush);
+		DeleteObject(hbrush);
+		ReleaseDC(hwnd, hdc);
+		return;
+	}
+	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	SetBkMode(hdc, TRANSPARENT);
+	SetTextColor(hdc, RGB(255, 255, 0));
+
+	sprintf(buffer, "%s info: %d chests, %d secret doors, %d writing, %d cave-ins\n", dunName[thisDun], dunSpoil[CHEST][thisDun],
+		dunSpoil[SECRET_DOOR][thisDun], dunSpoil[WRITING][thisDun], dunSpoil[CAVEIN][thisDun]);
+	
+	for (i=POISON_FIELD; i <= FIRE_FIELD; i++)
+		temp += dunSpoil[i][thisDun];
+	
+	if (temp)
+	{
+		strcat(buffer, "Fields: ");
+		for (i=POISON_FIELD; i <= FIRE_FIELD; i++)
+			if (dunSpoil[i][thisDun])
+				sprintf(buffer, " %d %s", dunSpoil[i][thisDun], fieldStr[i - POISON_FIELD]);
+		strcat(buffer, ".\n");
+	}
+	else
+		strcat(buffer, "No magic fields.\n");
+	
+	temp = dunSpoil[VISIBLE_PIT][thisDun] + dunSpoil[HIDDEN_PIT][thisDun];
+	
+	if (temp)
+	{
+		strcat(buffer, "Pits: ");
+		for (i=VISIBLE_PIT; i <= HIDDEN_PIT; i++)
+			if (dunSpoil[i][thisDun])
+				sprintf(buffer2, " %d %s", dunSpoil[i][thisDun], fieldStr[i - VISIBLE_PIT]);
+		strcat(buffer, buffer2);
+	}
+	else
+		strcat(buffer, "No pits.\n");
+	
+	for (i=HEAL_FOUNTAIN; i < HURT_FOUNTAIN; i++)
+		temp += dunSpoil[i][thisDun];
+	
+	if (temp)
+	{
+		strcat(buffer, "Fountains: ");
+		for (i=HEAL_FOUNTAIN; i <= HURT_FOUNTAIN; i++)
+			if (dunSpoil[i][thisDun])
+				sprintf(buffer2, " %d %s", dunSpoil[i][thisDun], fountStr[i - HEAL_FOUNTAIN]);
+		strcat(buffer, buffer2);
+	}
+	else
+		strcat(buffer, "No fountains.\n");
+
+	DrawText(hdc, buffer, strlen(buffer), &rc, DT_LEFT | DT_TOP);
+	ReleaseDC(hwnd, hdc);
+}
+
 void ReadTheDungeons()
 {
 	short tempRoom[32][11];
 
-	short i, j, k, l, temp;
+	short i, j, k, l, q, temp;
 
 	FILE * F = fopen("DUNGEON.DAT", "rb");
+
+	if (F == NULL)
+	{
+		MessageBox(hwnd, "You are missing Dungeon.dat. The dungeon surfer needs it to work.", "Oops!", MB_OK);
+		return;
+	}
 
 	for (l=0; l < 8; l++)
 		for (k=0; k < 8; k++)
@@ -902,11 +1008,11 @@ void ReadTheDungeons()
 				{
 					temp = fgetc(F);
 
-					if (temp == 0xd0)
-						levSecret[l]++;
-
-					if (temp == 0x41)
-						levChest[l]++;
+					for (q=0; q < DUNTRACKING; q++)
+					{
+						if (iconRedir(temp) == dunIconVal[l])
+							dunSpoil[q][l]++;
+					}
 
 					if (openSpace(temp))
 					{
@@ -932,6 +1038,13 @@ void ReadTheDungeons()
 	fclose(F);
 
 	F = fopen("DUNGEON.CBT", "rb");
+
+	if (!F)
+	{
+		MessageBox(hwnd, "You are missing Dungeon.CBT, a necessary file from Ultima V. The Surfer will not work without it.",
+			"Oh no!", MB_OK);
+		return;
+	}
 
 	for (l=0; l < 8; l++)
 	{
@@ -1184,56 +1297,3 @@ void initMenu()
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_1, MF_CHECKED);
 
 }
-
-short wrapHalf()
-{
-	if (wrapType == WRAP_HALF)
-		return 1;
-	if (wrapType == WRAP_FULL)
-		return 0;
-	if (levelWraps[curRoom][curDun])
-		return 1;
-	else
-		return 0;
-}
-
-void checkWrapHalf()
-{
-	if (wrapHalf())
-	{//this allows us to move from 1 quadrant to another
-		mouseDownX %= 8;
-		mouseDownY %= 8;
-		mouseUpX %= 8;
-		mouseUpY %= 8;
-	}
-	else
-	{
-		mouseDownX /= 2;
-		mouseDownY /= 2;
-		mouseUpX /= 2;
-		mouseUpY /= 2;
-	}
-}
-
-void tryGoingUp()
-{
-	if (curLevel == 0)
-		MessageBox(hwnd, "That would lead back to Brittania!", "There is no escape!", MB_OK);
-	else if (!syncLevelToRoom)
-	{
-		curLevel--;
-		PaintDunMap();
-	}
-}
-
-void tryGoingDown()
-{
-	if (curLevel == 7)
-		MessageBox(hwnd, "That would lead to the underworld, which is too big for this app!", "There is no escape!", MB_OK);
-	else if (!syncLevelToRoom)
-	{
-		curLevel++;
-		PaintDunMap();
-	}
-}
-

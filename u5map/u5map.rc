@@ -130,6 +130,10 @@ BEGIN
 		MENUITEM "Hide M&imic", ID_OPTIONS_HIDE_MIMIC
 		MENUITEM "Outline squares to &push by default", ID_OPTIONS_OUTLINE_SPOILER_SQUARES
 		MENUITEM "Outline squares that will &change by default", ID_OPTIONS_OUTLINE_CHANGED_SQUARES
+		MENUITEM SEPARATOR
+		MENUITEM "Show &Dungeon text summary\t9", ID_OPTIONS_DUNTEXTSUMMARY
+		MENUITEM "Show R&oom text summary\t0", ID_OPTIONS_ROOMTEXTSUMMARY
+		MENUITEM SEPARATOR
 		MENUITEM "Toggle 1\talt-1", ID_OPTIONS_PSGS_1
 		MENUITEM "Toggle 2\talt-2", ID_OPTIONS_PSGS_2
 		MENUITEM "Toggle 3\talt-3", ID_OPTIONS_PSGS_3
@@ -151,9 +155,8 @@ BEGIN
 		MENUITEM "&Auto-adjust maps\tBackspace", ID_OPTIONS_SIZE_AUTO
 		MENUITEM "&Bordered half-size maps\t\\", ID_OPTIONS_SIZE_BORDERED
 		MENUITEM "&Label rooms in main map", ID_OPTIONS_MAINMAP_LABEL
-		MENUITEM "Room te&xt summary", ID_OPTIONS_TEXTSUMMARY
 		MENUITEM SEPARATOR
-		MENUITEM "Reset to Room A on dungeon change", ID_OPTIONS_RESET_ROOM_1
+		MENUITEM "Reset to Room 1 on dungeon change", ID_OPTIONS_RESET_ROOM_1
 		MENUITEM "Reset to Level 1 on dungeon change", ID_OPTIONS_RESET_LEVEL_1
 		MENUITEM SEPARATOR
 		MENUITEM "Sync level to room", ID_OPTIONS_SYNC_LEVEL_TO_ROOM

@@ -49,6 +49,22 @@ short wrapHalf();
 #define HYTHLOTH 6
 #define ABYSS 7
 
+#define DUNTRACKING 14
+#define CHEST 0
+#define STATBALL 1
+#define SECRETDOOR 2
+#define POISONFIELD 3
+#define LIGHTNINGFIELD 4
+#define FIREFIELD 5
+#define SLEEPFIELD 6
+#define WINDS 7
+#define TRAPS 8
+#define PLAIN_FOUNTAIN 9
+#define HEAL_FOUNTAIN 10
+#define BADHP_FOUNTAIN 11
+#define EQUAL_FOUNTAIN 12
+#define POISON_FOUNTAIN 13
+
 #define MIMIC 0xac
 
 #define MONSTERS 52
@@ -75,7 +91,16 @@ long altIcon = 0;
 short showSpoilers = 0;
 short showChanged = 0;
 long mainLabel = 0;
+short dunTextSummary = 0;
 short roomTextSummary = 0;
+
+short noWarnYet = 0;
+
+char plu[2][2] = { "", "s" };
+
+//so we don't have to read dungeon spoilers in every time. See DUNTRACKING for what it maps to.
+short dunSpoil[14][8] = {0};
+short dunIconVal[14] = {0x40, 0x70, 0xe0, 0xa0, 0xa1, 0xa2, 0xa3, 0x80, 0x81, 0x90, 0x91, 0x92, 0x93, 0x94};
 
 short curDir = 0; //?? what about when things are turned off
 
@@ -192,30 +217,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curDun++;
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_CHECKED);
 				DungeonReset();
-			}
-			break;
-
-		case ID_DUNGEON_INFO:
-			{
-				char buffer[400]="";
-				char buffer2[200]="";
-
-				sprintf(buffer, "Information for %s:\n", dunName[curDun]);
-
-				if (stoneLoc[curDun])
-					sprintf(buffer2, "stone at L%d (%d, %d) from upper left\n", (stoneLoc[curDun]>>8)+1, stoneLoc[curDun] & 0xf, (stoneLoc[curDun]>>4) & 0xf);
-				else
-					sprintf(buffer2, "No stone.\n");
-
-				strcat(buffer, buffer2);
-
-				if (!dunBall[curDun])
-					sprintf(buffer2, "No dungeon balls.\n");
-				else
-					sprintf(buffer2, "%d dungeon balls.\n", dunBall[curDun]);
-
-				strcat(buffer, buffer2);
-				MessageBox(hwnd, buffer, "Dungeon info", MB_OK);
 			}
 			break;
 
@@ -449,12 +450,21 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintRoomMap();
 			break;
 
-		case ID_OPTIONS_TEXTSUMMARY:
+		case ID_OPTIONS_DUNTEXTSUMMARY:
+			dunTextSummary = !dunTextSummary;
+			if (dunTextSummary)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_DUNTEXTSUMMARY, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_DUNTEXTSUMMARY, MF_UNCHECKED);
+			PaintDunMap();
+			break;
+
+		case ID_OPTIONS_ROOMTEXTSUMMARY:
 			roomTextSummary = !roomTextSummary;
 			if (roomTextSummary)
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOMTEXTSUMMARY, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_TEXTSUMMARY, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOMTEXTSUMMARY, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
@@ -468,7 +478,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			showParty = LOWORD(wparam) - ID_OPTIONS_PARTY_NONE;
 			if (showParty)
-				curDir = showParty - 1;
+				curDir = (short)showParty - 1;
 			PaintRoomMap();
 			break;
 
@@ -793,11 +803,113 @@ if (!RegisterClass(&winclass))
 	return 0;
 }
 
+char fountStr[5][7] = { "Plain", "Heal", "Bad HP", "Equal", "Poison" };
+char fieldStr[4][10] = { "Poison", "Lightning", "Fire", "Sleep" };
+
+void spoilDungeon(short thisDun)
+{
+	char buffer[400] = "";
+	char buffer2[100] = "";
+	short i, temp = 0;
+	short needComma = 0;
+	
+	RECT rc;
+	HDC hdc = GetDC(hwnd);
+	
+	GetClientRect(hwnd, &rc);
+
+	rc.left = 0;
+	rc.top = 288;
+
+	rc.right = 288;
+
+	{//I suppose we could cheat here and StretchBlt Icon #0
+		HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
+		FillRect(hdc, &rc, hbrush);
+		DeleteObject(hbrush);
+		ReleaseDC(hwnd, hdc);
+	}
+
+	if (dunTextSummary == 0)
+		return;
+	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+	SetBkMode(hdc, TRANSPARENT);
+	SetTextColor(hdc, RGB(255, 255, 0));
+
+	//sprintf(buffer, "1");
+	sprintf(buffer, "%s info: %d chest%s, %d stat ball%s, %d secret door%s\n", dunName[thisDun],
+		dunSpoil[CHEST][thisDun], plu[dunSpoil[CHEST][thisDun] != 1],
+		dunSpoil[STATBALL][thisDun], plu[dunSpoil[STATBALL][thisDun] != 1],
+		dunSpoil[SECRETDOOR][thisDun], plu[dunSpoil[SECRETDOOR][thisDun] != 1]
+		);
+
+	if (thisDun == HYTHLOTH)
+		strcat(buffer, "Stone missing from ");
+	else if (thisDun == ABYSS)
+		strcat(buffer, "Codex at ");
+	else
+		strcat(buffer, "Stone at ");
+
+	sprintf(buffer2, "%d, %d level %d\n", stoneLoc[thisDun] & 0xf, (stoneLoc[thisDun]>>4) & 0xf, (stoneLoc[thisDun]>>8) + 1);
+	strcat(buffer, buffer2);
+
+	for (i=POISONFIELD; i <= SLEEPFIELD; i++)
+		temp += dunSpoil[i][thisDun];
+	
+	if (temp)
+	{
+		strcat(buffer, "Fields: ");
+		for (i=POISONFIELD; i <= SLEEPFIELD; i++)
+			if (dunSpoil[i][thisDun])
+			{
+				sprintf(buffer2, " %d %s", dunSpoil[i][thisDun], fieldStr[i - POISONFIELD]);
+				strcat(buffer, buffer2);
+			}
+		strcat(buffer, ".\n");
+	}
+	else
+		strcat(buffer, "No magic fields.\n");
+	
+	temp = 0;
+	
+	for (i=PLAIN_FOUNTAIN; i <= POISON_FOUNTAIN; i++)
+		temp += dunSpoil[i][thisDun];
+	
+	if (temp)
+	{
+		strcat(buffer, "Fountains: ");
+		for (i=PLAIN_FOUNTAIN; i <= POISON_FOUNTAIN; i++)
+			if (dunSpoil[i][thisDun])
+				sprintf(buffer2, " %d %s", dunSpoil[i][thisDun], fountStr[i - PLAIN_FOUNTAIN]);
+		strcat(buffer, buffer2);
+	}
+	else
+		strcat(buffer, "No fountains.\n");
+
+	DrawText(hdc, buffer, strlen(buffer), &rc, DT_LEFT | DT_TOP);
+	ReleaseDC(hwnd, hdc);
+
+	return;
+}
+
 void readDun(char x[20], int q)
 {
-	short i, j, k, temp, temp2;
+	short i, j, k, l, temp, temp2;
 	int numDun = 16;
 	FILE * F = fopen(x, "rb");
+	
+	if (F == NULL)
+	{
+		char buffer[200];
+		
+		if (!noWarnYet)
+		{
+		sprintf(buffer, "The program was not able to read %s! It probably won't run successfully. You may need to copy the Ultima 4 .DNG files over.", x);
+		MessageBox(hwnd, buffer, "Unreadable .DNG file", MB_OK);
+		noWarnYet = 1;
+		}
+		return;
+	}
 
 	if (q == ABYSS)
 		numDun = 64;
@@ -808,13 +920,15 @@ void readDun(char x[20], int q)
 			{
 				temp = fgetc(F); //?? 0xd(0-9) & 0xf0 == 
 				temp2 = temp;
-
-				if (temp == 0x70)
-					dunBall[q]++;
+				
+				//for when we want to spoil dungeons so we don't have to keep reading it in
+				for (l = 0; l < DUNTRACKING; l++)
+					if (temp == dunIconVal[l])
+						dunSpoil[l][q]++;
 
 				if (temp == 0xb0)
 					stoneLoc[q] = (k<<8)+(j<<4)+i;
-
+				
 				if ((i == 0) || (j == 0) || (i == 7) || (j == 7))
 					if (temp != 0xf0)
 						levelWraps[k][q] = 1;
@@ -917,11 +1031,8 @@ void PaintDunMap()
 				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 			}
-		adjHeader();
-		return;
 	}
-
-	if (wrapHalf())
+	else if (wrapHalf())
 	{
 		for (j=0; j < 8; j++)
 			for (i=0; i < 8; i++)
@@ -940,9 +1051,9 @@ void PaintDunMap()
 				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 			}
-		return;
 	}
-
+	else
+	{
 	for (j=0; j < 8; j++)
 	{
 		for (i=0; i < 8; i++)
@@ -954,7 +1065,11 @@ void PaintDunMap()
 				16*(temp % 0x10), 16*(temp / 0x10), 16, 16, SRCCOPY);
 		}
 	}
+	}
+	adjHeader();
 
+	//well not really if the spoil flag isn't set. But we need it, to wipe out the text that was there
+	spoilDungeon((short)curDun);
 }
 
 void PaintRoomMap()
@@ -962,6 +1077,14 @@ void PaintRoomMap()
 	int i, j, k, temp, temp2;
 	short thisIcon[11][11] = {0};
 	short changedYet[11][11] = {0};
+	RECT rc;
+	HDC hdc = GetDC(hwnd);
+	GetClientRect(hwnd, &rc);
+
+	rc.left = 288;
+	rc.top = 360;
+	rc.right = 640;
+	rc.bottom = 512;
 
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
@@ -1108,8 +1231,8 @@ void PaintRoomMap()
 			}
 			if (changeByte[i+3][curRoom][curDun])
 			{
-				temp = changeByte[i+2][curRoom][curDun] >> 4;
-				temp2 = changeByte[i+2][curRoom][curDun] & 0xf;
+				temp = changeByte[i+3][curRoom][curDun] >> 4;
+				temp2 = changeByte[i+3][curRoom][curDun] & 0xf;
 				TransparentBlt(localhdc, 288+32*temp, 32*temp2, 32, 32, leveldc,
 					224 + 16 * changedYet[temp][temp2], 240, 16, 16, 0x000000);
 			}
@@ -1125,42 +1248,89 @@ void PaintRoomMap()
 		}
 	}
 
+	{
+	HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
+	FillRect(hdc, &rc, hbrush);
+	DeleteObject(hbrush);
+	ReleaseDC(hwnd, hdc);
+	}
+
 	//now text list of monsters
 	if (roomTextSummary)
 	{
+		short needComma = 0;
 		short monInRoom[MONSTERS] = {0};
-	char roomString[300];
-	char buffer[100];
-	RECT rc;
-	HDC hdc = GetDC(hwnd);
-	GetClientRect(hwnd, &rc);
+		char roomString[300];
+		char buffer[100];
 
-	rc.left = 288;
-	rc.top = 360;
+		SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+		SetBkMode(hdc, TRANSPARENT);
+		SetTextColor(hdc, RGB(255, 255, 0));
 
-	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
-	SetBkMode(hdc, TRANSPARENT);
-	SetTextColor(hdc, RGB(255, 255, 0));
-
-	roomString[0] = 0;
-	for (i=0; i < 16; i++)
-	{
-		temp = monsterType[i][curRoom][curDun];
-		if (toMonster(temp) != -1)
-			monInRoom[toMonster(temp)]++;
-	}
-	for (i=0; i < MONSTERS; i++)
-		if (monInRoom[i])
+		roomString[0] = 0;
+		for (i=0; i < 16; i++)
 		{
-			sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
-			if (monInRoom[i] > 1)
-				strcat(buffer, "s");
-			strcat(buffer, "\n");
+			temp = monsterType[i][curRoom][curDun];
+			if (toMonster(temp) != -1)
+				monInRoom[toMonster(temp)]++;
+		}
+		for (i=0; i < MONSTERS; i++)
+			if (monInRoom[i])
+			{
+				sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
+				if (needComma == 0)
+					needComma = 1;
+				else
+					strcat(roomString, ", ");
+				strcat(roomString, buffer);
+			}
+		temp = 0;
+		for (j=0; j < 11; j++)
+			for (i=0; i < 11; i++)
+				if (roomMap[i][j][curRoom][curDun] == 0x3c)
+					temp++;
+
+		if (temp)
+		{
+			sprintf(buffer, "\n%d chest%s.\n", temp, plu[(temp > 1)]);
 			strcat(roomString, buffer);
 		}
-	if (strlen(roomString))
-		DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP);
-	ReleaseDC(hwnd, hdc);
+		else
+			strcat(roomString, "\nNo chests.\n");
+
+		temp = 0;
+		for (i=0; i < 4; i+= 1)
+		{
+			if (changeByte[4*i+1][curRoom][curDun])
+			{
+				temp2 = changeByte[4*i+1][curRoom][curDun];
+				if (temp2 != temp)
+				{
+					if (temp)
+						strcat(roomString, "\n");
+					sprintf(buffer, "%d, %d:", temp2%0x10, temp2>>4);
+					strcat(roomString, buffer);
+					temp = temp2;
+				}
+				if (changeByte[4*i+2][curRoom][curDun])
+				{
+					temp2 = changeByte[4*i+2][curRoom][curDun];
+					sprintf(buffer, " (%d,%d)", temp2%0x10, temp2>>4);
+					strcat(roomString, buffer);
+				}
+				if (changeByte[4*i+3][curRoom][curDun])
+				{
+					temp2 = changeByte[4*i+3][curRoom][curDun];
+					sprintf(buffer, " (%d,%d)", temp2%0x10, temp2>>4);
+					strcat(roomString, buffer);
+				}
+
+			}
+		}
+
+		if (strlen(roomString))
+			DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP);
+		ReleaseDC(hwnd, hdc);
 	}
 
 
@@ -1193,16 +1363,6 @@ void adjustSecretCheckmarks()
 	for (i=0; i < 4; i++)
 		temp += showTripsquare[i];
 
-	if (temp == 4)
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_THIS_ROOM, MF_CHECKED);
-	else
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_THIS_ROOM, MF_UNCHECKED);
-
-	if (temp == 0)
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_THIS_ROOM, MF_CHECKED);
-	else
-		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_HIDE_THIS_ROOM, MF_UNCHECKED);
-
 	for (i=0; i < 4; i++)
 		if (showTripsquare[i] && changeByte[4*i+1][curRoom][curDun])
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_1ST_SECRET + i, MF_CHECKED);
@@ -1222,6 +1382,7 @@ void adjHeader()
 void DungeonReset()
 {
 	PaintDunMap();
+
 	if (resetRoomA)
 		curRoom = 0;
 	if (resetLevel0)
