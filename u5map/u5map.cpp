@@ -59,7 +59,7 @@ void initMenu();
 
 long curRoom = 0;
 long curDun = 0;
-long curLevel = 0;
+long curLev = 0;
 
 long resetRoomA = 0;
 long resetLvl1 = 0;
@@ -93,10 +93,10 @@ short partyY[4][6][16][8];
 #define VISIBLE_PIT 4
 #define HIDDEN_PIT 5
 #define SOMETHING 6
-#define POISON_FIELD 7
 #define SLEEP_FIELD 8
-#define LIGHTNING_FIELD 9
+#define POISON_FIELD 7
 #define FIRE_FIELD 10
+#define LIGHTNING_FIELD 9
 #define WRITING 11
 #define CAVEIN 12
 #define SECRET_DOOR 13
@@ -105,7 +105,7 @@ short dunSpoil[14][8] = {0};
 short dunIconVal[14] = {0x41, 0x51, 0x52, 0x53, 0x60, 0x61, 0x62, 0x80, 0x81, 0x82, 0x83, 0xb1, 0xc0, 0xd0};
 
 char fountStr[3][7] = { "Heal", "Poison", "Hurt" };
-char fieldStr[4][10] = { "Poison", "Sleep", "Lightning", "Fire" };
+char fieldStr[4][10] = { "Sleep", "Poison", "Fire", "Lightning" };
 
 short dunTextSummary = 0;
 short roomTextSummary = 0;
@@ -141,6 +141,9 @@ char monsterName[MONSTERS][13] = {
 	"Orc", "Skeleton", "Python", "Ettin", "Headless", "Wisp", "Daemon", "Dragon",
 	"Sand Trap", "Troll", "FIELD", "WHIRLPOOL", "Mongbat", "Corpser", "Rot Worm", "Shadow Lord"
 };  //technically treasure/field/whirlpool aren't monsters but I'd have to muck with array counts otherwise
+
+short msgStart[8] = { 0, 1, -1, 2, 3, 7, 10, -1 };
+char msgs[11][25] = { "BOTTOMLESS PIT", "THE MAZE OF LOST SOULS", "THE PRISON WRONG", "THE CRYPT", "UPPER CRYPTS", "LOWER CRYPTS", "DEBTORS ALLY", "DEEP", "DEEPER", "DEEPEST", "MOTHER LODE MAZE" };
 
 HWND hwnd;
 
@@ -181,7 +184,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				if (resetRoomA)
 					curRoom = 0;
 				if (resetLvl1)
-					curLevel = 0;
+					curLev = 0;
 				PaintRoomMap();
 				checkPrevNextDun();
 			}
@@ -218,7 +221,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				if (resetRoomA)
 					curRoom = 0;
 				if (resetLvl1)
-					curLevel = 0;
+					curLev = 0;
 				PaintRoomMap();
 				checkPrevNextDun();
 			}
@@ -234,7 +237,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				if (resetRoomA)
 					curRoom = 0;
 				if (resetLvl1)
-					curLevel = 0;
+					curLev = 0;
 				PaintRoomMap();
 				checkPrevNextDun();
 			}
@@ -250,11 +253,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_6:
 		case ID_NAV_7:
 		case ID_NAV_8:
-			if (curLevel != LOWORD(wparam)-ID_NAV_1)
+			if (curLev != LOWORD(wparam)-ID_NAV_1)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_UNCHECKED);
-				curLevel = LOWORD(wparam) - ID_NAV_1;
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
+				curLev = LOWORD(wparam) - ID_NAV_1;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
 				checkPrevNextDun();
 			}
@@ -298,22 +301,22 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			break;
 
 		case ID_NAV_UP:
-			if (curLevel > 0)
+			if (curLev > 0)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_UNCHECKED);
-				curLevel--;
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
+				curLev--;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
 				checkPrevNextLvl();
 			}
 			break;
 
 		case ID_NAV_DOWN:
-			if (curLevel < 7)
+			if (curLev < 7)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_UNCHECKED);
-				curLevel++;
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
+				curLev++;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
 				checkPrevNextLvl();
 			}
@@ -322,7 +325,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_PREVRM:
 			if (curRoom > 0)
 				if (restrictRoom)
-					if (curLevel != roomLev[curRoom-1][curDun])
+					if (curLev != roomLev[curRoom-1][curDun])
 						break;
 				curRoom--;
 				PaintRoomMap();
@@ -333,7 +336,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			if (curRoom < 15)
 			{
 				if (restrictRoom)
-					if (curLevel != roomLev[curRoom+1][curDun])
+					if (curLev != roomLev[curRoom+1][curDun])
 						break;
 				curRoom++;
 				PaintRoomMap();
@@ -525,6 +528,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 			break;
 
 		}
+
 		case WM_LBUTTONDOWN:
 			mouseDownX = LOWORD(lparam)/16;
 			mouseDownY = HIWORD(lparam)/16;
@@ -554,11 +558,18 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 						mouseUpX /= 2;
 						mouseUpY /= 2;
 					}
-					temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
+					temp = mainDun[mouseDownX][mouseDownY][curLev][curDun];
 					if ((temp >= 0xf0) && (temp <= 0xff))
 					{
 						curRoom = temp & 0xf;
 						doRoomCheck();
+					}
+
+					if ((temp >= 0xb1) && (temp <= 0xb4)) //message
+					{
+						short temp2 = temp - 0xb1 + msgStart[curDun];
+						MessageBox(hwnd, msgs[temp2], "Wall writing", MB_OK);
+
 					}
 				}
 				if ((mouseUpX >= 18) && (mouseUpX < 40) && (mouseUpY < 22) && (showParty))
@@ -680,7 +691,7 @@ void PaintDunMap()
 					temp = 1;
 				else
 				{
-					temp = mainDun[(i+4)%8][(j+4)%8][curLevel][curDun];
+					temp = mainDun[(i+4)%8][(j+4)%8][curLev][curDun];
 					if (!mainLabel)
 						if ((temp >= 0xf0) && (temp <= 0xff))
 							temp = 0xed;
@@ -696,7 +707,7 @@ void PaintDunMap()
 	{
 		for (i=0; i < 8; i++)
 		{
-			temp = mainDun[i][j][curLevel][curDun];
+			temp = mainDun[i][j][curLev][curDun];
 			if (!mainLabel)
 				if ((temp >= 0xf0) && (temp <= 0xff))
 					temp = 0xed;
@@ -887,9 +898,9 @@ void PaintRoomMap()
 
 	if (syncLevelToRoom)
 	{
-		if (curLevel != roomLev[curRoom][curDun])
+		if (curLev != roomLev[curRoom][curDun])
 		{
-			curLevel = roomLev[curRoom][curDun];
+			curLev = roomLev[curRoom][curDun];
 			PaintDunMap();
 		}
 	}
@@ -1123,11 +1134,11 @@ void checkPrevNextDun()
 
 void checkPrevNextLvl()
 {
-	if (curLevel == 7)
+	if (curLev == 7)
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_GRAYED);
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_ENABLED);
-	if (curLevel == 0)
+	if (curLev == 0)
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_GRAYED);
 	else
 		EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_ENABLED);
@@ -1156,7 +1167,7 @@ void adjHeader()
 	char buffer2[30];
 	char buffer3[30];
 
-	sprintf(buffer, "Ultima V Dungeon Surfer: %s, level %d ", dunName[curDun], curLevel + 1);
+	sprintf(buffer, "Ultima V Dungeon Surfer: %s, level %d ", dunName[curDun], curLev + 1);
 	if (curDun == DESPISE)
 		strcat(buffer, " (no rooms)");
 	else
