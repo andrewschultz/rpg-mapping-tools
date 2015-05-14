@@ -108,6 +108,7 @@ short dunIconVal[14] = {0x41, 0x51, 0x52, 0x53, 0x60, 0x61, 0x62, 0x80, 0x81, 0x
 
 char fountStr[3][7] = { "Heal", "Poison", "Hurt" };
 char fieldStr[4][10] = { "Sleep", "Poison", "Fire", "Lightning" };
+char pitStr[2][4] = { "Vis", "Hid" };
 
 short dunTextSummary = 0;
 short roomTextSummary = 0;
@@ -756,13 +757,14 @@ void PaintDunMap()
 
 		if (dunSpoil[BOMB_TRAP][curDun])
 		{
-			sprintf(buffer2, "%d bomb trap%s: %d visible, %d invisible. ",
-				dunSpoil[BOMB_TRAP][curDun], plu[dunSpoil[BOMB_TRAP][curDun]>1], dunSpoil[HIDDEN_PIT][curDun]);
+			sprintf(buffer2, "%d bomb trap%s.\n",
+				dunSpoil[BOMB_TRAP][curDun], plu[dunSpoil[BOMB_TRAP][curDun]>1]);
 			strcat(buffer, buffer2);
 		}
 		else
 			strcat(buffer, "No bomb traps.\n");
 
+		temp = 0;
 		for (i=HEAL_FOUNTAIN; i <= HURT_FOUNTAIN; i++)
 			temp += dunSpoil[i][curDun];
 
@@ -781,6 +783,7 @@ void PaintDunMap()
 		}
 
 
+		temp = 0;
 		for (i=POISON_FIELD; i <= FIRE_FIELD; i++)
 			temp += dunSpoil[i][curDun];
 
@@ -936,8 +939,8 @@ void PaintRoomMap()
 		HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
 
 		rc.left = 288;
-		rc.top = 360;
-		rc.bottom = 480;
+		rc.top = 352;
+		rc.bottom = 560;
 		rc.right = 640;
 
 		FillRect(hdc, &rc, hbrush);
@@ -946,6 +949,7 @@ void PaintRoomMap()
 	}
 	if (roomTextSummary)
 	{
+	short needComma = 0;
 	short monInRoom[MONSTERS] = {0};
 	char roomString[300];
 	char buffer[100];
@@ -953,14 +957,14 @@ void PaintRoomMap()
 	GetClientRect(hwnd, &rc);
 
 	rc.left = 288;
-	rc.top = 360;
+	rc.top = 352;
 
 	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 	SetBkMode(hdc, TRANSPARENT);
 	SetTextColor(hdc, RGB(255, 255, 0));
 
 	roomString[0] = 0;
-	for (i=0; i < 21; i++)
+	for (i=0; i < 21; i++) // first we get the monsters
 	{
 		temp = monsterType[i][curRoom][curDun];
 		if (toMonster(temp) != -1)
@@ -969,12 +973,20 @@ void PaintRoomMap()
 	for (i=0; i < MONSTERS; i++)
 		if (monInRoom[i])
 		{
+			if (needComma)
+				strcat(roomString, ", ");
+			else
+				needComma = 1;
 			sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
 			if (monInRoom[i] > 1)
 				strcat(buffer, "s");
-			strcat(buffer, "\n");
 			strcat(roomString, buffer);
 		}
+
+	if (needComma)
+		strcat(roomString, ". ");
+	else
+		strcat(roomString, "No monsters. ");
 
 	temp = temp2 = 0;
 	for (i=0; i < 21; i++)
@@ -993,8 +1005,35 @@ void PaintRoomMap()
 
 	strcat(roomString, buffer);
 
+	temp = 0;
+	for (i=0; i < 8; i++)
+		if (fromSquareX[i][curRoom][curDun] + fromSquareY[i][curRoom][curDun])
+		{
+			temp2 = fromSquareX[i][curRoom][curDun] + 16*fromSquareY[i][curRoom][curDun];
+			if (temp2 != temp)
+			{
+				if (temp)
+					strcat(roomString, "\n");
+				sprintf(buffer, "(%d, %d):", fromSquareX[i][curRoom][curDun], fromSquareY[i][curRoom][curDun]);
+				strcat(roomString, buffer);
+			}
+			sprintf(buffer, " (%d, %d)", toSquare1X[i][curRoom][curDun], toSquare1Y[i][curRoom][curDun]);
+			strcat(roomString, buffer);
+			if (toSquare2X[i][curRoom][curDun] + toSquare2Y[i][curRoom][curDun])
+				if (toSquare2X[i][curRoom][curDun] + 16 * toSquare2Y[i][curRoom][curDun] !=
+					toSquare1X[i][curRoom][curDun] + 16 * toSquare1Y[i][curRoom][curDun])
+				{
+					sprintf(buffer, " (%d, %d)", toSquare2X[i][curRoom][curDun], toSquare2Y[i][curRoom][curDun]);
+					strcat(roomString, buffer);
+				}
+			temp = temp2;
+		}
+
+	if (temp)
+		strcat(roomString, "\n");
+
 	if (strlen(roomString))
-		DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP);
+		DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP | DT_WORDBREAK);
 	}
 
 	for (i=0; i < 8; i++)
@@ -1060,6 +1099,7 @@ void spoilDungeon(short thisDun)
 	sprintf(buffer, "%s info: %d chests, %d secret doors, %d writing, %d cave-ins\n", dunName[thisDun], dunSpoil[CHEST][thisDun],
 		dunSpoil[SECRET_DOOR][thisDun], dunSpoil[WRITING][thisDun], dunSpoil[CAVEIN][thisDun]);
 	
+	temp = 0;
 	for (i=POISON_FIELD; i <= FIRE_FIELD; i++)
 		temp += dunSpoil[i][thisDun];
 	
@@ -1081,7 +1121,7 @@ void spoilDungeon(short thisDun)
 		strcat(buffer, "Pits: ");
 		for (i=VISIBLE_PIT; i <= HIDDEN_PIT; i++)
 			if (dunSpoil[i][thisDun])
-				sprintf(buffer2, " %d %s", dunSpoil[i][thisDun], fieldStr[i - VISIBLE_PIT]);
+				sprintf(buffer2, " %d %s", dunSpoil[i][thisDun], pitStr[i - VISIBLE_PIT]);
 		strcat(buffer, buffer2);
 	}
 	else
