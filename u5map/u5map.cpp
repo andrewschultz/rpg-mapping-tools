@@ -92,14 +92,16 @@ short partyY[4][6][16][8];
 #define HURT_FOUNTAIN 3
 #define VISIBLE_PIT 4
 #define HIDDEN_PIT 5
-#define SOMETHING 6
-#define SLEEP_FIELD 8
+#define BOMB_TRAP 6
 #define POISON_FIELD 7
-#define FIRE_FIELD 10
+#define SLEEP_FIELD 8
 #define LIGHTNING_FIELD 9
+#define FIRE_FIELD 10
 #define WRITING 11
 #define CAVEIN 12
 #define SECRET_DOOR 13
+
+char plu[2][2] = { "", "s" };
 
 short dunSpoil[14][8] = {0};
 short dunIconVal[14] = {0x41, 0x51, 0x52, 0x53, 0x60, 0x61, 0x62, 0x80, 0x81, 0x82, 0x83, 0xb1, 0xc0, 0xd0};
@@ -189,27 +191,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				checkPrevNextDun();
 			}
 			break;
-
-		case ID_DUNGEON_INFO:
-			{
-				char buffer[400] = "";
-				char buffer2[200];
-
-				if (levSecret[curDun])
-					sprintf(buffer, "%d secret passages\n", levSecret[curDun]);
-				else
-					sprintf(buffer, "No secret passages\n");
-
-				if (levChest[curDun])
-					sprintf(buffer2, "%d chests\n", levChest[curDun]);
-				else
-					sprintf(buffer2, "No chests\n");
-
-				strcat(buffer, buffer2);
-
-				MessageBox(hwnd, buffer, "Dungeon Info", MB_OK);
-
-			}
 
 		case ID_DUNGEON_PREV:
 			if (curDun > 0)
@@ -373,6 +354,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_DUNTEXTSUMMARY, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_DUNTEXTSUMMARY, MF_UNCHECKED);
+			PaintDunMap();
 			break;
 
 		case ID_OPTIONS_ROOMTEXTSUMMARY:
@@ -381,6 +363,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOMTEXTSUMMARY, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_ROOMTEXTSUMMARY, MF_UNCHECKED);
+			PaintRoomMap();
 			break;
 
 		case ID_OPTIONS_MONSTERS:
@@ -681,6 +664,22 @@ void PaintDunMap()
 	int i = 0;
 	int j = 0;
 	short temp;
+	RECT rc;
+	HDC hdc = GetDC(hwnd);
+
+	GetClientRect(hwnd, &rc);
+
+	rc.left = 0;
+	rc.top = 288;
+	rc.right = 288;
+	rc.bottom = 640;
+
+	{//I suppose we could cheat here and StretchBlt Icon #0
+		HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
+		FillRect(hdc, &rc, hbrush);
+		DeleteObject(hbrush);
+		ReleaseDC(hwnd, hdc);
+	}
 
 	if (wrapType == 3)
 	{
@@ -728,14 +727,94 @@ void PaintDunMap()
 		}
 	}
 
+	if (dunTextSummary)
+	{
+		char buffer[300] = "";
+		char buffer2[100];
+		short temp = 0;
+
+		SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+		SetBkMode(hdc, TRANSPARENT);
+		SetTextColor(hdc, RGB(255, 255, 0));
+
+		sprintf(buffer, "%d chest%s, %d writings%s, %d secret door%s, %d cave-in%s.\n",
+			dunSpoil[CHEST][curDun], plu[dunSpoil[CHEST][curDun]>1],
+			dunSpoil[WRITING][curDun], plu[dunSpoil[WRITING][curDun]>1],
+			dunSpoil[CAVEIN][curDun], plu[dunSpoil[CAVEIN][curDun]>1],
+			dunSpoil[SECRET_DOOR][curDun], plu[dunSpoil[SECRET_DOOR][curDun]>1]
+			);
+
+		temp = dunSpoil[VISIBLE_PIT][curDun] + dunSpoil[HIDDEN_PIT][curDun];
+		if (temp)
+		{
+			sprintf(buffer2, "%d pits%s: %d visible, %d invisible. ",
+				temp, plu[temp>1], dunSpoil[VISIBLE_PIT][curDun], dunSpoil[HIDDEN_PIT][curDun]);
+			strcat(buffer, buffer2);
+		}
+		else
+			strcat(buffer, "No pits. ");
+
+		if (dunSpoil[BOMB_TRAP][curDun])
+		{
+			sprintf(buffer2, "%d bomb trap%s: %d visible, %d invisible. ",
+				dunSpoil[BOMB_TRAP][curDun], plu[dunSpoil[BOMB_TRAP][curDun]>1], dunSpoil[HIDDEN_PIT][curDun]);
+			strcat(buffer, buffer2);
+		}
+		else
+			strcat(buffer, "No bomb traps.\n");
+
+		for (i=HEAL_FOUNTAIN; i <= HURT_FOUNTAIN; i++)
+			temp += dunSpoil[i][curDun];
+
+		if (temp == 0)
+			strcat(buffer, "No fountains.\n");
+		else
+		{
+			strcat(buffer, "Fountains:");
+			for (i=HEAL_FOUNTAIN; i <= HURT_FOUNTAIN; i++)
+				if (dunSpoil[i][curDun])
+				{
+					sprintf(buffer2, " %d %s", dunSpoil[i][curDun], fountStr[i-HEAL_FOUNTAIN]);
+					strcat(buffer, buffer2);
+				}
+			strcat(buffer, "\n");
+		}
+
+
+		for (i=POISON_FIELD; i <= FIRE_FIELD; i++)
+			temp += dunSpoil[i][curDun];
+
+		if (temp == 0)
+			strcat(buffer, "No fields.\n");
+		else
+		{
+			strcat(buffer, "Fields:");
+			for (i=POISON_FIELD; i <= FIRE_FIELD; i++)
+				if (dunSpoil[i][curDun])
+				{
+					sprintf(buffer2, " %d %s%s", dunSpoil[i][curDun], fieldStr[i-POISON_FIELD], plu[dunSpoil[i][curDun]>1]);
+					strcat(buffer, buffer2);
+				}
+			strcat(buffer, "\n");
+		}
+		DrawText(hdc, buffer, strlen(buffer), &rc, DT_LEFT | DT_TOP);
+
+
+	}
+
+	ReleaseDC(hwnd, hdc);
+
 	adjHeader();
 }
 
 void PaintRoomMap()
 {
-	short i, j, temp;
+	short i, j, temp, temp2;
 	short tempIcon[11][11];
 	short checkAry[11][11] = {0};
+
+	RECT rc;
+	HDC hdc = GetDC(hwnd);
 
 	if (curDun == DESPISE)
 	{
@@ -852,13 +931,25 @@ void PaintRoomMap()
 	}
 	
 	//now text list of monsters
+
+	{//I suppose we could cheat here and StretchBlt Icon #0
+		HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
+
+		rc.left = 288;
+		rc.top = 360;
+		rc.bottom = 480;
+		rc.right = 640;
+
+		FillRect(hdc, &rc, hbrush);
+		DeleteObject(hbrush);
+		ReleaseDC(hwnd, hdc);
+	}
 	if (roomTextSummary)
 	{
 	short monInRoom[MONSTERS] = {0};
 	char roomString[300];
 	char buffer[100];
-	RECT rc;
-	HDC hdc = GetDC(hwnd);
+
 	GetClientRect(hwnd, &rc);
 
 	rc.left = 288;
@@ -884,6 +975,24 @@ void PaintRoomMap()
 			strcat(buffer, "\n");
 			strcat(roomString, buffer);
 		}
+
+	temp = temp2 = 0;
+	for (i=0; i < 21; i++)
+	{
+		if (monsterType[i][curRoom][curDun] == 0x101)
+			temp++;
+		if ((monsterType[i][curRoom][curDun] >= 0x102) && (monsterType[i][curRoom][curDun] <= 0x10f))
+			temp2++;
+
+	}
+
+	if (temp + temp2)
+		sprintf(buffer, "%d treasure: %d%s chest, %d misc\n", temp+temp2, temp, plu[temp!=1], temp2);
+	else
+		sprintf(buffer, "No chests or misc items.\n");
+
+	strcat(roomString, buffer);
+
 	if (strlen(roomString))
 		DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP);
 	}
@@ -1021,7 +1130,7 @@ void ReadTheDungeons()
 
 					for (q=0; q < DUNTRACKING; q++)
 					{
-						if (iconRedir(temp) == dunIconVal[l])
+						if (iconRedir(temp) == dunIconVal[q])
 							dunSpoil[q][l]++;
 					}
 

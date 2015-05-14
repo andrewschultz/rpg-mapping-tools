@@ -820,8 +820,8 @@ void spoilDungeon(short thisDun)
 
 	rc.left = 0;
 	rc.top = 288;
-
 	rc.right = 288;
+	rc.bottom = 640;
 
 	{//I suppose we could cheat here and StretchBlt Icon #0
 		HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
