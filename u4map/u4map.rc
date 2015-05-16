@@ -205,12 +205,12 @@ BEGIN
 		MENUITEM "Show &Dungeon text summary\t9", ID_OPTIONS_DUNTEXTSUMMARY
 		MENUITEM "Show R&oom text summary\t0", ID_OPTIONS_ROOMTEXTSUMMARY
 		MENUITEM SEPARATOR
-		MENUITEM "Show &North party\alt-up", ID_OPTIONS_PARTY_NORTH
-		MENUITEM "Show &East party\alt-right", ID_OPTIONS_PARTY_EAST
-		MENUITEM "Show &South party\alt-down", ID_OPTIONS_PARTY_SOUTH
-		MENUITEM "Show &West party\alt-left", ID_OPTIONS_PARTY_WEST
+		MENUITEM "Show &North party\talt-up", ID_OPTIONS_PARTY_NORTH
+		MENUITEM "Show &East party\talt-right", ID_OPTIONS_PARTY_EAST
+		MENUITEM "Show &South party\talt-down", ID_OPTIONS_PARTY_SOUTH
+		MENUITEM "Show &West party\talt-left", ID_OPTIONS_PARTY_WEST
 		MENUITEM "Show &First viable direction\talt-home", ID_OPTIONS_PARTY_FIRSTVIABLE
-		MENUITEM "Show no &Party\alt-end", ID_OPTIONS_PARTY_NONE
+		MENUITEM "Show no &Party\talt-end", ID_OPTIONS_PARTY_NONE
 		MENUITEM SEPARATOR
 		MENUITEM "Show 1st room shift\tF1", ID_OPTIONS_SHOW_1ST_SECRET
 		MENUITEM "Show 2nd room shift\tF2", ID_OPTIONS_SHOW_2ND_SECRET
@@ -224,8 +224,8 @@ BEGIN
 		MENUITEM "&Label rooms in main map", ID_OPTIONS_MAINMAP_LABEL
 		MENUITEM "Room te&xt Summary", ID_OPTIONS_TEXTSUMMARY
 		MENUITEM SEPARATOR
-		MENUITEM "Reset new dungeon to room A", ID_OPTIONS_RESET_ROOM_1
-		MENUITEM "Reset new dungeon to level 0", ID_OPTIONS_RESET_LEVEL_1
+		MENUITEM "Reset new dungeon to room 1", ID_OPTIONS_RESET_ROOM_1
+		MENUITEM "Reset new dungeon to level 1", ID_OPTIONS_RESET_LEVEL_1
 		MENUITEM SEPARATOR
 		MENUITEM "Sync level to room", ID_OPTIONS_SYNC_LEVEL_TO_ROOM
 		MENUITEM "Restrict room to current level", ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL
@@ -250,7 +250,7 @@ BEGIN
 		MENUITEM "Hide all\talt-1", ID_MINOR_HIDE_ALL
 		MENUITEM "Hide none\talt-9", ID_MINOR_HIDE_NONE
 		MENUITEM SEPARATOR
-		MENUITEM "Show &Alt player icons\alt-space", ID_MINOR_ALT_ICONS
+		MENUITEM "Show &Alt player icons\talt-space", ID_MINOR_ALT_ICONS
 	END
 	POPUP "&About"
 	BEGIN
@@ -258,6 +258,7 @@ BEGIN
 		MENUITEM "&Thanks", ID_ABOUT_THANKS
 		MENUITEM SEPARATOR
 		MENUITEM "Visit &Mapping tools repository", ID_ABOUT_REPO
-		MENUITEM "Visit U4 &Mapper sub-repository", ID_ABOUT_REPO_THISAPP
+		MENUITEM "Visit U4 &Surfer sub-repository", ID_ABOUT_REPO_THISAPP
+		MENUITEM "Open U4 &Readme", ID_ABOUT_README
 	END
 END

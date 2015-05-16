@@ -1,20 +1,150 @@
 <html>
 <title>Ultima IV Dungeon Surfer Test Cases</title>
+<style>
+th {
+    background-color: #c0c0c0;
+}
+
+h1 {
+    color: maroon;
+    margin-left: 40px;
+}
+</style>
 <body>
-<table border=1>
+<table border=1 width=100%>
+<th colspan=100%>Dungeon menu
 <tr>
-<td>Dungeon switching (numbers)
-<td>1 = do nothing
-<br>2345678 = switch dungeons
+<td>Using numbers
+<td>11 22 33 44 55 66 77 88: verify the second same number does nothing
+<tr>
+<td>Using page up/page down
+<td>8 PgDown (8th nothing) 8 PgUp (8th nothing)
 <tr>
 <td>Dungeon switching (u/d)
 <td>page up = do nothing
-<br>page down = scroll through dungeons, until Abyss
-<tr>Level switching
-<td>up/down = scroll through
 <tr>
-<td>Room switching
-<td>abcdefghijklmnop = go through rooms<br>left and right arrows
+<td>Dungeon information
+<td>9 reveals dungeons. Verify dungeon information is sensible.
+<tr>
+<td>Menu verification
+<td>Verify correct dungeon is checked (1 alt-d esc, etc.)
+<br>Verify that "previous dungeon" is greyed out in Deceit, "next" in Abyss
+<br>page down = scroll through dungeons, until Abyss
+<tr>
+<th colspan=100%>Navigate menu
+<tr>
+<td>Poke each room individually
+<td>A-P in any combination you choose
+<tr>
+<td>Room paging
+<td>abcdefghijklmnop = go through rooms
+<br>left and right arrows, verify can't go left in 1 or right in 16
+<tr>
+<td>Abyss room paging
+<td>left/right arrows 1-64 and back
+<br>shift-a-p (17-32)
+<br>ctrl-a-p (33-48)
+<br>ctrl-shift-a-p (49-64)
+<tr>
+<td>Menu verification
+<td>Verify correct level is checked (1 alt-m escape escape, etc.)
+<br>Verify up is greyed out on level 1, down on level 8
+<br>verify left is greyed out in room 1
+<br>verify right is greyed out in room 16 non-abyss, room 64 abyss
+<br>verify up 2 levels active ONLY in abyss, level 6 and above rooms
+<br>verify down 2 levels active ONLY in abyss, level 3 and below rooms
+<tr>
+<th colspan=100>Options menu
+<tr>
+<td>Show Monsters
+<td>Verify slimes/reaper show up in room 1 when you toggle the option
+<tr>
+<td>Hide Mimic
+<td>With Show Monsters on, verify mimic is visible in room 1 of Despise. Toggle again to verify it is not visible.
+<tr>
+<td>Verify squares to step on
+<td>F5 should toggle them on and off: Despise-1 should flip the chest
+<tr>
+<td>Verify squares that open
+<td>F6 should toggle them on and off: Despise-1 should open the upper left of the bottom right
+<tr>
+<td>Show Dungeon Text Summary
+<td>9 toggles this on and off. You should run through the dungeons and make sure the text changes with the dungeons.
+<tr>
+<td>Show Room Text Summary
+<td>0 toggles this on and off. You should run through the dungeons and make sure the text changes with the dungeons.
+<tr>
+<td>Show (direction) party
+<td>Despise room 7 shows all the directions, as do the altar rooms. Alt-up, down, left, right. Alt-end shows no party.
+<br>Alt-home in an altar room, should be north
+<br>Alt-home in destard-1, south
+<br>Alt-home in destard-2, west
+<br>Alt-home in destard-3, north
+<br>Alt-home in destard-4, east
+<br>Also alt-around the horn in any above to check blocked directions.
+<tr>
+<td>Show room shifts
+<td>Despise room 1 should have none
+<br>Despise room 12 should link them all together if you push F1-F4. Verify all are flipped when you do so.
+<br>Despise room 12 should, if you type F1 left right, show the slimes then cover them.
+<br>Deceit room 14 should have 2 unconnected squares. F1 and F2 should toggle different things. 
+<br>Deceit room 1 should have its 3 all linked if you push F1, F2 or F3
+<tr>
+<td>toggle map size
+<td>- should cut the map in half. So should (backspace)
+<br>= should make it 8x8 again.
+<tr>
+<td>Label rooms
+<td>This option (needs accelerator) should toggle whether you can see their numbers
+<tr>
+<td>Reset to room 1
+<td>Set, right arrow, 2, (should go to room 2), unset, right arrow, (should stay room 2)
+<tr>
+<td>Reset to level 1
+<td>Set, down arrow, 2, (should go to level 1), unset, down arrow, (should stay level 1)
+<tr>
+<td>Sync level to current room ####BROKEN
+<td>set option and page right and left. Verify left map changes when room # in status bar does.
+<tr>
+<td>Don't allow room beyond level
+<td>Click this, go to Abyss level 2, and arrow left and right.
+<tr>
+<th colspan=100%>Minor options menu
+<tr>
+<td>Swap class with player X
+<td>Show the party. (Alt-home) then shift-2 twice, to shift-8 twice.
+<tr>
+<td>Hide player X
+<td>Show the party. (Alt-home) then alt-2 twice, to alt-8 twice. In between, you can verify that Hide X is checked.
+<tr>
+<td>Hide the party
+<td>alt-home, then alt-1. Verify that alt-1 is now checked.
+<tr>
+<td>Show the party
+<td>alt-home, then alt-9. Verify that alt-9 is now checked.
+<tr>
+<td>Show alt icons
+<td>alt-home, then alt-space. Verify that alt-space is now checked, then toggle and verify it's gone. The party should change slightly, too.
+<tr>
+<th colspan=100%>About menu
+<tr>
+<td>Basics
+<td>Sensible pop-up box "surfer" not "browser"
+<tr>
+<td>Thanks
+<td>Sensible pop-up box "surfer" not "browser"
+<tr>
+<td>General repository
+<td>Link to https://github.com/andrewschultz/rpg-mapping-tools/
+<tr>
+<td>Sub-repository
+<td>Link to https://github.com/andrewschultz/rpg-mapping-tools/u4map
+<tr>
+<td>Open U4 readme
+<td>Opens the README file in the app's directory.
+<tr>
+<th colspan=100>Interactions
+<tr>
 </table>
 </body>
 </html>

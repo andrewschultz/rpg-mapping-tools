@@ -490,11 +490,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 This application lets the player browse all the dungeons and rooms.\n\
 It features options and accelerators to bypass the usual traps and grinds.\n\
 Your party is customizable for fun, too.\n\
-Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
+Bugs? schultz.andrew@sbcglobal.net", "Basics", MB_OK);
 			break;
 
 		case ID_ABOUT_THANKS:
-			MessageBox(hwnd, "The Ultima V Codex was a big help.\nSo was GitHub.", "About", MB_OK);
+			MessageBox(hwnd, "tk421.net was useful to direct me to obscure locations.\nThe Ultima V Codex was a big help.\nSo was GitHub.\nDosBox helped run U4 efficiently in a window.", "Thanks/References", MB_OK);
 			break;
 
 		case ID_ABOUT_REPO:

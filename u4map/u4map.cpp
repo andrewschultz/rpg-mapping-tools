@@ -597,15 +597,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			//ABOUT MENU ITEMS
 
 		case ID_ABOUT_BASICS:
-			MessageBox(hwnd, "Ultima IV Dungeon Browser\n\
+			MessageBox(hwnd, "Ultima IV Dungeon Surfer\n\
 This application lets the player browse all the dungeons and rooms.\n\
 It features options and accelerators to bypass the usual traps and grinds.\n\
 Your party is customizable for fun, too.\n\
-Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
+Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 			break;
 
 		case ID_ABOUT_THANKS:
-			MessageBox(hwnd, "The Ultima V Codex was a big help.\nSo was GitHub.", "About", MB_OK);
+			MessageBox(hwnd, "tk421.net was useful to direct me to obscure locations.\nThe Ultima V Codex was a big help.\nSo was GitHub.\nDosBox helped run U4 efficiently in a window.", "Thanks/References", MB_OK);
 			break;
 
 		case ID_ABOUT_REPO:
@@ -616,6 +616,10 @@ Bugs? schultz.andrew@sbcglobal.net", "About", MB_OK);
 		case ID_ABOUT_REPO_THISAPP:
 			ShellExecute(hwnd, "open", "https://github.com/andrewschultz/rpg-mapping-tools/tree/master/u5map",
 				NULL, NULL, SW_SHOWNORMAL);
+			break;
+			
+		case ID_ABOUT_README:
+			ShellExecute(hwnd, "open", "readme.txt", NULL, NULL, SW_SHOWNORMAL);
 			break;
 
 		}
@@ -751,7 +755,7 @@ if (!RegisterClass(&winclass))
 // create the window
 	if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, // class
 							  "Ultima 4 Dungeon Simulator",	     // title
-							  WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+							  WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
 					 		  0,0,	   // x,y
 							  20*ICONSIZE, 16*ICONSIZE, // width, height
 							  NULL,	   // handle to parent 
