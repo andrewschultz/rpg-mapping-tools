@@ -91,6 +91,7 @@ long altIcon = 0;
 short showSpoilers = 0;
 short showChanged = 0;
 long mainLabel = 0;
+short showAltarRooms = 1;
 short dunTextSummary = 0;
 short roomTextSummary = 0;
 
@@ -516,7 +517,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_MAINMAP_LABEL, MF_UNCHECKED);
 			PaintDunMap();
 			break;
-			
+
+		case ID_OPTIONS_SHOW_ALTAR_ROOMS:
+			showAltarRooms = !showAltarRooms;
+			if (showAltarRooms)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_ALTAR_ROOMS, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_ALTAR_ROOMS, MF_UNCHECKED);
+			break;
+
 			//MINOR/SILLY OPTIONS
 		case ID_MINOR_SWAP_2:
 		case ID_MINOR_SWAP_3:
@@ -1042,6 +1051,12 @@ void PaintDunMap()
 			for (i=0; i < 8; i++)
 			{
 				temp = mainDun[i][j][curLevel][curDun];
+
+				if ((temp == 0xdf) && (curDun != 7) && (showAltarRooms))
+				{
+					temp = i / 3 + 0xed;
+				}
+
 				if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
 					temp = 0xfd; // rooms 1-16
 				if (((temp % 16 >= 0x8) && (temp <= 0x7f)) && (!mainLabel))
@@ -1063,6 +1078,10 @@ void PaintDunMap()
 		for (i=0; i < 8; i++)
 		{
 			temp = mainDun[i][j][curLevel][curDun];
+			if ((temp == 0xdf) && (curDun != 7) && (showAltarRooms))
+			{
+				temp = i / 3 + 0xed;
+			}
 			if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
 				temp = 0xfd;
 			StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
@@ -1465,6 +1484,9 @@ void initMenuCheck()
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
 	EnableMenuItem( GetMenu(hwnd), ID_NAV_INSTR, MF_GRAYED);
+
+	if (showAltarRooms)
+		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_ALTAR_ROOMS, MF_CHECKED);
 }
 
 short wrapHalf()
