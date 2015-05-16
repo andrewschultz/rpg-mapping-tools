@@ -819,6 +819,11 @@ if (!RegisterClass(&winclass))
 char fountStr[5][7] = { "Plain", "Heal", "Bad HP", "Equal", "Poison" };
 char fieldStr[4][10] = { "Poison", "Lightning", "Fire", "Sleep" };
 
+char altarRoom[3][55] = {
+	"TRUTH 1,1: N to Deceit, E to Shame, W to Wrong",
+	"LOVE 3,3: N to Despise, E to Wrong, W to Covetous",
+	"COURAGE 7,7: N to Destard, E to Covetous, W to Shame" };
+
 void spoilDungeon(short thisDun)
 {
 	char buffer[400] = "";
@@ -1348,6 +1353,26 @@ void PaintRoomMap()
 					strcat(roomString, buffer);
 				}
 
+			}
+		}
+
+		if ((curRoom == 15) && (curDun != ABYSS))
+		{
+			char hyth[20] = ", S to Hythloth.\n";
+			if (mainDun[1][1][7][curDun] == 0xdf)
+			{
+				strcat(roomString, altarRoom[0]);
+				strcat(roomString, hyth);
+			}
+			if (mainDun[3][3][7][curDun] == 0xdf)
+			{
+				strcat(roomString, altarRoom[1]);
+				strcat(roomString, hyth);
+			}
+			if (mainDun[7][7][7][curDun] == 0xdf)
+			{
+				strcat(roomString, altarRoom[2]);
+				strcat(roomString, hyth);
 			}
 		}
 

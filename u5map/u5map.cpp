@@ -664,7 +664,7 @@ void PaintDunMap()
 {
 	int i = 0;
 	int j = 0;
-	short temp;
+	short temp = 0, temp2 = 0;
 	RECT rc;
 	HDC hdc = GetDC(hwnd);
 
@@ -691,7 +691,7 @@ void PaintDunMap()
 					temp = 1;
 				else
 				{
-					temp = mainDun[(i+4)%8][(j+4)%8][curLev][curDun];
+					temp = mainDun[(i+4)%8][(j+4)%8][curLev][curDun]; //clean this code up, as it's around twice
 					if (!mainLabel)
 						if ((temp >= 0xf0) && (temp <= 0xff))
 							temp = 0xed;
@@ -708,6 +708,7 @@ void PaintDunMap()
 		for (i=0; i < 8; i++)
 		{
 			temp = mainDun[i][j][curLev][curDun];
+
 			if (!mainLabel)
 				if ((temp >= 0xf0) && (temp <= 0xff))
 					temp = 0xed;
