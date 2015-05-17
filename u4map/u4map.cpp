@@ -1096,6 +1096,16 @@ void PaintDunMap()
 	}
 	adjHeader();
 
+	if (curLevel == 0)
+			EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_GRAYED);
+	else
+			EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_ENABLED);
+
+	if (curLevel == 7)
+			EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_GRAYED);
+	else
+			EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_ENABLED);
+
 	//well not really if the spoil flag isn't set. But we need it, to wipe out the text that was there
 	spoilDungeon((short)curDun);
 }
