@@ -73,6 +73,9 @@ void checkAbyssRoom();
 #define WRAP_HALF 0
 #define WRAP_FULL 1
 #define WRAP_IF_THERE 2
+#define WRAP_CENTERED 3
+
+short centerPadding = 1;
 
 //###################globals
 
@@ -501,10 +504,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			PaintRoomMap();
 			break;
 
+		case ID_OPTIONS_SIZE_BORDERED:
+			if (wrapType == 3)
+			{
+				centerPadding++;
+				if (centerPadding == 4)
+					centerPadding = 1;
+				PaintDunMap();
+				break;
+			}
+
 		case ID_OPTIONS_SIZE_HALF:
 		case ID_OPTIONS_SIZE_FULL:
 		case ID_OPTIONS_SIZE_AUTO:
-		case ID_OPTIONS_SIZE_BORDERED:
 			wrapType = LOWORD(wparam) - ID_OPTIONS_SIZE_HALF;
 			for (temp = ID_OPTIONS_SIZE_HALF; temp < ID_OPTIONS_SIZE_AUTO; temp++)
 				if (temp == LOWORD(wparam))
@@ -542,26 +554,26 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			break;
 
 			//MINOR/SILLY OPTIONS
-		case ID_MINOR_SWAP_2:
-		case ID_MINOR_SWAP_3:
-		case ID_MINOR_SWAP_4:
-		case ID_MINOR_SWAP_5:
-		case ID_MINOR_SWAP_6:
-		case ID_MINOR_SWAP_7:
-		case ID_MINOR_SWAP_8:
-			temp = slotIcon[0]; //switch player 1's class with player (SWAP#). ID_MINOR_SWAP_1
-			slotIcon[0] = slotIcon[LOWORD(wparam)-ID_MINOR_SWAP_1];
-			slotIcon[LOWORD(wparam)-ID_MINOR_SWAP_1] = temp;
+		case ID_COSMETIC_SWAP_2:
+		case ID_COSMETIC_SWAP_3:
+		case ID_COSMETIC_SWAP_4:
+		case ID_COSMETIC_SWAP_5:
+		case ID_COSMETIC_SWAP_6:
+		case ID_COSMETIC_SWAP_7:
+		case ID_COSMETIC_SWAP_8:
+			temp = slotIcon[0]; //switch player 1's class with player (SWAP#). ID_COSMETIC_SWAP_1
+			slotIcon[0] = slotIcon[LOWORD(wparam)-ID_COSMETIC_SWAP_1];
+			slotIcon[LOWORD(wparam)-ID_COSMETIC_SWAP_1] = temp;
 			break;
 			
-		case ID_MINOR_HIDE_2:
-		case ID_MINOR_HIDE_3:
-		case ID_MINOR_HIDE_4:
-		case ID_MINOR_HIDE_5:
-		case ID_MINOR_HIDE_6:
-		case ID_MINOR_HIDE_7:
-		case ID_MINOR_HIDE_8:
-			temp = LOWORD(wparam)-ID_MINOR_HIDE_1;
+		case ID_COSMETIC_HIDE_2:
+		case ID_COSMETIC_HIDE_3:
+		case ID_COSMETIC_HIDE_4:
+		case ID_COSMETIC_HIDE_5:
+		case ID_COSMETIC_HIDE_6:
+		case ID_COSMETIC_HIDE_7:
+		case ID_COSMETIC_HIDE_8:
+			temp = LOWORD(wparam)-ID_COSMETIC_HIDE_1;
 			slotShow[temp] = !slotShow[temp];
 			temp2 = 0;
 			for (i=1; i < 7; i++)
@@ -569,52 +581,52 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			if (slotShow[temp])
 			{
 				CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_UNCHECKED);
-				CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_NONE, MF_UNCHECKED);
 				if (temp2 == 7)
-					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_CHECKED);
+					CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_ALL, MF_CHECKED);
 				else
-					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
+					CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_ALL, MF_UNCHECKED);
 			}
 			else
 			{
 				CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
-				CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_ALL, MF_UNCHECKED);
 				if (temp2 == 0)
-					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+					CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_NONE, MF_CHECKED);
 				else
-					CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
+					CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_NONE, MF_UNCHECKED);
 			}
 			PaintRoomMap();
 			break;
 
-		case ID_MINOR_HIDE_ALL:
+		case ID_COSMETIC_HIDE_ALL:
 			for (temp=1; temp <= 7; temp++)
 			{
 				slotShow[temp] = 0;
-				CheckMenuItem( GetMenu(hwnd), temp + ID_MINOR_HIDE_1, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), temp + ID_COSMETIC_HIDE_1, MF_CHECKED);
 			}
-			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_CHECKED);
-			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_ALL, MF_CHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_NONE, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
-		case ID_MINOR_HIDE_NONE:
+		case ID_COSMETIC_HIDE_NONE:
 			for (temp=1; temp <= 7; temp++)
 			{
 				slotShow[temp] = 1;
-				CheckMenuItem( GetMenu(hwnd), temp + ID_MINOR_HIDE_1, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), temp + ID_COSMETIC_HIDE_1, MF_UNCHECKED);
 			}
-			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_ALL, MF_UNCHECKED);
-			CheckMenuItem( GetMenu(hwnd), ID_MINOR_HIDE_NONE, MF_CHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_ALL, MF_UNCHECKED);
+			CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_HIDE_NONE, MF_CHECKED);
 			PaintRoomMap();
 			break;
 
-		case ID_MINOR_ALT_ICONS:
+		case ID_COSMETIC_ALT_ICONS:
 			altIcon = !altIcon;
 			if (altIcon)
-				CheckMenuItem( GetMenu(hwnd), ID_MINOR_ALT_ICONS, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_ALT_ICONS, MF_CHECKED);
 			else
-				CheckMenuItem( GetMenu(hwnd), ID_MINOR_ALT_ICONS, MF_UNCHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_COSMETIC_ALT_ICONS, MF_UNCHECKED);
 			PaintRoomMap();
 			break;
 
@@ -1047,12 +1059,12 @@ void PaintDunMap()
 	int i, j;
 	short temp;
 
-	if (wrapType == 3)
+	if (wrapType == WRAP_CENTERED)
 	{
 		for (j=0; j < 16; j++)
 			for (i=0; i < 16; i++)
 			{
-				if ((i < 3) || (j < 3) || (j > 12) || (i > 12))
+				if ((i < centerPadding) || (j < centerPadding) || (j > 15-centerPadding) || (i > 15-centerPadding))
 					temp = 1;
 				else
 				{

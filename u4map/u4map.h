@@ -144,28 +144,28 @@
 #define ID_OPTIONS_REMEMBER_ABYSS_ROOM	369
 
 //Game specific options being able to swap characters at will
-#define ID_MINOR_HIDE_ALL	401
-#define ID_MINOR_HIDE_NONE	402
+#define ID_COSMETIC_HIDE_ALL	401
+#define ID_COSMETIC_HIDE_NONE	402
 
-#define ID_MINOR_SWAP_1	411 //not really valid but there for reference
-#define ID_MINOR_SWAP_2	412
-#define ID_MINOR_SWAP_3	413
-#define ID_MINOR_SWAP_4	414
-#define ID_MINOR_SWAP_5	415
-#define ID_MINOR_SWAP_6	416
-#define ID_MINOR_SWAP_7	417
-#define ID_MINOR_SWAP_8	418
+#define ID_COSMETIC_SWAP_1	411 //not really valid but there for reference
+#define ID_COSMETIC_SWAP_2	412
+#define ID_COSMETIC_SWAP_3	413
+#define ID_COSMETIC_SWAP_4	414
+#define ID_COSMETIC_SWAP_5	415
+#define ID_COSMETIC_SWAP_6	416
+#define ID_COSMETIC_SWAP_7	417
+#define ID_COSMETIC_SWAP_8	418
 
-#define ID_MINOR_HIDE_1	421 //not really valid but there for reference
-#define ID_MINOR_HIDE_2	422
-#define ID_MINOR_HIDE_3	423
-#define ID_MINOR_HIDE_4	424
-#define ID_MINOR_HIDE_5	425
-#define ID_MINOR_HIDE_6	426
-#define ID_MINOR_HIDE_7	427
-#define ID_MINOR_HIDE_8	428
+#define ID_COSMETIC_HIDE_1	421 //not really valid but there for reference
+#define ID_COSMETIC_HIDE_2	422
+#define ID_COSMETIC_HIDE_3	423
+#define ID_COSMETIC_HIDE_4	424
+#define ID_COSMETIC_HIDE_5	425
+#define ID_COSMETIC_HIDE_6	426
+#define ID_COSMETIC_HIDE_7	427
+#define ID_COSMETIC_HIDE_8	428
 
-#define ID_MINOR_ALT_ICONS	431
+#define ID_COSMETIC_ALT_ICONS	431
 
 //ABOUT menu
 #define ID_ABOUT_BASICS	501
