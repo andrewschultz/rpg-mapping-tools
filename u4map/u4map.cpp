@@ -91,7 +91,7 @@ long curLevel = 0;
 long curRoom = 0;
 long showMonsters = 0;
 long showParty = 0;
-long altIcon = 0;
+short altIcon = 0;
 short showSpoilers = 0;
 short showChanged = 0;
 long mainLabel = 0;
@@ -564,6 +564,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			temp = slotIcon[0]; //switch player 1's class with player (SWAP#). ID_COSMETIC_SWAP_1
 			slotIcon[0] = slotIcon[LOWORD(wparam)-ID_COSMETIC_SWAP_1];
 			slotIcon[LOWORD(wparam)-ID_COSMETIC_SWAP_1] = temp;
+			PaintRoomMap();
 			break;
 			
 		case ID_COSMETIC_HIDE_2:
@@ -654,7 +655,12 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
 			
-		case ID_ABOUT_README:
+		case ID_ABOUT_README_REPO:
+			ShellExecute(hwnd, "open", "https://raw.githubusercontent.com/andrewschultz/rpg-mapping-tools/master/u4map/ReadMe.txt",
+				NULL, NULL, SW_SHOWNORMAL);
+			break;
+			
+		case ID_ABOUT_README_LOCAL:
 			ShellExecute(hwnd, "open", "readme.txt", NULL, NULL, SW_SHOWNORMAL);
 			break;
 
@@ -982,7 +988,6 @@ void readDun(char x[20], int q)
 				{
 					if (q == ABYSS) //in abyss, add 16 for each (level/2)
 					{
-						temp2 = temp % 0x10;
 						if (k >= 2)
 						{
 							temp %= 0x10;
@@ -993,6 +998,8 @@ void readDun(char x[20], int q)
 							temp2 += 16 * (k / 2);
 						}
 					}
+					else
+						temp2 = temp % 0x10;
 
 					roomLev[temp2][q] = k;
 				}
@@ -1179,7 +1186,7 @@ void PaintRoomMap()
 			{
 				for (j=0; j < 8; j++)
 					if (slotShow[j])
-						thisIcon[partyX[i][j][curRoom][curDun]][partyY[i][j][curRoom][curDun]] = slotIcon[j];
+						thisIcon[partyX[i][j][curRoom][curDun]][partyY[i][j][curRoom][curDun]] = slotIcon[j] + altIcon;
 				curDir = i;
 				break;
 			}
@@ -1198,19 +1205,19 @@ void PaintRoomMap()
 			{
 			case PARTY_NORTH:
 				if (slotShow[i])
-					thisIcon[partyX[0][i][curRoom][curDun]][partyY[0][i][curRoom][curDun]] = slotIcon[i];
+					thisIcon[partyX[0][i][curRoom][curDun]][partyY[0][i][curRoom][curDun]] = slotIcon[i] + altIcon;
 				break;
 			case PARTY_SOUTH:
 				if (slotShow[i])
-					thisIcon[partyX[2][i][curRoom][curDun]][partyY[2][i][curRoom][curDun]] = slotIcon[i];
+					thisIcon[partyX[2][i][curRoom][curDun]][partyY[2][i][curRoom][curDun]] = slotIcon[i] + altIcon;
 				break;
 			case PARTY_EAST:
 				if (slotShow[i])
-					thisIcon[partyX[1][i][curRoom][curDun]][partyY[1][i][curRoom][curDun]] = slotIcon[i];
+					thisIcon[partyX[1][i][curRoom][curDun]][partyY[1][i][curRoom][curDun]] = slotIcon[i] + altIcon;
 				break;
 			case PARTY_WEST:
 				if (slotShow[i])
-					thisIcon[partyX[3][i][curRoom][curDun]][partyY[3][i][curRoom][curDun]] = slotIcon[i];
+					thisIcon[partyX[3][i][curRoom][curDun]][partyY[3][i][curRoom][curDun]] = slotIcon[i] + altIcon;
 				break;
 			}
 		}
@@ -1554,6 +1561,8 @@ void initMenuCheck()
 	CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
 	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_UNCHECKED);
 	EnableMenuItem( GetMenu(hwnd), ID_NAV_INSTR, MF_GRAYED);
+
+	CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_PARTY_NONE, MF_CHECKED);
 
 	if (showAltarRooms)
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_ALTAR_ROOMS, MF_CHECKED);

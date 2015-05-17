@@ -115,7 +115,8 @@
 #define ID_ABOUT_THANKS	502
 #define ID_ABOUT_REPO	503
 #define ID_ABOUT_REPO_THISAPP	504
-#define ID_ABOUT_README	505
+#define ID_ABOUT_README_REPO	505
+#define ID_ABOUT_README_LOCAL	506
 
 //Just defining VK_ stuff so there are fewer magic numbers
 #define VK_0 0x30

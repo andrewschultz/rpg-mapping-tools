@@ -523,7 +523,12 @@ Bugs? schultz.andrew@sbcglobal.net", "Basics", MB_OK);
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
 
-		case ID_ABOUT_README:
+		case ID_ABOUT_README_REPO:
+			ShellExecute(hwnd, "open", "https://raw.githubusercontent.com/andrewschultz/rpg-mapping-tools/master/u4map/ReadMe.txt",
+				NULL, NULL, SW_SHOWNORMAL);
+			break;
+			
+		case ID_ABOUT_README_LOCAL:
 			ShellExecute(hwnd, "open", "readme.txt", NULL, NULL, SW_SHOWNORMAL);
 			break;
 
