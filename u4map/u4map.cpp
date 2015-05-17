@@ -1286,6 +1286,7 @@ void PaintRoomMap()
 	//now text list of monsters
 	if (roomTextSummary)
 	{
+		short foundSecret = 0;
 		short needComma = 0;
 		short monInRoom[MONSTERS] = {0};
 		char roomString[300];
@@ -1331,6 +1332,7 @@ void PaintRoomMap()
 		{
 			if (changeByte[4*i+1][curRoom][curDun])
 			{
+				foundSecret = 1;
 				temp2 = changeByte[4*i+1][curRoom][curDun];
 				if (temp2 != temp)
 				{
@@ -1355,6 +1357,8 @@ void PaintRoomMap()
 
 			}
 		}
+		if (!foundSecret)
+			strcat(roomString, "Nothing to reveal in this room.\n");
 
 		if ((curRoom == 15) && (curDun != ABYSS))
 		{

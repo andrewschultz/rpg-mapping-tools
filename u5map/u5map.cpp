@@ -950,91 +950,96 @@ void PaintRoomMap()
 	}
 	if (roomTextSummary)
 	{
-	short needComma = 0;
-	short monInRoom[MONSTERS] = {0};
-	char roomString[300];
-	char buffer[100];
+		short foundSecret = 0;
+		short needComma = 0;
+		short monInRoom[MONSTERS] = {0};
+		char roomString[300];
+		char buffer[100];
 
-	GetClientRect(hwnd, &rc);
+		GetClientRect(hwnd, &rc);
 
-	rc.left = 288;
-	rc.top = 352;
+		rc.left = 288;
+		rc.top = 352;
 
-	SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
-	SetBkMode(hdc, TRANSPARENT);
-	SetTextColor(hdc, RGB(255, 255, 0));
+		SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+		SetBkMode(hdc, TRANSPARENT);
+		SetTextColor(hdc, RGB(255, 255, 0));
 
-	roomString[0] = 0;
-	for (i=0; i < 21; i++) // first we get the monsters
-	{
-		temp = monsterType[i][curRoom][curDun];
-		if (toMonster(temp) != -1)
-			monInRoom[toMonster(temp)]++;
-	}
-	for (i=0; i < MONSTERS; i++)
-		if (monInRoom[i])
+		roomString[0] = 0;
+		for (i=0; i < 21; i++) // first we get the monsters
 		{
-			if (needComma)
-				strcat(roomString, ", ");
-			else
-				needComma = 1;
-			sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
-			if (monInRoom[i] > 1)
-				strcat(buffer, "s");
-			strcat(roomString, buffer);
+			temp = monsterType[i][curRoom][curDun];
+			if (toMonster(temp) != -1)
+				monInRoom[toMonster(temp)]++;
 		}
-
-	if (needComma)
-		strcat(roomString, ". ");
-	else
-		strcat(roomString, "No monsters. ");
-
-	temp = temp2 = 0;
-	for (i=0; i < 21; i++)
-	{
-		if (monsterType[i][curRoom][curDun] == 0x101)
-			temp++;
-		if ((monsterType[i][curRoom][curDun] >= 0x102) && (monsterType[i][curRoom][curDun] <= 0x10f))
-			temp2++;
-
-	}
-
-	if (temp + temp2)
-		sprintf(buffer, "%d treasure: %d%s chest, %d misc\n", temp+temp2, temp, plu[temp!=1], temp2);
-	else
-		sprintf(buffer, "No chests or misc items.\n");
-
-	strcat(roomString, buffer);
-
-	temp = 0;
-	for (i=0; i < 8; i++)
-		if (fromSquareX[i][curRoom][curDun] + fromSquareY[i][curRoom][curDun])
-		{
-			temp2 = fromSquareX[i][curRoom][curDun] + 16*fromSquareY[i][curRoom][curDun];
-			if (temp2 != temp)
+		for (i=0; i < MONSTERS; i++)
+			if (monInRoom[i])
 			{
-				if (temp)
-					strcat(roomString, "\n");
-				sprintf(buffer, "(%d, %d):", fromSquareX[i][curRoom][curDun], fromSquareY[i][curRoom][curDun]);
+				if (needComma)
+					strcat(roomString, ", ");
+				else
+					needComma = 1;
+				sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
+				if (monInRoom[i] > 1)
+					strcat(buffer, "s");
 				strcat(roomString, buffer);
 			}
-			sprintf(buffer, " (%d, %d)", toSquare1X[i][curRoom][curDun], toSquare1Y[i][curRoom][curDun]);
-			strcat(roomString, buffer);
-			if (toSquare2X[i][curRoom][curDun] + toSquare2Y[i][curRoom][curDun])
-				if (toSquare2X[i][curRoom][curDun] + 16 * toSquare2Y[i][curRoom][curDun] !=
-					toSquare1X[i][curRoom][curDun] + 16 * toSquare1Y[i][curRoom][curDun])
-				{
-					sprintf(buffer, " (%d, %d)", toSquare2X[i][curRoom][curDun], toSquare2Y[i][curRoom][curDun]);
-					strcat(roomString, buffer);
-				}
-			temp = temp2;
+
+		if (needComma)
+			strcat(roomString, ". ");
+		else
+			strcat(roomString, "No monsters. ");
+
+		temp = temp2 = 0;
+		for (i=0; i < 21; i++)
+		{
+			if (monsterType[i][curRoom][curDun] == 0x101)
+				temp++;
+			if ((monsterType[i][curRoom][curDun] >= 0x102) && (monsterType[i][curRoom][curDun] <= 0x10f))
+				temp2++;
+
 		}
 
-	if (temp)
-		strcat(roomString, "\n");
+		if (temp + temp2)
+			sprintf(buffer, "%d treasure: %d%s chest, %d misc\n", temp+temp2, temp, plu[temp!=1], temp2);
+		else
+			sprintf(buffer, "No chests or misc items.\n");
 
-	if (strlen(roomString))
-		DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP | DT_WORDBREAK);
+		strcat(roomString, buffer);
+
+		temp = 0;
+		for (i=0; i < 8; i++)
+			if (fromSquareX[i][curRoom][curDun] + fromSquareY[i][curRoom][curDun])
+			{
+				foundSecret = 1;
+				temp2 = fromSquareX[i][curRoom][curDun] + 16*fromSquareY[i][curRoom][curDun];
+				if (temp2 != temp)
+				{
+					if (temp)
+						strcat(roomString, "\n");
+					sprintf(buffer, "(%d, %d):", fromSquareX[i][curRoom][curDun], fromSquareY[i][curRoom][curDun]);
+					strcat(roomString, buffer);
+				}
+				sprintf(buffer, " (%d, %d)", toSquare1X[i][curRoom][curDun], toSquare1Y[i][curRoom][curDun]);
+				strcat(roomString, buffer);
+				if (toSquare2X[i][curRoom][curDun] + toSquare2Y[i][curRoom][curDun])
+					if (toSquare2X[i][curRoom][curDun] + 16 * toSquare2Y[i][curRoom][curDun] !=
+						toSquare1X[i][curRoom][curDun] + 16 * toSquare1Y[i][curRoom][curDun])
+					{
+						sprintf(buffer, " (%d, %d)", toSquare2X[i][curRoom][curDun], toSquare2Y[i][curRoom][curDun]);
+						strcat(roomString, buffer);
+					}
+				temp = temp2;
+			}
+
+		if (temp)
+			strcat(roomString, "\n");
+
+		if (!foundSecret)
+			strcat(roomString, "No secret squares to push.\n");
+
+		if (strlen(roomString))
+			DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP | DT_WORDBREAK);
 	}
 
 	for (i=0; i < 8; i++)
