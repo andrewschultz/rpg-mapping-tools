@@ -55,6 +55,27 @@ void initMenu();
 
 #define ICONSIZE 32
 
+#define DUNTRACKING 14
+#define CHEST 0
+#define HEAL_FOUNTAIN 1
+#define POISON_FOUNTAIN 2
+#define HURT_FOUNTAIN 3
+#define VISIBLE_PIT 4
+#define HIDDEN_PIT 5
+#define BOMB_TRAP 6
+#define POISON_FIELD 7
+#define SLEEP_FIELD 8
+#define LIGHTNING_FIELD 9
+#define FIRE_FIELD 10
+#define WRITING 11
+#define CAVEIN 12
+#define SECRET_DOOR 13
+
+#define WRAP_HALF 0
+#define WRAP_FULL 1
+#define WRAP_IF_THERE 2
+#define WRAP_CENTERED 3
+
 //globals
 
 long curRoom = 0;
@@ -85,21 +106,7 @@ short monsterY[21][16][8];
 short partyX[4][6][16][8];
 short partyY[4][6][16][8];
 
-#define DUNTRACKING 14
-#define CHEST 0
-#define HEAL_FOUNTAIN 1
-#define POISON_FOUNTAIN 2
-#define HURT_FOUNTAIN 3
-#define VISIBLE_PIT 4
-#define HIDDEN_PIT 5
-#define BOMB_TRAP 6
-#define POISON_FIELD 7
-#define SLEEP_FIELD 8
-#define LIGHTNING_FIELD 9
-#define FIRE_FIELD 10
-#define WRITING 11
-#define CAVEIN 12
-#define SECRET_DOOR 13
+short centerPadding = 1;
 
 char plu[2][2] = { "", "s" };
 
@@ -328,10 +335,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 
 			//OPTIONS MENU ITEMS
 
+		case ID_OPTIONS_SIZE_BORDERED:
+			if (wrapType == WRAP_CENTERED)
+			{
+				centerPadding++;
+				if (centerPadding == 4)
+					centerPadding = 1;
+				PaintDunMap();
+				break;
+			}
+
 		case ID_OPTIONS_SIZE_HALF:
 		case ID_OPTIONS_SIZE_FULL:
 		case ID_OPTIONS_SIZE_AUTO:
-		case ID_OPTIONS_SIZE_BORDERED:
 			wrapType = LOWORD(wparam) - ID_OPTIONS_SIZE_HALF;
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SIZE_HALF, MF_UNCHECKED);
 			CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SIZE_FULL, MF_UNCHECKED);
@@ -682,12 +698,12 @@ void PaintDunMap()
 		ReleaseDC(hwnd, hdc);
 	}
 
-	if (wrapType == 3)
+	if (wrapType == WRAP_CENTERED)
 	{
 		for (j=0; j < 16; j++)
 			for (i=0; i < 16; i++)
 			{
-				if ((i < 3) || (j < 3) || (j > 12) || (i > 12))
+				if ((i < centerPadding) || (j < centerPadding) || (j > 15-centerPadding) || (i > 15-centerPadding))
 					temp = 1;
 				else
 				{
