@@ -33,6 +33,7 @@ void rlsDebug(char x[50]);
 void checkWrapHalf();
 void tryGoingUp();
 short wrapHalf();
+void checkAbyssRoom();
 
 //#defines for in-app use
 #define NORTH 0
@@ -94,6 +95,8 @@ long mainLabel = 0;
 short showAltarRooms = 1;
 short dunTextSummary = 0;
 short roomTextSummary = 0;
+short lastAbyssRoom = -1;
+short rememberAbyssRoom = 1;
 
 short noWarnYet = 0;
 
@@ -194,6 +197,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_DUNGEON_ABYSS:
 			if (curDun != LOWORD(wparam) - ID_DUNGEON_DECEIT)
 			{
+				checkAbyssRoom();
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_UNCHECKED);
 				curDun = LOWORD(wparam) - ID_DUNGEON_DECEIT;
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_CHECKED);
@@ -204,6 +208,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_DUNGEON_PREV:
 			if (curDun > 0)
 			{
+				checkAbyssRoom();
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_UNCHECKED);
 				curDun--;
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_CHECKED);
@@ -524,6 +529,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_ALTAR_ROOMS, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SHOW_ALTAR_ROOMS, MF_UNCHECKED);
+			break;
+
+		case ID_OPTIONS_REMEMBER_ABYSS_ROOM:
+			rememberAbyssRoom = !rememberAbyssRoom;
+			if (!rememberAbyssRoom)
+				lastAbyssRoom = -1;
+			if (rememberAbyssRoom)
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REMEMBER_ABYSS_ROOM, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REMEMBER_ABYSS_ROOM, MF_UNCHECKED);
 			break;
 
 			//MINOR/SILLY OPTIONS
@@ -1449,6 +1464,10 @@ void DungeonReset()
 		curRoom = 0;
 	if (resetLevel0)
 		curLevel = 0;
+
+	if ((curDun == ABYSS) && (rememberAbyssRoom) && (!resetRoomA) && (lastAbyssRoom != -1))
+		curRoom = lastAbyssRoom;
+
 	if ((curRoom > 15) && (curDun != ABYSS))
 		curRoom = 15;	//From far down the abyss, room 16+ is not valid, so let's default to the altar room
 
@@ -1576,4 +1595,11 @@ void rlsDebug(char x[50])
 	fputs(x, F);
 	fputs("\n", F);
 	fclose(F);
+}
+
+void checkAbyssRoom()
+{
+	if ((curDun == 7) && (rememberAbyssRoom))
+		lastAbyssRoom = (short) curRoom;
+
 }

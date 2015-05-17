@@ -140,7 +140,8 @@
 #define ID_OPTIONS_SHOW_3RD_SECRET	366
 #define ID_OPTIONS_SHOW_4TH_SECRET	367
 
-#define ID_OPTIONS_SHOW_ALTAR_ROOMS	369
+#define ID_OPTIONS_SHOW_ALTAR_ROOMS	368
+#define ID_OPTIONS_REMEMBER_ABYSS_ROOM	369
 
 //Game specific options being able to swap characters at will
 #define ID_MINOR_HIDE_ALL	401
