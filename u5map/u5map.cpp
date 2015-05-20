@@ -854,6 +854,14 @@ void PaintRoomMap()
 
 		FillRect(hdc, &rect, hbrush);
 
+		//we have an artifact problem if room details are set on and we go to despise
+
+		hbrush=CreateSolidBrush(RGB(0,0,0));
+		rect.top = 352;
+		rect.bottom = 640;
+
+		FillRect(hdc, &rect, hbrush);
+
 		DeleteObject(hbrush);
 		return;
 	}
