@@ -34,6 +34,7 @@ void checkWrapHalf();
 void tryGoingUp();
 short wrapHalf();
 void checkAbyssRoom();
+short findLevRoom(long lv, long du);
 
 //#defines for in-app use
 #define NORTH 0
@@ -101,7 +102,8 @@ short roomTextSummary = 0;
 short lastAbyssRoom = -1;
 short rememberAbyssRoom = 1;
 
-short noWarnYet = 0;
+short noFileWarnYet = 0;
+short noRoomOnLevelWarn = 0;
 
 char plu[2][2] = { "", "s" };
 
@@ -245,6 +247,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev = LOWORD(wparam) - ID_NAV_1;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
+				findLevRoom(curLev, curDun);
 			}
 			break;
 
@@ -264,8 +267,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_N:
 		case ID_NAV_O:
 		case ID_NAV_P:
+			CheckMenuItem( GetMenu(hwnd), ID_NAV_A + curRoom, MF_UNCHECKED);
 			curRoom = LOWORD(wparam) - ID_NAV_A;
-			PaintDunMap();
+			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
+			PaintRoomMap();
 			break;
 
 		case ID_NAV_SHIFT_A:
@@ -373,16 +378,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			{
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_CHECKED);
 				if (curLev != roomLev[curRoom][curDun])
-				{
-					for (temp=0; temp < 16; temp++)
-						if (curLev == roomLev[curRoom][curDun])
-						{
-							curRoom = temp;
-							PaintRoomMap();
-							break;
-						}
-					MessageBox(hwnd, "There are no rooms on this level. So the room on the right will be shown until you get to a level with a room.", "Small warning.", MB_OK);
-				}
+					findLevRoom(curLev, curDun);
 			}
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
@@ -395,26 +391,34 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev--;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
+				if (restrictRoom)
+					findLevRoom(curLev, curDun);
 			}
 			break;
 
 		case ID_NAV_DOWN:
-			if (curLev < ABYSS)
+			if (curLev < 7)
 			{
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
 				curLev++;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
+				if (restrictRoom)
+					findLevRoom(curLev, curDun);
 			}
 			break;
 
 		case ID_NAV_PREVRM:
 			if (curRoom > 0)
+			{
 				if (restrictRoom)
 					if (curLev != roomLev[curRoom-1][curDun])
 						break;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_A + curRoom, MF_UNCHECKED);
 				curRoom--;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_A + curRoom, MF_CHECKED);
 				doRoomCheck();
+			}
 			break;
 
 		case ID_NAV_NEXTRM:
@@ -423,7 +427,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				if (restrictRoom)
 					if (curLev != roomLev[curRoom+1][curDun])
 						break;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_A + curRoom, MF_UNCHECKED);
 				curRoom++;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_A + curRoom, MF_CHECKED);
 				doRoomCheck();
 			}
 			else if ((curRoom < 63) && (curDun == ABYSS))
@@ -970,11 +976,11 @@ void readDun(char x[20], int q)
 	{
 		char buffer[200];
 		
-		if (!noWarnYet)
+		if (!noFileWarnYet)
 		{
 		sprintf(buffer, "The program was not able to read %s! It probably won't run successfully. You may need to copy the Ultima 4 .DNG files over.", x);
 		MessageBox(hwnd, buffer, "Unreadable .DNG file", MB_OK);
-		noWarnYet = 1;
+		noFileWarnYet = 1;
 		}
 		return;
 	}
@@ -1082,26 +1088,41 @@ void PaintDunMap()
 {
 	int i, j;
 	short temp;
+	short tempPadding = centerPadding;
+	short offset = 0;
 
 	if (wrapType == WRAP_CENTERED)
+		offset = 4;
+
+	if (wrapType == WRAP_HALF)
+		tempPadding = 0;
+
+	if (wrapHalf())
 	{
 		for (j=0; j < 16; j++)
 			for (i=0; i < 16; i++)
 			{
-				if ((i < centerPadding) || (j < centerPadding) || (j > 15-centerPadding) || (i > 15-centerPadding))
+				if ((i < tempPadding) || (j < tempPadding) || (j > 15-tempPadding) || (i > 15-tempPadding))
 					temp = 1;
 				else
 				{
-					temp = mainDun[(i+4)%8][(j+4)%8][curLev][curDun];
-					if (!mainLabel)
-						if ((temp >= 0xd0) && (temp <= 0xdf))
-							temp = 0xfd;
+					temp = mainDun[(i+offset)%8][(j+offset)%8][curLev][curDun];
+					if ((temp == 0xdf) && (curDun != 7) && (showAltarRooms))
+					{
+						temp = i / 3 + 0xed;
+					}
+					if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
+						temp = 0xfd; // rooms 1-16
+
+					if (((temp % 16 >= 0x8) && (temp <= 0x7f)) && (!mainLabel))
+						temp = 0xfd; // rooms 17-64
+
 				}
 				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 			}
 	}
-	else if (wrapHalf())
+	else
 	{
 		for (j=0; j < 8; j++)
 			for (i=0; i < 8; i++)
@@ -1117,34 +1138,11 @@ void PaintDunMap()
 					temp = 0xfd; // rooms 1-16
 				if (((temp % 16 >= 0x8) && (temp <= 0x7f)) && (!mainLabel))
 					temp = 0xfd; // rooms 17-64
-				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16, j*16+128, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
+				StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
+					16*(temp % 0x10), 16*(temp / 0x10), 16, 16, SRCCOPY);
 			}
 	}
-	else
-	{
-	for (j=0; j < 8; j++)
-	{
-		for (i=0; i < 8; i++)
-		{
-			temp = mainDun[i][j][curLev][curDun];
-			if ((temp == 0xdf) && (curDun != 7) && (showAltarRooms))
-			{
-				temp = i / 3 + 0xed;
-			}
-			if (((temp >= 0xd0) && (temp <= 0xdf)) && (!mainLabel))
-				temp = 0xfd;
-			StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
-				16*(temp % 0x10), 16*(temp / 0x10), 16, 16, SRCCOPY);
-		}
-	}
-	}
+
 	adjHeader();
 
 	if (curLev == 0)
@@ -1497,12 +1495,24 @@ void DungeonReset()
 	PaintDunMap();
 
 	if (resetRoomA)
+	{
+		CheckMenuItem( GetMenu(hwnd), ID_NAV_A + curRoom, MF_UNCHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_NAV_A, MF_CHECKED);
 		curRoom = 0;
+	}
 	if (resetLevel0)
+	{
+		CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_NAV_1, MF_CHECKED);
 		curLev = 0;
+	}
 
 	if ((curDun == ABYSS) && (rememberAbyssRoom) && (!resetRoomA) && (lastAbyssRoom != -1))
+	{
+		CheckMenuItem( GetMenu(hwnd), ID_NAV_A + curRoom, MF_UNCHECKED);
+		CheckMenuItem( GetMenu(hwnd), ID_NAV_A + (curRoom%16), MF_CHECKED);
 		curRoom = lastAbyssRoom;
+	}
 
 	if ((curRoom > 15) && (curDun != ABYSS))
 		curRoom = 15;	//From far down the abyss, room 16+ is not valid, so let's default to the altar room
@@ -1587,11 +1597,11 @@ void initMenuCheck()
 
 short wrapHalf()
 {
-	if (wrapType == WRAP_HALF)
+	if ((wrapType == WRAP_HALF) || (wrapType == WRAP_CENTERED))
 		return 1;
 	if (wrapType == WRAP_FULL)
 		return 0;
-	if (levelWraps[curRoom][curDun])
+	if (levelWraps[curRoom][curDun]) //wrapType is WRAP_IF_THERE
 		return 1;
 	else
 		return 0;
@@ -1640,4 +1650,27 @@ void checkAbyssRoom()
 	if ((curDun == 7) && (rememberAbyssRoom))
 		lastAbyssRoom = (short) curRoom;
 
+}
+
+short findLevRoom(long lv, long du)
+{
+	short temp;
+
+	for (temp=0; temp < 16; temp++)
+		if (curLev == roomLev[temp][curDun])
+		{
+			curRoom = temp;
+			PaintRoomMap();
+			return temp;
+		}
+	if (!noRoomOnLevelWarn)
+	{
+		noRoomOnLevelWarn = 1;
+		MessageBox(hwnd, "There are no rooms on this level. So the room panel will be greyed until you get to a level with a room.", "Small warning.", MB_OK);
+	}
+	//The room: Grey it out!
+	StretchBlt(localhdc, 288, 0, 352, 352, leveldc, 16, 0, 16, 16, SRCCOPY);
+	//The comments: Black them out!
+	StretchBlt(localhdc, 288, 352, 352, 176, leveldc, 0, 0, 16, 16, SRCCOPY);
+	return -1;
 }

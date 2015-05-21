@@ -35,6 +35,7 @@ void checkTheParty();
 short thisLevelWraps();
 short openSpace(short x);
 void initMenu();
+short findLevRoom(long lv, long du);
 
 //local pound-defines
 #define MIMIC 0xa8
@@ -91,6 +92,8 @@ short restrictRoom = 0;
 short wrapType = 2;
 short mainLabel = 1;
 short hideMimic = 0;
+
+short noRoomOnLevelWarn = 0;
 
 long mouseDownX, mouseDownY;
 
@@ -248,6 +251,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev = LOWORD(wparam) - ID_NAV_1;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
+				if (restrictRoom)
+					findLevRoom(curRoom, curDun);
 				checkPrevNextDun();
 			}
 			break;
@@ -296,6 +301,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev--;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
+				if (restrictRoom)
+					findLevRoom(curRoom, curDun);
 				checkPrevNextLvl();
 			}
 			break;
@@ -307,6 +314,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev++;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
+				if (restrictRoom)
+					findLevRoom(curRoom, curDun);
 				checkPrevNextLvl();
 			}
 			break;
@@ -441,16 +450,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			{
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_CHECKED);
 				if (curLev != roomLev[curRoom][curDun])
-				{
-					for (temp=0; temp < 16; temp++)
-						if (curLev == roomLev[curRoom][curDun])
-						{
-							curRoom = temp;
-							PaintRoomMap();
-							break;
-						}
-					MessageBox(hwnd, "There are no rooms on this level. So the room on the right will be shown until you get to a level with a room.", "Small warning.", MB_OK);
-				}
+					findLevRoom(curRoom, curDun);
 			}
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
@@ -706,6 +706,8 @@ void PaintDunMap()
 	short temp = 0, temp2 = 0;
 	short tempPadding = centerPadding;
 
+	short offset = 0;
+
 	RECT rc;
 	HDC hdc = GetDC(hwnd);
 
@@ -714,7 +716,7 @@ void PaintDunMap()
 	rc.left = 0;
 	rc.top = 288;
 	rc.right = 288;
-	rc.bottom = 640;
+	rc.bottom = 524;
 
 	{//I suppose we could cheat here and StretchBlt Icon #0
 		HBRUSH hbrush=CreateSolidBrush(RGB(0, 0, 0));
@@ -726,6 +728,9 @@ void PaintDunMap()
 	if (wrapType != WRAP_CENTERED)
 		tempPadding = 0;
 
+	if (wrapType == WRAP_CENTERED)
+		offset = 4;
+
 	if ((wrapType == WRAP_CENTERED) || (thisLevelWraps()))
 	{
 		for (j=0; j < 16; j++)
@@ -735,7 +740,7 @@ void PaintDunMap()
 					temp = 1;
 				else
 				{
-					temp = mainDun[(i+4)%8][(j+4)%8][curLev][curDun]; //clean this code up, as it's around twice
+					temp = mainDun[(i+offset)%8][(j+offset)%8][curLev][curDun]; //clean this code up, as it's around twice
 					if (!mainLabel)
 						if ((temp >= 0xf0) && (temp <= 0xff))
 							temp = 0xed;
@@ -1475,11 +1480,11 @@ void checkTheParty()
 
 short thisLevelWraps()
 {
-	if (wrapType == 0)
+	if ((wrapType == WRAP_HALF) || (wrapType == WRAP_CENTERED))
 		return 1;
-	if (wrapType == 1)
+	if (wrapType == WRAP_FULL)
 		return 0;
-	if (levelWraps[curRoom][curDun])
+	if ((wrapType == WRAP_IF_THERE) && (levelWraps[curLev][curDun]))
 		return 1;
 	return 0;
 }
@@ -1508,4 +1513,28 @@ void initMenu()
 	if (resetRoomA)
 		CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_ROOM_1, MF_CHECKED);
 
+}
+
+short findLevRoom(long lv, long du)
+{
+	short temp;
+
+	for (temp=0; temp < 16; temp++)
+		if (curLev == roomLev[temp][curDun])
+		{
+			curRoom = temp;
+			PaintRoomMap();
+			return temp;
+		}
+
+	if (!noRoomOnLevelWarn)
+	{
+		noRoomOnLevelWarn = 1;
+		MessageBox(hwnd, "There are no rooms on this level. So the room panel will be greyed until you get to a level with a room.", "Small warning.", MB_OK);
+	}
+	//The room: Grey it out!
+	StretchBlt(localhdc, 288, 0, 352, 352, leveldc, 16, 0, 16, 16, SRCCOPY);
+	//The comments: Black them out!
+	StretchBlt(localhdc, 288, 352, 352, 176, leveldc, 0, 0, 16, 16, SRCCOPY);
+	return -1;
 }
