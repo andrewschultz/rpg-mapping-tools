@@ -67,6 +67,43 @@ h1 {
 <td>Show Room Text Summary
 <td>0 toggles this on and off. You should run through the dungeons and make sure the text changes with the dungeons.
 <tr>
+<td>Toggle squares
+<td>Deceit-1: all grey, alt-1-8 does nothing.
+<td>Deceit-2: 1-4 visible, alt-1-4 should work separately.
+<td>Shame-1: alt-1-2 both toggle 2 squares, 3-5 toggle 3 squares, 6 toggles a final square.
+<td>Shame-10: alt-1-7 toggle 7 squares, alt-8 toggles only one.
+<td>Shame-13: 1-2, 3-4, 5-6 and 7-8 are the grouped ones.
+<tr>
+<td>Showing party
+<td>Alt-end anywhere clears the party
+<td>Deceit-1: alt-home and alt-up show north, others show nothing.
+<td>Deceit-5: alt-left and alt-home show party to west, others show nothing.
+<td>Deceit-6: alt-down and alt-home show party to south, others show nothing.
+<td>Deceit-8: alt-right and alt-home show party to east, others show nothing.
+<tr>
+<td>Reset to Room 1 on Dungeon Change
+<td>1, P, 3 should show a room with a grill instead of one with four exits.
+<tr>
+<td>Reset to Level 1 on Dungeon Change
+<td>1, ctrl-8, 3 should show a dungeon level with low numbers instead of high (4 together instead of 2 isolated)
+<tr>
+<td>Dungeon level rendering
+<td>= shows 8x8 dungeon.
+<br>- shows 16x16.
+<br>\ 3 times in a row shows square 14x14 to 12x12 to 10x10 to 14x14.
+<br>backspace shows 16x16 (meant to be flexible, but there are no non-wrapping dungeons)
+<tr>
+<td>Label rooms in dungeon
+<td>ctrl-1, Alt-o, alt-l, arrow down, verify that numbers 1-16 appear
+<td>repeat, but verify no numbers appear
+<tr>Sync level to room
+<td>Do this on startup and we should immediately go to Deceit 2.
+<td>Right arrow through shame, 1346668888888887 (try the reverse too)
+<tr>Restrict room to level
+<td>On startup, should pop up warning that no rooms are on this level.
+<td>Deceit: 2 and should arrow between 1 and 2 (A and B)
+<td>Shame: 8 and should be able to go between 7 and 15 (G and O)
+<tr>
 <th colspan=100%>Party options menu
 <tr>
 <td>Big picture

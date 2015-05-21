@@ -87,7 +87,7 @@ HDC leveldc;
 HDC localhdc;
 
 long curDun = 0;
-long curLevel = 0;
+long curLev = 0;
 long curRoom = 0;
 long showMonsters = 0;
 long showParty = 0;
@@ -239,11 +239,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_6:
 		case ID_NAV_7:
 		case ID_NAV_8:
-			if (curLevel != LOWORD(wparam)-ID_NAV_1)
+			if (curLev != LOWORD(wparam)-ID_NAV_1)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_UNCHECKED);
-				curLevel = LOWORD(wparam) - ID_NAV_1;
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
+				curLev = LOWORD(wparam) - ID_NAV_1;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
 			}
 			break;
@@ -358,7 +358,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_SYNC_LEVEL_TO_ROOM:
 			syncLevelToRoom = !syncLevelToRoom;
 			if (syncLevelToRoom)
+			{
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_CHECKED);
+				curLev = roomLev[curRoom][curDun];
+				PaintDunMap();
+			}
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_UNCHECKED);
 			break;
@@ -366,27 +370,40 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL:
 			restrictRoom = !restrictRoom;
 			if (restrictRoom)
+			{
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_CHECKED);
+				if (curLev != roomLev[curRoom][curDun])
+				{
+					for (temp=0; temp < 16; temp++)
+						if (curLev == roomLev[curRoom][curDun])
+						{
+							curRoom = temp;
+							PaintRoomMap();
+							break;
+						}
+					MessageBox(hwnd, "There are no rooms on this level. So the room on the right will be shown until you get to a level with a room.", "Small warning.", MB_OK);
+				}
+			}
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
 			break;
 
 		case ID_NAV_UP:
-			if (curLevel > 0)
+			if (curLev > 0)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_UNCHECKED);
-				curLevel--;
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
+				curLev--;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
 			}
 			break;
 
 		case ID_NAV_DOWN:
-			if (curLevel < ABYSS)
+			if (curLev < ABYSS)
 			{
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_UNCHECKED);
-				curLevel++;
-				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLevel, MF_CHECKED);
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_UNCHECKED);
+				curLev++;
+				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
 			}
 			break;
@@ -394,7 +411,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_PREVRM:
 			if (curRoom > 0)
 				if (restrictRoom)
-					if (curLevel != roomLev[curRoom-1][curDun])
+					if (curLev != roomLev[curRoom-1][curDun])
 						break;
 				curRoom--;
 				doRoomCheck();
@@ -404,7 +421,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			if (curRoom < 15)
 			{
 				if (restrictRoom)
-					if (curLevel != roomLev[curRoom+1][curDun])
+					if (curLev != roomLev[curRoom+1][curDun])
 						break;
 				curRoom++;
 				doRoomCheck();
@@ -412,7 +429,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			else if ((curRoom < 63) && (curDun == ABYSS))
 			{
 				if (restrictRoom)
-					if (curLevel != roomLev[curRoom-1][curDun])
+					if (curLev != roomLev[curRoom-1][curDun])
 						break;
 				curRoom++; //Abyss has four times the rooms of the other dungeons.
 				doRoomCheck();
@@ -671,12 +688,12 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 			mouseDownY = HIWORD(lparam)/16;
 			checkWrapHalf();
 			
-			temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
+			temp = mainDun[mouseDownX][mouseDownY][curLev][curDun];
 			if (temp == 0x30)
 			{
 				if (!syncLevelToRoom)
 				{
-				curLevel++;
+				curLev++;
 				PaintDunMap();
 				}
 			}
@@ -706,11 +723,11 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 
 							for (temp = 0; temp < 8; temp++)
 							{
-								if (partyX[curDir][temp][curRoom][curLevel] == mouseDownX)
-									if (partyY[curDir][temp][curRoom][curLevel] == mouseDownY)
+								if (partyX[curDir][temp][curRoom][curLev] == mouseDownX)
+									if (partyY[curDir][temp][curRoom][curLev] == mouseDownY)
 										froms = temp;
-								if (partyX[curDir][temp][curRoom][curLevel] == mouseUpX)
-									if (partyY[curDir][temp][curRoom][curLevel] == mouseUpY)
+								if (partyX[curDir][temp][curRoom][curLev] == mouseUpX)
+									if (partyY[curDir][temp][curRoom][curLev] == mouseUpY)
 										tos = temp;
 							}
 
@@ -731,7 +748,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 				if (mouseDownX == mouseUpX)
 					if (mouseDownY == mouseUpY)
 					{
-						temp = mainDun[mouseDownX][mouseDownY][curLevel][curDun];
+						temp = mainDun[mouseDownX][mouseDownY][curLev][curDun];
 						
 						if (temp == 0x10 || temp == 0x30)
 							tryGoingUp();
@@ -739,7 +756,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 						if (temp == 0x20)
 							if (!syncLevelToRoom)
 							{
-							curLevel++;
+							curLev++;
 							PaintDunMap();
 							}
 						
@@ -1075,7 +1092,7 @@ void PaintDunMap()
 					temp = 1;
 				else
 				{
-					temp = mainDun[(i+4)%8][(j+4)%8][curLevel][curDun];
+					temp = mainDun[(i+4)%8][(j+4)%8][curLev][curDun];
 					if (!mainLabel)
 						if ((temp >= 0xd0) && (temp <= 0xdf))
 							temp = 0xfd;
@@ -1089,7 +1106,7 @@ void PaintDunMap()
 		for (j=0; j < 8; j++)
 			for (i=0; i < 8; i++)
 			{
-				temp = mainDun[i][j][curLevel][curDun];
+				temp = mainDun[i][j][curLev][curDun];
 
 				if ((temp == 0xdf) && (curDun != 7) && (showAltarRooms))
 				{
@@ -1116,7 +1133,7 @@ void PaintDunMap()
 	{
 		for (i=0; i < 8; i++)
 		{
-			temp = mainDun[i][j][curLevel][curDun];
+			temp = mainDun[i][j][curLev][curDun];
 			if ((temp == 0xdf) && (curDun != 7) && (showAltarRooms))
 			{
 				temp = i / 3 + 0xed;
@@ -1130,12 +1147,12 @@ void PaintDunMap()
 	}
 	adjHeader();
 
-	if (curLevel == 0)
+	if (curLev == 0)
 			EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_GRAYED);
 	else
 			EnableMenuItem( GetMenu(hwnd), ID_NAV_UP, MF_ENABLED);
 
-	if (curLevel == 7)
+	if (curLev == 7)
 			EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_GRAYED);
 	else
 			EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_ENABLED);
@@ -1313,9 +1330,9 @@ void PaintRoomMap()
 
 	if (syncLevelToRoom)
 	{
-		if (curLevel != roomLev[curRoom][curDun])
+		if (curLev != roomLev[curRoom][curDun])
 		{
-			curLevel = roomLev[curRoom][curDun];
+			curLev = roomLev[curRoom][curDun];
 			PaintDunMap();
 		}
 	}
@@ -1470,7 +1487,7 @@ void adjHeader()
 {
 	char buffer[100];
 
-	sprintf(buffer, "Ultima IV Dungeon Browser: %s, level %d, room %d (L%d)", dunName[curDun], curLevel + 1,
+	sprintf(buffer, "Ultima IV Dungeon Browser: %s, level %d, room %d (L%d)", dunName[curDun], curLev + 1,
 		curRoom + 1, roomLev[curRoom][curDun]+1);
 	SetWindowText(hwnd, buffer);
 }
@@ -1482,7 +1499,7 @@ void DungeonReset()
 	if (resetRoomA)
 		curRoom = 0;
 	if (resetLevel0)
-		curLevel = 0;
+		curLev = 0;
 
 	if ((curDun == ABYSS) && (rememberAbyssRoom) && (!resetRoomA) && (lastAbyssRoom != -1))
 		curRoom = lastAbyssRoom;
@@ -1600,11 +1617,11 @@ void checkWrapHalf()
 
 void tryGoingUp()
 {
-	if (curLevel == 0)
+	if (curLev == 0)
 		MessageBox(hwnd, "That would lead back to Brittania!", "There is no escape!", MB_OK);
 	else if (!syncLevelToRoom)
 	{
-		curLevel--;
+		curLev--;
 		PaintDunMap();
 	}
 }

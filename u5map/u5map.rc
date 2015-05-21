@@ -121,9 +121,25 @@ BEGIN
 		MENUITEM "Level &7\tctrl-7", ID_NAV_7
 		MENUITEM "Level &8\tctrl-8", ID_NAV_8
 		MENUITEM SEPARATOR
-		MENUITEM "Room A\ta", ID_NAV_A
-		MENUITEM "...", ID_NAV_NULL
-		MENUITEM "Room P\tp", ID_NAV_P
+		POPUP "Room choice"
+		BEGIN
+			MENUITEM "Room A\ta", ID_NAV_A
+			MENUITEM "Room B\tb", ID_NAV_B
+			MENUITEM "Room C\tc", ID_NAV_C
+			MENUITEM "Room D\td", ID_NAV_D
+			MENUITEM "Room E\te", ID_NAV_E
+			MENUITEM "Room F\tf", ID_NAV_F
+			MENUITEM "Room G\tg", ID_NAV_G
+			MENUITEM "Room H\th", ID_NAV_H
+			MENUITEM "Room I\ti", ID_NAV_I
+			MENUITEM "Room J\tj", ID_NAV_J
+			MENUITEM "Room K\tk", ID_NAV_K
+			MENUITEM "Room L\tl", ID_NAV_L
+			MENUITEM "Room M\tm", ID_NAV_M
+			MENUITEM "Room N\tn", ID_NAV_N
+			MENUITEM "Room O\to", ID_NAV_O
+			MENUITEM "Room P\tp", ID_NAV_P
+		END
 	END
 	POPUP "&Options"
 	BEGIN

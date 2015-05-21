@@ -190,11 +190,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_UNCHECKED);
 				curDun = LOWORD(wparam) - ID_DUNGEON_DECEIT;
 				CheckMenuItem( GetMenu(hwnd), ID_DUNGEON_DECEIT + curDun, MF_CHECKED);
-				PaintDunMap();
 				if (resetRoomA)
 					curRoom = 0;
 				if (resetLvl1)
 					curLev = 0;
+				PaintDunMap();
 				PaintRoomMap();
 				checkPrevNextDun();
 			}
@@ -269,7 +269,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_NAV_O:
 		case ID_NAV_P:
 			curRoom = LOWORD(wparam) - ID_NAV_A;
-			PaintDunMap();
+			PaintRoomMap();
 			checkPrevNextRoom();
 			break;
 
@@ -425,15 +425,33 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 		case ID_OPTIONS_SYNC_LEVEL_TO_ROOM:
 			syncLevelToRoom = !syncLevelToRoom;
 			if (syncLevelToRoom)
+			{
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_CHECKED);
+				curLev = roomLev[curRoom][curDun];
+				PaintDunMap();
+			}
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_SYNC_LEVEL_TO_ROOM, MF_UNCHECKED);
+			if (syncLevelToRoom)
 			break;
 
 		case ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL:
 			restrictRoom = !restrictRoom;
 			if (restrictRoom)
+			{
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_CHECKED);
+				if (curLev != roomLev[curRoom][curDun])
+				{
+					for (temp=0; temp < 16; temp++)
+						if (curLev == roomLev[curRoom][curDun])
+						{
+							curRoom = temp;
+							PaintRoomMap();
+							break;
+						}
+					MessageBox(hwnd, "There are no rooms on this level. So the room on the right will be shown until you get to a level with a room.", "Small warning.", MB_OK);
+				}
+			}
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
 			break;
@@ -636,7 +654,7 @@ if (!RegisterClass(&winclass))
 							  "Ultima 5 Dungeon Simulator",	     // title
 							  WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
 					 		  0,0,	   // x,y
-							  20*ICONSIZE, 16*ICONSIZE, // width, height. We want space for text at the bottom to allow room description.
+							  20*ICONSIZE, 524, // width, height. We want space for text at the bottom to allow room description.
 							  NULL,	   // handle to parent 
 							  NULL,	   // handle to menu
 							  hInstance,// instance
@@ -686,6 +704,8 @@ void PaintDunMap()
 	int i = 0;
 	int j = 0;
 	short temp = 0, temp2 = 0;
+	short tempPadding = centerPadding;
+
 	RECT rc;
 	HDC hdc = GetDC(hwnd);
 
@@ -703,12 +723,15 @@ void PaintDunMap()
 		ReleaseDC(hwnd, hdc);
 	}
 
-	if (wrapType == WRAP_CENTERED)
+	if (wrapType != WRAP_CENTERED)
+		tempPadding = 0;
+
+	if ((wrapType == WRAP_CENTERED) || (thisLevelWraps()))
 	{
 		for (j=0; j < 16; j++)
 			for (i=0; i < 16; i++)
 			{
-				if ((i < centerPadding) || (j < centerPadding) || (j > 15-centerPadding) || (i > 15-centerPadding))
+				if ((i < tempPadding) || (j < tempPadding) || (j > 15-tempPadding) || (i > 15-tempPadding))
 					temp = 1;
 				else
 				{
@@ -721,32 +744,22 @@ void PaintDunMap()
 					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
 			}
 		adjHeader();
-		return;
 	}
-
-	for (j=0; j < 8; j++)
+	else
 	{
-		for (i=0; i < 8; i++)
+		for (j=0; j < 8; j++)
 		{
-			temp = mainDun[i][j][curLev][curDun];
-
-			if (!mainLabel)
-				if ((temp >= 0xf0) && (temp <= 0xff))
-					temp = 0xed;
-			if (thisLevelWraps())
+			for (i=0; i < 8; i++)
 			{
-				BitBlt(localhdc, i*16, j*16, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16, j*16+128, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-				BitBlt(localhdc, i*16+128, j*16+128, 16, 16, leveldc,
-					16*(temp % 0x10), 16*(temp / 0x10), SRCCOPY);
-			}
-			else
+				temp = mainDun[i][j][curLev][curDun];
+
+				if (!mainLabel)
+					if ((temp >= 0xf0) && (temp <= 0xff))
+						temp = 0xed;
+
 				StretchBlt(localhdc, i*32, j*32, 32, 32, leveldc,
 					16*(temp % 0x10), 16*(temp / 0x10), 16, 16, SRCCOPY);
+			}
 		}
 	}
 
@@ -760,17 +773,18 @@ void PaintDunMap()
 		SetBkMode(hdc, TRANSPARENT);
 		SetTextColor(hdc, RGB(255, 255, 0));
 
-		sprintf(buffer, "%d chest%s, %d writings%s, %d secret door%s, %d cave-in%s.\n",
-			dunSpoil[CHEST][curDun], plu[dunSpoil[CHEST][curDun]>1],
-			dunSpoil[WRITING][curDun], plu[dunSpoil[WRITING][curDun]>1],
-			dunSpoil[CAVEIN][curDun], plu[dunSpoil[CAVEIN][curDun]>1],
-			dunSpoil[SECRET_DOOR][curDun], plu[dunSpoil[SECRET_DOOR][curDun]>1]
+		sprintf(buffer, "Dungeon %s:\n%d chest%s, %d writing%s, %d secret door%s, %d cave-in%s.\n",
+			dunName[curDun],
+			dunSpoil[CHEST][curDun], plu[dunSpoil[CHEST][curDun]!=1],
+			dunSpoil[WRITING][curDun], plu[dunSpoil[WRITING][curDun]!=1],
+			dunSpoil[CAVEIN][curDun], plu[dunSpoil[CAVEIN][curDun]!=1],
+			dunSpoil[SECRET_DOOR][curDun], plu[dunSpoil[SECRET_DOOR][curDun]!=1]
 			);
 
 		temp = dunSpoil[VISIBLE_PIT][curDun] + dunSpoil[HIDDEN_PIT][curDun];
 		if (temp)
 		{
-			sprintf(buffer2, "%d pits%s: %d visible, %d invisible. ",
+			sprintf(buffer2, "%d pit%s: %d visible, %d invisible. ",
 				temp, plu[temp>1], dunSpoil[VISIBLE_PIT][curDun], dunSpoil[HIDDEN_PIT][curDun]);
 			strcat(buffer, buffer2);
 		}
@@ -780,7 +794,7 @@ void PaintDunMap()
 		if (dunSpoil[BOMB_TRAP][curDun])
 		{
 			sprintf(buffer2, "%d bomb trap%s.\n",
-				dunSpoil[BOMB_TRAP][curDun], plu[dunSpoil[BOMB_TRAP][curDun]>1]);
+				dunSpoil[BOMB_TRAP][curDun], plu[dunSpoil[BOMB_TRAP][curDun]!=1]);
 			strcat(buffer, buffer2);
 		}
 		else
@@ -854,7 +868,8 @@ void PaintRoomMap()
 
 		FillRect(hdc, &rect, hbrush);
 
-		//we have an artifact problem if room details are set on and we go to despise
+		//We have an artifact problem if room details are set on and we go to despise
+		//We could save a bit of time by only doing this when changing the dungeon to despise, but that's nitpicking
 
 		hbrush=CreateSolidBrush(RGB(0,0,0));
 		rect.top = 352;
@@ -869,15 +884,17 @@ void PaintRoomMap()
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
 			tempIcon[i][j] = roomBase[i][j][curRoom][curDun];
-			if ((!hideMimic) && (roomBase[i][j][curRoom][curDun] == MIMIC)) //Show the mimic
-				tempIcon[i][j] += 1;
 
 	//now show monsters
 	if (showMonsters)
 	{
 		for (i=0; i < 21; i++)
 			if (monsterType[i][curRoom][curDun])
+			{
 				tempIcon[monsterX[i][curRoom][curDun]][monsterY[i][curRoom][curDun]] = monsterType[i][curRoom][curDun] + 256;
+				if ((!hideMimic) && (monsterType[i][curRoom][curDun] == MIMIC))
+					tempIcon[monsterX[i][curRoom][curDun]][monsterY[i][curRoom][curDun]]++;
+			}
 	}
 
 
@@ -1022,15 +1039,15 @@ void PaintRoomMap()
 		temp = temp2 = 0;
 		for (i=0; i < 21; i++)
 		{
-			if (monsterType[i][curRoom][curDun] == 0x101)
+			if (monsterType[i][curRoom][curDun] == 0x01)
 				temp++;
-			if ((monsterType[i][curRoom][curDun] >= 0x102) && (monsterType[i][curRoom][curDun] <= 0x10f))
+			if ((monsterType[i][curRoom][curDun] >= 0x02) && (monsterType[i][curRoom][curDun] <= 0x0f))
 				temp2++;
 
 		}
 
 		if (temp + temp2)
-			sprintf(buffer, "%d treasure: %d%s chest, %d misc\n", temp+temp2, temp, plu[temp!=1], temp2);
+			sprintf(buffer, "%d treasure: %d chest%s, %d misc\n", temp+temp2, temp, plu[temp!=1], temp2);
 		else
 			sprintf(buffer, "No chests or misc items.\n");
 
