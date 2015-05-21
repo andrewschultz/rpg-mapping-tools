@@ -853,7 +853,7 @@ void PaintDunMap()
 
 void PaintRoomMap()
 {
-	short i, j, temp, temp2;
+	short i, j, temp = 0, temp2 = 0;
 	short tempIcon[11][11];
 	short checkAry[11][11] = {0};
 
@@ -944,8 +944,6 @@ void PaintRoomMap()
 	for (j=0; j < 11; j++) //Put out the main squares here.
 		for (i=0; i < 11; i++)
 		{
-			if ((i == 5) && (j == 3))
-			{ temp = 5; }
 			BitBlt(localhdc, i*32+288, j*32, 32, 32, roomdc,
 				32*(tempIcon[i][j] % 0x20), 32*(tempIcon[i][j] / 0x20), SRCCOPY);
 		}
@@ -1006,6 +1004,7 @@ void PaintRoomMap()
 		short monInRoom[MONSTERS] = {0};
 		char roomString[300];
 		char buffer[100];
+		char dirs[5] = "NESW";
 
 		GetClientRect(hwnd, &rc);
 
@@ -1016,7 +1015,26 @@ void PaintRoomMap()
 		SetBkMode(hdc, TRANSPARENT);
 		SetTextColor(hdc, RGB(255, 255, 0));
 
-		roomString[0] = 0;
+		for (i=NORTH; i <= WEST; i++)
+		{
+			if (partyX[i][0][curRoom][curDun] + partyY[i][0][curRoom][curDun])
+				temp++;
+		}
+		sprintf(roomString, "Exit%s: ", plu[temp!=1]);
+
+		for (i=NORTH; i <= WEST; i++)
+		{
+			if (partyX[i][0][curRoom][curDun] + partyY[i][0][curRoom][curDun])
+			{
+				temp2 = strlen(roomString);
+				roomString[temp2] = dirs[i];
+				roomString[temp2+1] = 0;
+			}
+		}
+		strcat(roomString, ". ");
+
+		temp2 = temp = 0;
+
 		for (i=0; i < 21; i++) // first we get the monsters
 		{
 			temp = monsterType[i][curRoom][curDun];

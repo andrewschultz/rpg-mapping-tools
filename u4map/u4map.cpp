@@ -1161,7 +1161,7 @@ void PaintDunMap()
 
 void PaintRoomMap()
 {
-	int i, j, k, temp, temp2;
+	int i, j, k, temp = 0, temp2 = 0;
 	short thisIcon[11][11] = {0};
 	short changedYet[11][11] = {0};
 	RECT rc;
@@ -1350,12 +1350,32 @@ void PaintRoomMap()
 		short monInRoom[MONSTERS] = {0};
 		char roomString[300];
 		char buffer[100];
+		char dirs[5] = "NESW";
 
 		SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 		SetBkMode(hdc, TRANSPARENT);
 		SetTextColor(hdc, RGB(255, 255, 0));
 
-		roomString[0] = 0;
+		for (i=NORTH; i <= WEST; i++)
+		{
+			if (partyX[i][0][curRoom][curDun] + partyY[i][0][curRoom][curDun])
+				temp++;
+		}
+		sprintf(roomString, "Exit%s: ", plu[temp!=1]);
+
+		for (i=NORTH; i <= WEST; i++)
+		{
+			if (partyX[i][0][curRoom][curDun] + partyY[i][0][curRoom][curDun])
+			{
+				temp2 = strlen(roomString);
+				roomString[temp2] = dirs[i];
+				roomString[temp2+1] = 0;
+			}
+		}
+		strcat(roomString, ". ");
+
+		temp2 = temp = 0;
+
 		for (i=0; i < 16; i++)
 		{
 			temp = monsterType[i][curRoom][curDun];
