@@ -34,7 +34,7 @@ void checkWrapHalf();
 void tryGoingUp();
 short wrapHalf();
 void checkAbyssRoom();
-short findLevRoom(long lv, long du);
+short findLevRoom();
 
 //#defines for in-app use
 #define NORTH 0
@@ -247,7 +247,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev = LOWORD(wparam) - ID_NAV_1;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
-				findLevRoom(curLev, curDun);
 			}
 			break;
 
@@ -378,7 +377,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			{
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_CHECKED);
 				if (curLev != roomLev[curRoom][curDun])
-					findLevRoom(curLev, curDun);
+					findLevRoom();
 			}
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESTRICT_ROOM_TO_CURRENT_LEVEL, MF_UNCHECKED);
@@ -391,8 +390,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev--;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
-				if (restrictRoom)
-					findLevRoom(curLev, curDun);
 			}
 			break;
 
@@ -403,8 +400,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev++;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
-				if (restrictRoom)
-					findLevRoom(curLev, curDun);
 			}
 			break;
 
@@ -1155,6 +1150,10 @@ void PaintDunMap()
 	else
 			EnableMenuItem( GetMenu(hwnd), ID_NAV_DOWN, MF_ENABLED);
 
+	//need to re-sort the room if it gets jumbled
+	if (restrictRoom)
+		findLevRoom();
+
 	//well not really if the spoil flag isn't set. But we need it, to wipe out the text that was there
 	spoilDungeon((short)curDun);
 }
@@ -1172,6 +1171,10 @@ void PaintRoomMap()
 	rc.top = 360;
 	rc.right = 640;
 	rc.bottom = 512;
+
+	if (restrictRoom)
+		if (curLev != roomLev[curRoom][curDun])
+			return;
 
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
@@ -1672,7 +1675,7 @@ void checkAbyssRoom()
 
 }
 
-short findLevRoom(long lv, long du)
+short findLevRoom()
 {
 	short temp;
 

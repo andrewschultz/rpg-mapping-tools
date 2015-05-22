@@ -251,8 +251,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev = LOWORD(wparam) - ID_NAV_1;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
-				if (restrictRoom)
-					findLevRoom(curRoom, curDun);
 				checkPrevNextDun();
 			}
 			break;
@@ -301,8 +299,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev--;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
-				if (restrictRoom)
-					findLevRoom(curRoom, curDun);
 				checkPrevNextLvl();
 			}
 			break;
@@ -314,8 +310,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				curLev++;
 				CheckMenuItem( GetMenu(hwnd), ID_NAV_1 + curLev, MF_CHECKED);
 				PaintDunMap();
-				if (restrictRoom)
-					findLevRoom(curRoom, curDun);
 				checkPrevNextLvl();
 			}
 			break;
@@ -848,6 +842,9 @@ void PaintDunMap()
 
 	ReleaseDC(hwnd, hdc);
 
+	if (restrictRoom)
+		findLevRoom(curRoom, curDun);
+
 	adjHeader();
 }
 
@@ -859,6 +856,10 @@ void PaintRoomMap()
 
 	RECT rc;
 	HDC hdc = GetDC(hwnd);
+
+	if (restrictRoom)
+		if (curLev != roomLev[curRoom][curDun])
+			return;
 
 	if (curDun == DESPISE)
 	{
