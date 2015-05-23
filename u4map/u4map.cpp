@@ -111,6 +111,8 @@ char plu[2][2] = { "", "s" };
 short dunSpoil[14][8] = {0};
 short dunIconVal[14] = {0x40, 0x70, 0xe0, 0xa0, 0xa1, 0xa2, 0xa3, 0x80, 0x81, 0x90, 0x91, 0x92, 0x93, 0x94};
 
+short dunStat[8] = { 1, 2, 4, 5, 6, 3, 7, 0 };
+
 short curDir = 0; //?? what about when things are turned off
 
 short hideMimic = 0;
@@ -911,6 +913,18 @@ void spoilDungeon(short thisDun)
 		dunSpoil[STATBALL][thisDun], plu[dunSpoil[STATBALL][thisDun] != 1],
 		dunSpoil[SECRETDOOR][thisDun], plu[dunSpoil[SECRETDOOR][thisDun] != 1]
 		);
+
+	if (dunSpoil[STATBALL][thisDun] > 0)
+	{
+		strcat(buffer, "Stat ball bonuses:");
+		if (dunStat[thisDun] & 4)
+			strcat(buffer, " +5 Str");
+		if (dunStat[thisDun] & 2)
+			strcat(buffer, " +5 Dex");
+		if (dunStat[thisDun] & 1)
+			strcat(buffer, " +5 Int");
+		strcat(buffer, "\n");
+	}
 
 	if (thisDun == HYTHLOTH)
 		strcat(buffer, "Stone missing from ");
