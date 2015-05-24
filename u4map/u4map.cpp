@@ -763,6 +763,9 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 							PaintDunMap();
 							}
 						
+						if ((temp <= 0xa3) && (temp >= 0xa0))
+							MessageBox(hwnd, "Info", "Field", MB_OK);
+
 						if ((temp >= 0xd0) && (temp <= 0xdf))
 						{
 							curRoom = temp & 0xf;
