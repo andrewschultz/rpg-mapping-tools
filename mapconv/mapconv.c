@@ -28,6 +28,7 @@ let 1 icon equal another
 let 1 icon = another but with colors switched somehow
 1 icon = another rotated or flipped.
 */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -465,7 +466,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		fgets(BufStr, MAXSTRING, F);
 
-            printf("%s\n", BufStr);
+        printf("String-read: %s\n", BufStr);
 
 		BufStrCount = 0;
 
@@ -746,7 +747,9 @@ void PrintOutUnused()
 	}
 	if (MAPCONV_STATUS & MAPCONV_SHOW_END_STATS)
 	{
-		printf("%d of %d usable icons, for %f percent.\n", totalUsed, totalUsed+totalUnused, (totalUsed*100)/(totalUsed+totalUnused));
+		float q = ((float)(totalUsed*100))/(totalUsed+totalUnused);
+	    printf("Total stats:\n");
+		printf("%d of %d usable icons, for %f percent.\n", totalUsed, totalUsed+totalUnused, q);
 	}
 }
 
@@ -976,7 +979,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	short tst, tst2;
 	char buffer[MAXSTRING];
 
-	printf("%x:%c\n", q, myBuf[0]);
+	printf("Icon-read %x:%c\n", q, myBuf[0]);
 
 	if (MAPCONV_STATUS & MAPCONV_SORT_PIX)
 		if (q < BmpHandler.LastIconViewed)

@@ -103,6 +103,12 @@ main(int argc, char * argv[])
 			addSpace = 1;
 			break;
 
+		case '*':
+			for (i=0; i < MAXW; i++)
+				for (j=0; j < MAXW; j++)
+					myary[i][j] = 0;
+			break;
+
 		case 'c':
 		case 'C':
 			if ((buffer[1] == 'r') || (buffer[1] == 'R'))
@@ -130,16 +136,32 @@ main(int argc, char * argv[])
 
 		//x/y move you to absolute coordinates myX+myAbsX
 		case 'x':
+			if (buffer[1] == 'd')
+			{
+				myX = strtol(buffer+2, NULL, 10) + myX;
+				myLastX = myX;
+			}
+			else
+			{
 			myX = strtol(buffer+1, NULL, 10);
 			myLastX = myX;
+			}
 			break;
 
 		case 'y':
+			if (buffer[1] == 'd')
+			{
+				myY += strtol(buffer+2, NULL, 10);
+				myLastY = myY;
+			}
+			else
+			{
 			myY = strtol(buffer+1, NULL, 10);
 			myLastY = myY;
+			}
 			break;
 
-		case 'd':
+		case 'd': // this changes the starting point to draw the rectangle
 			if (buffer[1] == 'x')
 			{
 				if (buffer[2] == '-')
@@ -165,7 +187,7 @@ main(int argc, char * argv[])
 			printf("Error at line %d. d(xy) is proper usage for moving.\n", curLine);
 			break;
 
-		//+/-/^/v move you around relatively, as opposed to absolute
+		//+/-/^/v rotate the start-x in the rectangle. For moving around, use dx/dy
 		case '+':
 			myXModOffset = strtol(buffer+1, NULL, 10);
 			break;

@@ -1,4 +1,5 @@
 //editor.cpp
+//copyright ??? by Andrew Schultz
 //this program edits a wall based map and allows for
 //  icons inside squares
 //  tracking squares done
