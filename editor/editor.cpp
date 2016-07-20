@@ -75,6 +75,7 @@ short CutSquareIconArray[MAXICONSWIDE][MAXICONSHIGH];
 short ControlKeyDown = 0;
 long MouseDownX, MouseDownY;
 long xCurrent = 0, yCurrent = 0, iconNumber = 0, massCutPasteIcon;
+long notPeriod = 0;
 long WallIconNumber = 2;	//default to doors. Can add/delete walls with (shift) WASZ
 long myW = MAXICONSWIDE, myH = MAXICONSHIGH;
 char CurrentFileName[200];
@@ -1062,11 +1063,34 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				ReloadTheMap(hwnd);
 				break;
 
+			case 0xbc: // comma
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
+				if (iconNumber == BEENTHERE)
+				{
+					iconNumber = notPeriod;
+				}
+				else
+				{
+					notPeriod = iconNumber;
+				}
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
+				drawMyIcons(hwnd);
+				break;
+
 			case 0xbe:	//period
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
 ;				if (iconNumber == BEENTHERE)
 					iconNumber = 0;
 				else
+				{
+					notPeriod = iconNumber;
 					iconNumber = BEENTHERE;
+				}
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
+				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
 				drawMyIcons(hwnd);
 				break;
 
