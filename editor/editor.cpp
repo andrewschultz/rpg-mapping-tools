@@ -1180,7 +1180,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 		// kill the application
 			if (workNotSaved)
 			{
-				long x = MessageBox(NULL, "Save Warning", "Do you wish to exit without saving? If so, hit OK. If not, hit Cancel.", MB_OKCANCEL);
+				long x = MessageBox(NULL, "Do you wish to exit without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
 			}
 		PostQuitMessage(0);
 		return(0);

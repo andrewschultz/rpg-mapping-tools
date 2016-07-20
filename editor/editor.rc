@@ -45,7 +45,7 @@ BEGIN
 		MENUITEM "Create &New mapfile", ID_FILE_CREATE_NEW
 		MENUITEM SEPARATOR
 		MENUITEM "Save &bitmap\tctrl-shift-s", ID_FILE_SAVE_BITMAP
-		MENUITEM "Save &mapfile\tcrl-s", ID_FILE_SAVE_MAPFILE
+		MENUITEM "Save &mapfile\tctrl-s", ID_FILE_SAVE_MAPFILE
 		MENUITEM "Save &text", ID_FILE_SAVE_TEXT
 		MENUITEM "Save &as", ID_FILE_SAVE_AS
 		MENUITEM "Save a&ll", ID_FILE_SAVE_ALL
