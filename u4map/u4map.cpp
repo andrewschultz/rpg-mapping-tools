@@ -107,6 +107,14 @@ short noRoomOnLevelWarn = 0;
 
 char plu[2][2] = { "", "s" };
 
+char fountStr[5][7] = { "Plain", "Heal", "Bad HP", "Equal", "Poison" };
+char fieldStr[4][10] = { "Poison", "Lightning", "Fire", "Sleep" };
+
+char altarRoom[3][55] = {
+	"TRUTH 1,1: N to Deceit, E to Shame, W to Wrong",
+	"LOVE 3,3: N to Despise, E to Wrong, W to Covetous",
+	"COURAGE 7,7: N to Destard, E to Covetous, W to Shame" };
+
 //so we don't have to read dungeon spoilers in every time. See DUNTRACKING for what it maps to.
 short dunSpoil[14][8] = {0};
 short dunIconVal[14] = {0x40, 0x70, 0xe0, 0xa0, 0xa1, 0xa2, 0xa3, 0x80, 0x81, 0x90, 0x91, 0x92, 0x93, 0x94};
@@ -272,6 +280,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			curRoom = LOWORD(wparam) - ID_NAV_A;
 			CheckMenuItem( GetMenu(hwnd), LOWORD(wparam), MF_CHECKED);
 			PaintRoomMap();
+			doRoomCheck();
 			break;
 
 		case ID_NAV_SHIFT_A:
@@ -751,6 +760,8 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 				if (mouseDownX == mouseUpX)
 					if (mouseDownY == mouseUpY)
 					{
+						char buffer[300];
+
 						temp = mainDun[mouseDownX][mouseDownY][curLev][curDun];
 						
 						if (temp == 0x10 || temp == 0x30)
@@ -764,7 +775,29 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 							}
 						
 						if ((temp <= 0xa3) && (temp >= 0xa0))
-							MessageBox(hwnd, "Info", "Field", MB_OK);
+						{
+							sprintf(buffer, "%s field", fieldStr[temp - 0xa0]);
+							MessageBox(hwnd, buffer, "Info", MB_OK);
+						}
+
+						if (temp == 0x8e)
+							MessageBox(hwnd, "Pit", "Info", MB_OK);
+
+						if (temp == 0x80)
+							MessageBox(hwnd, "Winds", "Info", MB_OK);
+
+						if (temp == 0x70)
+							MessageBox(hwnd, "Orb", "Info", MB_OK);
+
+						if (temp == 0xa0)
+							MessageBox(hwnd, "Altar", "Info", MB_OK);
+
+						if ((temp <= 0x94) && (temp >= 0x90))
+						{
+							sprintf(buffer, "%s fountain", fountStr[temp - 0x90]);
+							MessageBox(hwnd, buffer, "Info", MB_OK);
+						}
+
 
 						if ((temp >= 0xd0) && (temp <= 0xdf))
 						{
@@ -871,14 +904,6 @@ if (!RegisterClass(&winclass))
 	}
 	return 0;
 }
-
-char fountStr[5][7] = { "Plain", "Heal", "Bad HP", "Equal", "Poison" };
-char fieldStr[4][10] = { "Poison", "Lightning", "Fire", "Sleep" };
-
-char altarRoom[3][55] = {
-	"TRUTH 1,1: N to Deceit, E to Shame, W to Wrong",
-	"LOVE 3,3: N to Despise, E to Wrong, W to Covetous",
-	"COURAGE 7,7: N to Destard, E to Covetous, W to Shame" };
 
 void spoilDungeon(short thisDun)
 {
