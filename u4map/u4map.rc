@@ -222,7 +222,6 @@ BEGIN
 		MENUITEM "&Auto-adjust maps\tBackspace", ID_OPTIONS_SIZE_AUTO
 		MENUITEM "&Bordered half-size maps\t\\", ID_OPTIONS_SIZE_BORDERED
 		MENUITEM "&Label rooms in main map", ID_OPTIONS_MAINMAP_LABEL
-		MENUITEM "Room te&xt Summary", ID_OPTIONS_TEXTSUMMARY
 		MENUITEM SEPARATOR
 		MENUITEM "Reset new dungeon to room 1", ID_OPTIONS_RESET_ROOM_1
 		MENUITEM "Reset new dungeon to level 1", ID_OPTIONS_RESET_LEVEL_1

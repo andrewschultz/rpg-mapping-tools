@@ -172,6 +172,17 @@ char monsterName[52][13] = { "Mage", "Bard", "Fighter", "Druid", "Tinker", "Pala
 	"Daemon", "Hydra", "Dragon", "Balron"
 };
 
+short monsterExp[52] = { 12, 7, 7, 10, 9, 4, 3, 9,
+13, 9, 7, 9, 13, 10, 11, 255,
+16, 16, 5, 9, 9, 9, 16, 16,
+4, 4, 5, 6,
+4, 7, 4, 13,
+16, 4, 16, 9,
+6, 4, 6, 4,
+8, 5, 9, 5,
+12, 13, 7, 16,
+8, 14, 15, 16 };
+
 //Mage down to shepherd. You start as a mage, for simplicity.
 short slotIcon[8] = { 0x20, 0x22, 0x24, 0x26, 0x28, 0x2a, 0x2c, 0x2e };
 short slotShow[8] = {1, 1, 1, 1, 1, 1, 1, 1};
@@ -1390,12 +1401,14 @@ void PaintRoomMap()
 	//now text list of monsters
 	if (roomTextSummary)
 	{
+		short roomExp = 0;
 		short foundSecret = 0;
 		short needComma = 0;
 		short monInRoom[MONSTERS] = {0};
 		char roomString[300];
 		char buffer[100];
 		char dirs[5] = "NESW";
+		short monGroup = 0;
 
 		SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 		SetBkMode(hdc, TRANSPARENT);
@@ -1417,7 +1430,7 @@ void PaintRoomMap()
 				roomString[temp2+1] = 0;
 			}
 		}
-		strcat(roomString, ". ");
+		strcat(roomString, ".\n");
 
 		temp2 = temp = 0;
 
@@ -1430,6 +1443,11 @@ void PaintRoomMap()
 		for (i=0; i < MONSTERS; i++)
 			if (monInRoom[i])
 			{
+				monGroup++;
+				if (monGroup == 7)
+					{ strcat(roomString, "\n"); needComma = 0; } //hack for super long each-class room in Abyss
+
+				roomExp += monInRoom[i] * monsterExp[i];
 				sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
 				if (needComma == 0)
 					needComma = 1;
@@ -1443,9 +1461,15 @@ void PaintRoomMap()
 				if (roomMap[i][j][curRoom][curDun] == 0x3c)
 					temp++;
 
+		if (roomExp)
+		{
+			sprintf(buffer, " (%d exp)", roomExp);
+			strcat(roomString, buffer);
+		}
+
 		if (temp)
 		{
-			sprintf(buffer, "\n%d chest%s.\n", temp, plu[(temp > 1)]);
+			sprintf(buffer, "\n%d chest%s, %d gold expected.\n", temp, plu[(temp > 1)], (99*temp) / 2);
 			strcat(roomString, buffer);
 		}
 		else
