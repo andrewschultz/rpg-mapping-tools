@@ -1408,7 +1408,6 @@ void PaintRoomMap()
 		char roomString[300];
 		char buffer[100];
 		char dirs[5] = "NESW";
-		short monGroup = 0;
 
 		SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
 		SetBkMode(hdc, TRANSPARENT);
@@ -1443,10 +1442,6 @@ void PaintRoomMap()
 		for (i=0; i < MONSTERS; i++)
 			if (monInRoom[i])
 			{
-				monGroup++;
-				if (monGroup == 7)
-					{ strcat(roomString, "\n"); needComma = 0; } //hack for super long each-class room in Abyss
-
 				roomExp += monInRoom[i] * monsterExp[i];
 				sprintf(buffer, "%d %s", monInRoom[i], monsterName[i]);
 				if (needComma == 0)
@@ -1529,7 +1524,7 @@ void PaintRoomMap()
 		}
 
 		if (strlen(roomString))
-			DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP);
+			DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP | DT_WORDBREAK);
 		ReleaseDC(hwnd, hdc);
 	}
 

@@ -155,6 +155,13 @@ char monsterName[MONSTERS][13] = {
 	"Sand Trap", "Troll", "FIELD", "WHIRLPOOL", "Mongbat", "Corpser", "Rot Worm", "Shadow Lord"
 };  //technically treasure/field/whirlpool aren't monsters but I'd have to muck with array counts otherwise
 
+short monsterExp[MONSTERS] = {
+	8, 13, 18, 6, 3, 2, 3, 6,
+	3, 3, 8, 11, 6, 0, 11, 2,
+	3, 6, 3, 8, 6, 11, 13, 25,
+	21, 4, 0, 0, 6, 11, 2, 25
+};
+
 short msgStart[8] = { 0, 1, -1, 2, 3, 7, 10, -1 };
 char msgs[11][25] = { "BOTTOMLESS PIT", "THE MAZE OF LOST SOULS", "THE PRISON WRONG", "THE CRYPT", "UPPER CRYPTS", "LOWER CRYPTS", "DEBTORS ALLY", "DEEP", "DEEPER", "DEEPEST", "MOTHER LODE MAZE" };
 
@@ -648,7 +655,7 @@ if (!RegisterClass(&winclass))
 							  "Ultima 5 Dungeon Simulator",	     // title
 							  WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
 					 		  0,0,	   // x,y
-							  20*ICONSIZE, 524, // width, height. We want space for text at the bottom to allow room description.
+							  20*ICONSIZE, 540, // width, height. We want space for text at the bottom to allow room description.
 							  NULL,	   // handle to parent 
 							  NULL,	   // handle to menu
 							  hInstance,// instance
@@ -853,6 +860,7 @@ void PaintRoomMap()
 	short i, j, temp = 0, temp2 = 0;
 	short tempIcon[11][11];
 	short checkAry[11][11] = {0};
+	short roomExp = 0;
 
 	RECT rc;
 	HDC hdc = GetDC(hwnd);
@@ -1040,7 +1048,10 @@ void PaintRoomMap()
 		{
 			temp = monsterType[i][curRoom][curDun];
 			if (toMonster(temp) != -1)
+			{
 				monInRoom[toMonster(temp)]++;
+				roomExp += monsterExp[toMonster(temp)];
+			}
 		}
 		for (i=0; i < MONSTERS; i++)
 			if (monInRoom[i])
@@ -1054,6 +1065,11 @@ void PaintRoomMap()
 					strcat(buffer, "s");
 				strcat(roomString, buffer);
 			}
+		if (roomExp)
+		{
+			sprintf(buffer, "(%d exp) ", roomExp);
+			strcat(roomString, buffer);
+		}
 
 		if (needComma)
 			strcat(roomString, ". ");
