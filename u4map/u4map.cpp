@@ -614,23 +614,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			{
 				short rts = roomTextSummary;
 				roomTextSummary = 1;
-				short oldRoom = curRoom;
-				short oldDun = curDun;
+				long oldRoom = curRoom;
+				long oldDun = curDun;
 				short mymax = 16;
 				short i;
 				short j;
 				short k;
 				short l;
+				memset(&txtflag, 0, sizeof(txtflag));
 				dungeonDump = 1;
 				for (i=0; i < 8; i++)
 				{
-					if (i == 8) { mymax = 64; }
+					if (i == 7) { mymax = 64; }
 					for (j=0; j < mymax; j++)
 					{
 						curDun = i; curRoom = j;
 						char buffer[200];
 						fputs("\n\n", F);
-						sprintf(buffer, "%s room %d, level %d\n\n", dunName[i], j+1, roomLev[j][i]);
+						sprintf(buffer, "%s room %d, level %d\n\n", dunName[i], j+1, roomLev[j][i] + 1);
+						fputs(buffer, F);
 						for (k=0; k < 11; k++)
 						{
 							fputs("+ ", F);
@@ -643,8 +645,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 							}
 							fputs("\n", F);
 						}
-						fputs("\n", F);
-						fputs(buffer, F);
 						PaintRoomMap();
 					}
 				}
@@ -656,7 +656,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 					if (txtflag[i] > 0)
 					{
 						char buffer[50];
-						sprintf(buffer, "Undef %x at %d\n", i, txtflag[i]);
+						sprintf(buffer, "Undef %x at %s room %d %d, %d\n", i, dunName[(txtflag[i] / 1000000) % 100],
+							(txtflag[i] / 10000) % 100 + 1, txtflag[i] % 100, (txtflag[i] / 100) % 100);
 						fputs(buffer, F);
 					}
 			}
@@ -1597,7 +1598,11 @@ if (!dungeonDump)
 
 		if (strlen(roomString))
 			if (dungeonDump)
+			{
 				fputs(roomString, F);
+				if (foundSecret)
+					fputs("\n", F);
+			}
 			else
 				DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP | DT_WORDBREAK);
 		ReleaseDC(hwnd, hdc);
