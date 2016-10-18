@@ -17,6 +17,7 @@ main(int argc, char * argv[])
 	FILE * F, * G = NULL, * H, * I;
 	long keepGoing = 1;
 	unsigned int count = 0;
+	short goDirection = 1;
 	long toSet = 0, temp = 0, curLine = 0;
 	long myDefaultOffset = 0;
 	long myAbsX = 0, myAbsY = 0;
@@ -274,6 +275,10 @@ main(int argc, char * argv[])
 				return 0;
 			}
 			break;
+		
+		case 'f':
+			goDirection = 0 - goDirection;
+			break;
 
 		case 'g': // this is specific to Gegege No Kitaro
 			gegege=1;
@@ -356,7 +361,7 @@ main(int argc, char * argv[])
 				for (i=0; i < myW; i++)
 				{
 					i2 = (i+myXModOffset) % myW;
-					j2 = (j+myYModOffset) % myH;
+					j2 = (j*goDirection+myYModOffset) % myH;
 					ch = fgetc(G) & 0xff;
 					if (replace[ch] != -1)
 						ch = replace[ch];
