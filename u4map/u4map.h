@@ -142,6 +142,8 @@
 #define ID_OPTIONS_SHOW_ALTAR_ROOMS	368
 #define ID_OPTIONS_REMEMBER_ABYSS_ROOM	369
 
+#define ID_NAV_DUNGEONDUMP 370
+
 //Game specific options being able to swap characters at will
 #define ID_COSMETIC_HIDE_ALL	401
 #define ID_COSMETIC_HIDE_NONE	402

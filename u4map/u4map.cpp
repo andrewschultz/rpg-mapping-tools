@@ -102,6 +102,9 @@ short roomTextSummary = 0;
 short lastAbyssRoom = -1;
 short rememberAbyssRoom = 1;
 
+short dungeonDump = 0;
+FILE * F;
+
 short noFileWarnYet = 0;
 short noRoomOnLevelWarn = 0;
 
@@ -109,6 +112,9 @@ char plu[2][2] = { "", "s" };
 
 char fountStr[5][7] = { "Plain", "Heal", "Bad HP", "Equal", "Poison" };
 char fieldStr[4][10] = { "Poison", "Lightning", "Fire", "Sleep" };
+
+char txtAry[256];
+long txtflag[256] = {0};
 
 char altarRoom[3][55] = {
 	"TRUTH 1,1: N to Deceit, E to Shame, W to Wrong",
@@ -591,6 +597,70 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REMEMBER_ABYSS_ROOM, MF_CHECKED);
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_REMEMBER_ABYSS_ROOM, MF_UNCHECKED);
+			break;
+
+		case ID_NAV_DUNGEONDUMP:
+			short j;
+			F = fopen("c:\\coding\\games\\u4map\\u4di.txt", "r");
+			for (i=0; i < 16; i++)
+			{
+				char buffer[30];
+				fgets(buffer, 30, F);
+				for (j=0; j < 16; j++)
+					txtAry[j+16*i] = buffer[j];
+			}
+			fclose(F);
+			F = fopen("c:\\coding\\games\\u4map\\u4dump.txt", "w");
+			{
+				short rts = roomTextSummary;
+				roomTextSummary = 1;
+				short oldRoom = curRoom;
+				short oldDun = curDun;
+				short mymax = 16;
+				short i;
+				short j;
+				short k;
+				short l;
+				dungeonDump = 1;
+				for (i=0; i < 8; i++)
+				{
+					if (i == 8) { mymax = 64; }
+					for (j=0; j < mymax; j++)
+					{
+						curDun = i; curRoom = j;
+						char buffer[200];
+						fputs("\n\n", F);
+						sprintf(buffer, "%s room %d, level %d\n\n", dunName[i], j+1, roomLev[j][i]);
+						for (k=0; k < 11; k++)
+						{
+							fputs("+ ", F);
+							for (l=0; l < 11; l++)
+							{
+								fputc(txtAry[roomMap[l][k][j][i]], F);
+								if (txtAry[roomMap[l][k][j][i]] == '?')
+									if (txtflag[roomMap[l][k][j][i]] == 0)
+										txtflag[roomMap[l][k][j][i]] = 1000000 * i + 10000 * j + 100 * k + l;
+							}
+							fputs("\n", F);
+						}
+						fputs("\n", F);
+						fputs(buffer, F);
+						PaintRoomMap();
+					}
+				}
+				dungeonDump = 0;
+				curRoom = oldRoom;
+				curDun = oldDun;
+				roomTextSummary = rts;
+				for (i=0; i < 256; i++)
+					if (txtflag[i] > 0)
+					{
+						char buffer[50];
+						sprintf(buffer, "Undef %x at %d\n", i, txtflag[i]);
+						fputs(buffer, F);
+					}
+			}
+			fclose(F);
 			break;
 
 			//MINOR/SILLY OPTIONS
@@ -1318,6 +1388,8 @@ void PaintRoomMap()
 
 	//Okay, print everything out
 
+if (!dungeonDump)
+{
 	for (j=0; j < 11; j++)
 		for (i=0; i < 11; i++)
 			BitBlt(localhdc, i*32+288, j*32, 32, 32, roomdc,
@@ -1397,7 +1469,7 @@ void PaintRoomMap()
 	DeleteObject(hbrush);
 	ReleaseDC(hwnd, hdc);
 	}
-
+}
 	//now text list of monsters
 	if (roomTextSummary)
 	{
@@ -1524,7 +1596,10 @@ void PaintRoomMap()
 		}
 
 		if (strlen(roomString))
-			DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP | DT_WORDBREAK);
+			if (dungeonDump)
+				fputs(roomString, F);
+			else
+				DrawText(hdc, roomString, strlen(roomString), &rc, DT_LEFT | DT_TOP | DT_WORDBREAK);
 		ReleaseDC(hwnd, hdc);
 	}
 
