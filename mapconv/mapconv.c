@@ -65,6 +65,7 @@ short NewPIXFile;
 #define MAPCONV_DEBUG_ONLY_FIRST 128
 #define MAPCONV_SHOW_END_STATS 256
 #define MAPCONV_BOTTOMTOP 512
+#define MAPCONV_DEBUG_ICONS 1024
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -223,6 +224,12 @@ main(int argc, char * argv[])
 		case 'h':
 			BmpHandler.printHTMLFile = 1;
 			CurComd++;
+			break;
+
+		case 'i':
+			CurComd++;
+			MAPCONV_STATUS |= MAPCONV_DEBUG_ICONS;
+			printf("Debugging icons.\n");
 			break;
 
 		case 'n':
@@ -979,7 +986,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	short tst, tst2;
 	char buffer[MAXSTRING];
 
-	printf("Icon-read %x:%c\n", q, myBuf[0]);
+	if (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS)
+		printf("Icon-read %x:%c\n", q, myBuf[0] == '\n' ? '.' : myBuf[0]);
 
 	if (MAPCONV_STATUS & MAPCONV_SORT_PIX)
 		if (q < BmpHandler.LastIconViewed)
