@@ -162,6 +162,7 @@ int CharToNum(int);
 void ReadPiece();
 void ModifyArray();
 void PrintOutUnused();
+void printGrid();
 
 void HelpBombOut();
 
@@ -325,6 +326,7 @@ Flag -b specifies blank icon.\n\
 Flag -c to set default blank color, in hexadecimal.\n\
 Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
+Flag -i to show icon debugging.\n\
 Flag -nh to show NMR help.\n\
 Flag -r to reverse when IDing unused icons (default is top to bottom).\n\
 Flag -s to show used/unused icon stats at the end.\n\
@@ -716,17 +718,15 @@ void PrintOutUnused()
 {
 	long j, i, k;
 	short used[256] = {0};
+	short usedAtAll[256] = {0};
 	long totalUnused = 0;
 	long totalUsed = 0;
+	short unusedBaseIcons = 0;
+	short usedBaseIcons = 0;
 
 	printf("Roll call for unused icons:\n");
 
-	for (i=0; i < 256; i++)
-	{
-		printf("%d", BmpHandler.IconUsed[i]);
-		if (i%16 == 15)
-			printf("\n");
-	}
+	printGrid();
 
 	for (j = BmpHandler.Yi; j < BmpHandler.Yf; j++)
 	{
@@ -745,10 +745,20 @@ void PrintOutUnused()
 				else
 					printf("%02x %02x Unused icon %x also %d %d.\n", i, k, BmpHandler.ary[i][k], i-BmpHandler.Xi, k-BmpHandler.Yi);
 				used[BmpHandler.ary[i][k]]++;
+				if (BmpHandler.IconUsed[BmpHandler.ary[i][k]] == 0)
+					unusedBaseIcons++;
+				BmpHandler.IconUsed[BmpHandler.ary[i][k]] = 2;
 				totalUnused++;
 			}
 			else
+			{
+				if (usedAtAll[BmpHandler.ary[i][k]] == 0)
+				{
+					usedAtAll[BmpHandler.ary[i][k]] = 1;
+					usedBaseIcons++;
+				}
 				totalUsed++;
+			}
 		}
 //		printf("\n");
 	}
@@ -756,7 +766,22 @@ void PrintOutUnused()
 	{
 		float q = ((float)(totalUsed*100))/(totalUsed+totalUnused);
 	    printf("Total stats:\n");
-		printf("%d of %d usable icons, for %f percent.\n", totalUsed, totalUsed+totalUnused, q);
+		printf("%d of %d usable icons in final map, for %f percent.\n", totalUsed, totalUsed+totalUnused, q);
+		printf("%d unused based icons, %d used.\n", unusedBaseIcons, usedBaseIcons);
+	}
+	if (totalUnused > 0)
+		printGrid();
+}
+
+void printGrid()
+{
+	short i;
+
+	for (i=0; i < 256; i++)
+	{
+		printf("%d", BmpHandler.IconUsed[i]);
+		if (i%16 == 15)
+			printf("\n");
 	}
 }
 
