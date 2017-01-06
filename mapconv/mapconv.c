@@ -171,7 +171,10 @@ long InMapW = 256;
 
 main(int argc, char * argv[])
 {
+	char myFile[50];
 	short CurComd = 1;
+
+	myFile[0] = 0;
 
 	BmpHandler.BlankColor = BLANKCOLOR;
 	BmpHandler.BlankIcon = BLANKICON;
@@ -194,103 +197,108 @@ main(int argc, char * argv[])
 		NMRRead("dmdd.nmr");
 		return 0;
 	}
-	while (argv[CurComd][0] == '-')
+	for (CurComd = 1; CurComd < argc; CurComd++)
 	{
-		switch(argv[CurComd][1])
+		printf("%d %s\n", CurComd, argv[CurComd]);
+		if (argv[CurComd][0] == '-')
 		{
-		case '0':
-			MAPCONV_STATUS |= MAPCONV_BIN_FLAG_KNOWN;
-			printf(".bin file exports known as 0's\n");
-			CurComd++;
-			break;
-
-		case 'b':
-			BmpHandler.BlankIcon = (short)strtol(argv[CurComd+1], NULL, 16);
-			printf("Blank icon is %x.\n", BmpHandler.BlankIcon);
-			CurComd += 2;
-			break;
-
-		case 'c':
-			BmpHandler.BlankColor = (short)strtol(argv[CurComd+1], NULL, 16);
-			printf("Use default color %x for blank icons.\n", BmpHandler.BlankColor);
-			CurComd+=2;
-			break;
-
-		case 'e':
-			CurComd++;
-			MAPCONV_STATUS |= MAPCONV_USE_EGA_HEADER;
-			printf("Using EGA header.\n");
-			break;
-
-		case 'h':
-			BmpHandler.printHTMLFile = 1;
-			CurComd++;
-			break;
-
-		case 'i':
-			CurComd++;
-			MAPCONV_STATUS |= MAPCONV_DEBUG_ICONS;
-			printf("Debugging icons.\n");
-			break;
-
-		case 'n':
-			MAPCONV_STATUS |= MAPCONV_NO_HEADER_FLAG;
-			printf("Don't use built in header.\n");
-			CurComd++;
-			break;
-
-		case 'S':
-			MAPCONV_STATUS |= MAPCONV_SORT_PIX;
-			printf("Warning you if PIX file is not sorted.\n");
-			CurComd++;
-			break;
-
-		case 's':
-			MAPCONV_STATUS |= MAPCONV_SHOW_END_STATS;
-			CurComd++;
-			break;
-
-		case 't':
-			MAPCONV_STATUS |= MAPCONV_USE_TRANSPARENCY;
-			printf("Use transparency.\n");
-			if (argv[CurComd][2])
+			switch(argv[CurComd][1])
 			{
-				BmpHandler.TransparencyColor = (short) strtol(argv[CurComd], NULL, 16);
-				printf("Transparency color %02x.\n", BmpHandler.TransparencyColor);
+			case '0':
+				MAPCONV_STATUS |= MAPCONV_BIN_FLAG_KNOWN;
+				printf(".bin file exports known as 0's\n");
+				break;
+
+			case 'b':
+				BmpHandler.BlankIcon = (short)strtol(argv[CurComd+1], NULL, 16);
+				printf("Blank icon is %x.\n", BmpHandler.BlankIcon);
+				CurComd++;
+				break;
+
+			case 'c':
+				BmpHandler.BlankColor = (short)strtol(argv[CurComd+1], NULL, 16);
+				printf("Use default color %x for blank icons.\n", BmpHandler.BlankColor);
+				CurComd++;
+				break;
+
+			case 'e':
+				CurComd++;
+				MAPCONV_STATUS |= MAPCONV_USE_EGA_HEADER;
+				printf("Using EGA header.\n");
+				break;
+
+			case 'h':
+				BmpHandler.printHTMLFile = 1;
+				break;
+
+			case 'i':
+				MAPCONV_STATUS |= MAPCONV_DEBUG_ICONS;
+				printf("Debugging icons.\n");
+				break;
+
+			case 'n':
+				MAPCONV_STATUS |= MAPCONV_NO_HEADER_FLAG;
+				printf("Don't use built in header.\n");
+				break;
+
+			case 'S':
+				MAPCONV_STATUS |= MAPCONV_SORT_PIX;
+				printf("Warning you if PIX file is not sorted.\n");
+				break;
+
+			case 's':
+				MAPCONV_STATUS |= MAPCONV_SHOW_END_STATS;
+				//printf("Showing end stats.\n");
+				break;
+
+			case 't':
+				MAPCONV_STATUS |= MAPCONV_USE_TRANSPARENCY;
+				printf("Use transparency.\n");
+				if (argv[CurComd][2])
+				{
+					BmpHandler.TransparencyColor = (short) strtol(argv[CurComd], NULL, 16);
+					printf("Transparency color %02x.\n", BmpHandler.TransparencyColor);
+				}
+				break;
+
+			case 'u':
+				MAPCONV_STATUS |= MAPCONV_DEBUG_UNKNOWN_SQUARES;
+				if (argv[CurComd][2] == 'f')
+					MAPCONV_STATUS |= MAPCONV_DEBUG_ONLY_FIRST;
+				break;
+
+			case 'x':
+				MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS;
+				printf("Use .xtr file to amend the BMPs.\n");
+				break;
+
+			default:
+				printf("%s is not a known option, bailing out.\n", argv[CurComd]);
+
+			case '?':
+				HelpBombOut();
+				return 0;
+
 			}
-			CurComd++;
-			break;
-
-		case 'u':
-			MAPCONV_STATUS |= MAPCONV_DEBUG_UNKNOWN_SQUARES;
-			if (argv[CurComd][2] == 'f')
-				MAPCONV_STATUS |= MAPCONV_DEBUG_ONLY_FIRST;
-			CurComd++;
-			break;
-
-		case 'x':
-			MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS;
-			printf("Use .xtr file to amend the BMPs.\n");
-			CurComd++;
-			break;
-
-		default:
-			printf("%s is not a known option, bailing out.\n", argv[CurComd]);
-
-		case '?':
-			HelpBombOut();
-			return 0;
-
+		}
+		else
+		{
+			if (myFile[0] > 0)
+			{
+				printf("Already picked out a file to read.\n");
+				return 0;
+			}
+			strcpy(myFile, argv[CurComd]);
 		}
 	}
-	if (argc == CurComd)
+	if (myFile[0] == 0)
 	{
 		printf("You need to input a file, not just flags.\n");
 		HelpBombOut();
 		return 0;
 	}
 
-	if (NMRRead(argv[CurComd]) != NMR_READ_SUCCESS)
+	if (NMRRead(myFile) != NMR_READ_SUCCESS)
 	{
 		printf("Bailing, NMR read failed.\n");
 		return 0;
