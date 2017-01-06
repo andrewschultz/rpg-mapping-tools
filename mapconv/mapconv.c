@@ -1204,8 +1204,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case 'x': //alternating checkerboard colors
-		tst = myBuf[1];
-		tst2 = myBuf[2];
+		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[2]);
 		fgetc(F);
 		for (j=0;  j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
@@ -1216,23 +1216,23 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case 'H': //horizontal trimming, with color after
-		tst = myBuf[1] - 0x30;
+		tst = CharToNum(myBuf[1]);
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0; i < tst; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
 		return;
 
 	case 'V': //vertical trimming, with color after
-		tst = myBuf[1] - 0x30;
-		tst2 = myBuf[1] - 0x30;
+		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[1]);
 		for (j=0; j < tst; j++)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
 		return;
 
 	case 'S': //switch 2 colors. Actually, you can switch with a null color with no problem.
-		tst = myBuf[1] - 0x30;
-		tst2 = myBuf[2] - 0x30;
+		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[2]);
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				if ((BmpHandler.Icons[q][i][j] == tst) || (BmpHandler.Icons[q][i][j] == tst2))
