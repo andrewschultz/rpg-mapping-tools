@@ -221,6 +221,11 @@ main(int argc, char * argv[])
 				CurComd++;
 				break;
 
+			case 'd': // delete intermediary files
+				system("erase *.png.bak");
+				system("erase *.png.0*");
+				break;
+
 			case 'e':
 				CurComd++;
 				MAPCONV_STATUS |= MAPCONV_USE_EGA_HEADER;
@@ -332,6 +337,7 @@ void HelpBombOut()
 Flag -0 so bin file puts 0s for known.\n\
 Flag -b specifies blank icon.\n\
 Flag -c to set default blank color, in hexadecimal.\n\
+Flag -d to get rid of *.png.(bak/000) files.\n\
 Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
 Flag -i to show icon debugging.\n\
@@ -603,7 +609,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				}
 				OneIcon(strtol(buffer+3, NULL, 16), buffer+3, F);
 				break;
-				
+
 			case '>': //command line
 				system(buffer+1);
 				break;
@@ -765,7 +771,10 @@ void PrintOutUnused()
 					usedAtAll[BmpHandler.ary[i][k]] = 1;
 					usedBaseIcons++;
 				}
-				totalUsed++;
+				if (BmpHandler.IconUsed[BmpHandler.ary[i][k]] == 2)
+					totalUnused++;
+				else
+					totalUsed++;
 			}
 		}
 //		printf("\n");
