@@ -373,9 +373,19 @@ h15 sets height to 15. (default 8, max 16)\n\
 w13 sets width to 13. (default 8, max 16)\n\
 0x0a=3 sets icon 0x0a to 3 (green).\n\
 0x0fc0e copies icon 0x0e to 0x0f.\n\
+0x12h03 makes 0x12 a horizontal flip of 03.\n\
+0x12h03 makes 0x12 a vertical flip of 03.\n\
+\n\
 0x0ax34 alternates 3/4 in checkerboard pattern, starting with 3.\n\
 0x0a/35 puts 3 in the upper left, 5 in lower right, diagonal. Extra / means 3 along the center.\n\
 0x0a\\35 puts 3 in the upper right, 5 in lower left, diagonal. Extra \\ means 3 along the center.\n\
+\n\
+0x12l06 rotates 06 90 degrees left.\n\
+0x12r06 rotates 06 90 degrees right.\n\
+0x12H34 horizonally clips an icon by 3, with color 4 trim.\n\
+0x12V34 vertically clips an icon by 3, with color 4 trim.\n\
+0x12S34 switches 2 colors in an icon, in this case, 3 and 4.\n\
+\n\
 \'#\' detects the character instead of, say, 0x0a.\n\
 > runs something from the command line.\n\
 \n\
@@ -1095,16 +1105,10 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case '\n':
 		break;
 
-	case 'x': //alternating checkerboard colors
-		tst = myBuf[1];
-		tst2 = myBuf[2];
-		fgetc(F);
+	case '=':	//changes one icon to all one color.
 		for (j=0;  j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				if ((i+j)%2)
-					BmpHandler.Icons[q][i][j] = tst2;
-				else
-					BmpHandler.Icons[q][i][j] = tst;
+				BmpHandler.Icons[q][i][j] = tst;
 		return;
 
 	case '/': // upper left is color #1, double slash means diagonal is too
@@ -1141,18 +1145,28 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 					BmpHandler.Icons[q][i][j] = tst2;
 		return;
 
-
-
 	case 'c': //copies one icon to another
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[tst][i][j];
 		return;
 
-	case 'f':
+	case 'e': // 180 degree rotation
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
+		return;
+
+	case 'f': // flip across the SW/NE diagonal
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
+		return;
+
+	case 'F': // flip across the SE/NW diagonal
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				BmpHandler.Icons[q][j][i] = BmpHandler.Icons[tst][i][j];
 		return;
 
 	case 'h': //copies one icon to another, flipped horizontally
@@ -1161,10 +1175,44 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][j] = BmpHandler.Icons[tst][i][j];
 		return;
 
+	case 'l': //rotate 90 degrees left
+		if (BmpHandler.TheHeight != BmpHandler.TheWidth)
+		{
+			printf ("Need height = width to rotate.\n");
+			return;
+		}
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				BmpHandler.Icons[q][j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
+		return;
+
+	case 'r': //rotate 90 degrees right
+		if (BmpHandler.TheHeight != BmpHandler.TheWidth)
+		{
+			printf ("Need height = width to rotate.\n");
+			return;
+		}
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][i] = BmpHandler.Icons[tst][i][j];
+		return;
+
 	case 'v': //copies one icon to another, flipped vertically
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
+		return;
+
+	case 'x': //alternating checkerboard colors
+		tst = myBuf[1];
+		tst2 = myBuf[2];
+		fgetc(F);
+		for (j=0;  j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				if ((i+j)%2)
+					BmpHandler.Icons[q][i][j] = tst2;
+				else
+					BmpHandler.Icons[q][i][j] = tst;
 		return;
 
 	case 'H': //horizontal trimming, with color after
@@ -1176,6 +1224,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 
 	case 'V': //vertical trimming, with color after
 		tst = myBuf[1] - 0x30;
+		tst2 = myBuf[1] - 0x30;
 		for (j=0; j < tst; j++)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
@@ -1188,13 +1237,6 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				if ((BmpHandler.Icons[q][i][j] == tst) || (BmpHandler.Icons[q][i][j] == tst2))
 					BmpHandler.Icons[q][i][j] = tst + tst2 - BmpHandler.Icons[q][i][j];
-		return;
-
-
-	case '=':	//changes one icon to all one color.
-		for (j=0;  j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][i][j] = tst;
 		return;
 
 	default:
