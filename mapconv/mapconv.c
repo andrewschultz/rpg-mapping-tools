@@ -156,6 +156,7 @@ DomesdayBook BmpHandler;
 
 int ReadInIcons(char [MAXSTRING]);
 short NMRRead(char [MAXSTRING]);
+void AHSHelp();
 void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
 int LatestNumber(FILE *);
@@ -200,7 +201,7 @@ main(int argc, char * argv[])
 	}
 	for (CurComd = 1; CurComd < argc; CurComd++)
 	{
-		printf("%d %s\n", CurComd, argv[CurComd]);
+		//printf("%d %s\n", CurComd, argv[CurComd]);
 		if (argv[CurComd][0] == '-')
 		{
 			switch(argv[CurComd][1])
@@ -209,6 +210,10 @@ main(int argc, char * argv[])
 				MAPCONV_STATUS |= MAPCONV_BIN_FLAG_KNOWN;
 				printf(".bin file exports known as 0's\n");
 				break;
+
+			case 'a':
+				AHSHelp();
+				return 0;
 
 			case 'b':
 				BmpHandler.BlankIcon = (short)strtol(argv[CurComd+1], NULL, 16);
@@ -341,6 +346,7 @@ void HelpBombOut()
 {
 	printf("Flag -? for this help command.\n\
 Flag -0 so bin file puts 0s for known.\n\
+Flag -a shows options for AHS files and how to write them.n\
 Flag -b specifies blank icon.\n\
 Flag -c to set default blank color, in hexadecimal.\n\
 Flag -d to get rid of *.png.(bak/000) files.\n\
@@ -358,6 +364,22 @@ Flag -uf to debug squares with no icon, only showing the first.\n\
 Flag -v to reVerse the default top-down process of -uf.\n\
 Flag -x to add extra modifications to the base BMP files.\n");
 
+}
+
+void AHSHelp()
+{
+	printf("# means a comment.\n\
+h15 sets height to 15. (default 8, max 16)\n\
+w13 sets width to 13. (default 8, max 16)\n\
+0x0a=3 sets icon 0x0a to 3 (green).\n\
+0x0fc0e copies icon 0x0e to 0x0f.\n\
+0x0ax34 alternates 3/4 in checkerboard pattern, starting with 3.\n\
+0x0a/35 puts 3 in the upper left, 5 in lower right, diagonal. Extra / means 3 along the center.\n\
+0x0a\\35 puts 3 in the upper right, 5 in lower left, diagonal. Extra \\ means 3 along the center.\n\
+\'#\' detects the character instead of, say, 0x0a.\n\
+> runs something from the command line.\n\
+\n\
+; ends the file.\n");
 }
 
 void NMRHelp()
@@ -1052,6 +1074,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	int i,j;
 	short tst, tst2;
 	char buffer[MAXSTRING];
+	short startLoc = 1;
 
 	if (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS)
 		printf("Icon-read %x:%c\n", q, myBuf[0] == '\n' ? '.' : myBuf[0]);
@@ -1072,7 +1095,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case '\n':
 		break;
 
-	case '/': //alternating checkerboard colors
+	case 'x': //alternating checkerboard colors
 		tst = myBuf[1];
 		tst2 = myBuf[2];
 		fgetc(F);
@@ -1083,6 +1106,42 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				else
 					BmpHandler.Icons[q][i][j] = tst;
 		return;
+
+	case '/': // upper left is color #1, double slash means diagonal is too
+		tst = myBuf[1];
+		tst2 = myBuf[2];
+		if (tst == '/')
+			startLoc++;
+		for (j=0;  j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				if (i + j < BmpHandler.TheHeight - 1)
+					BmpHandler.Icons[q][i][j] = tst;
+				else if (i + j > BmpHandler.TheHeight - 1)
+					BmpHandler.Icons[q][i][j] = tst2;
+				else if (startLoc == 2)
+					BmpHandler.Icons[q][i][j] = tst;
+				else
+					BmpHandler.Icons[q][i][j] = tst2;
+		return;
+
+	case '\\': // upper right is color #1, double slash means diagonal is too
+		if (tst == '\\')
+			startLoc++;
+		tst = myBuf[1];
+		tst2 = myBuf[2];
+		for (j=0;  j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				if (i > j)
+					BmpHandler.Icons[q][i][j] = tst;
+				else if (i < j)
+					BmpHandler.Icons[q][i][j] = tst2;
+				else if (startLoc == 2)
+					BmpHandler.Icons[q][i][j] = tst;
+				else
+					BmpHandler.Icons[q][i][j] = tst2;
+		return;
+
+
 
 	case 'c': //copies one icon to another
 		for (j=0; j < BmpHandler.TheHeight; j++)
