@@ -66,6 +66,7 @@ short NewPIXFile;
 #define MAPCONV_SHOW_END_STATS 256
 #define MAPCONV_BOTTOMTOP 512
 #define MAPCONV_DEBUG_ICONS 1024
+#define MAPCONV_PNG_POST 2048
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -246,6 +247,11 @@ main(int argc, char * argv[])
 				printf("Don't use built in header.\n");
 				break;
 
+			case 'p':
+				MAPCONV_STATUS |= MAPCONV_PNG_POST;
+				printf("Don't use built in header.\n");
+				break;
+
 			case 'S':
 				MAPCONV_STATUS |= MAPCONV_SORT_PIX;
 				printf("Warning you if PIX file is not sorted.\n");
@@ -342,6 +348,7 @@ Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
 Flag -i to show icon debugging.\n\
 Flag -nh to show NMR help.\n\
+Flag -p to postprocess to png.\n\
 Flag -r to reverse when IDing unused icons (default is top to bottom).\n\
 Flag -s to show used/unused icon stats at the end.\n\
 Flag -S to print out sort warning for icon files.\n\
@@ -723,6 +730,24 @@ void ReadPiece()
 	fclose(F1);
 	fclose(F2);
 	fclose(F3);
+
+	if (MAPCONV_STATUS & MAPCONV_PNG_POST)
+	{
+		char pngString[80];
+		char myCmd[100];
+
+		short len;
+
+		strcpy(pngString, BmpHandler.OutStr);
+		len = strlen(pngString);
+		pngString[len-3] = 'p';
+		pngString[len-2] = 'n';
+		pngString[len-1] = 'g';
+		sprintf(myCmd, "erase %s", pngString);
+		system(myCmd);
+		sprintf(myCmd, "bmp2png -9 %s", BmpHandler.OutStr);
+		system(myCmd);
+	}
 
 	if (MAPCONV_STATUS & MAPCONV_DEBUG_UNKNOWN_SQUARES)
 		PrintOutUnused();
