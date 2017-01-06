@@ -171,6 +171,8 @@ void HelpBombOut();
 long InMapH = 256;
 long InMapW = 256;
 
+short lineInFile = 0;
+
 main(int argc, char * argv[])
 {
 	char myFile[50];
@@ -588,7 +590,6 @@ int ReadInIcons(char yzzy[MAXSTRING])
 {
 	FILE * F = fopen(yzzy, "r");
 	char buffer[200];
-	short count = 0;
 	int i1, i2, i3;
 	for (i1 = 0;  i1 < NUM_ICONS;  i1++)
 		for (i2 = 0;  i2 < MAXICONSIZE;  i2++)
@@ -607,7 +608,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 	while(1)
 	{
 		fgets(buffer, 40, F);
-		count++;
+		lineInFile++;
 		//printf("Reading %s", buffer);
 		switch(buffer[0])
 		{
@@ -624,7 +625,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				break;
 
 			case '\n':	//blank line
-				printf("Warning, blank line %d.\n", count);
+				printf("Warning, blank line %d.\n", lineInFile);
 				break;
 
 			case '#':	//comment
@@ -633,7 +634,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 			case '0': // hexadecimal representation
 				if (buffer[1] != 'x')
 				{
-					printf("Bad hexadecimal at %d.\n", count);
+					printf("Bad hexadecimal at %d.\n", lineInFile);
 					return INVALID;
 				}
 				OneIcon(CharToNum(buffer[2])*16+CharToNum(buffer[3]), buffer+4, F);
@@ -643,7 +644,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 			case '\'': // character representation i.e. 'a'
 				if (buffer[1] != '\'')
 				{
-					printf("Bad hexadecimal at %d.\n", count);
+					printf("Bad hexadecimal at %d.\n", lineInFile);
 					return INVALID;
 				}
 				OneIcon(strtol(buffer+3, NULL, 16), buffer+3, F);
@@ -657,7 +658,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				return THEEND;
 
 			default:
-				printf("Invalid command line %d: %s", count, buffer);
+				printf("Invalid command line %d: %s", lineInFile, buffer);
 				return INVALID;
 		}
 	}
@@ -1245,6 +1246,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	}
 	for (j=0;  j < BmpHandler.TheHeight; j++)
 	{
+		lineInFile++;
 		fgets(buffer, 40, F);
 		for (i=0;  i < BmpHandler.TheWidth;  i++)
                 {
@@ -1253,7 +1255,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 						  if ((buffer[i] > 'Z') || (buffer[i] < 'A'))
 							if ((buffer[i] > 'z') || (buffer[i] < 'a'))
 							{
-                              printf("Reading icon 0x%x(%d), bogus char 0x%x at %d,%d in icon.\n", q, q, buffer[i], i, j);
+                              printf("Reading icon 0x%x(%d), bogus char 0x%x at %d,%d in icon, line %d.\n",
+								  q, q, buffer[i], i, j, lineInFile);
 							  if ( buffer[i] == 0xa)
 								  printf("Likely early carriage return.\n");
 							}
