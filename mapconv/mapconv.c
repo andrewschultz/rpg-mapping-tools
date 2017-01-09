@@ -321,7 +321,7 @@ main(int argc, char * argv[])
 
 	if (NMRRead(myFile) != NMR_READ_SUCCESS)
 	{
-		printf("Bailing, NMR read failed.\n");
+		printf("The NMR file didn't seem to read successfully.\n");
 		return 0;
 	}
 
@@ -528,13 +528,13 @@ short NMRRead(char FileStr[MAXSTRING])
 		if (fgets(BufStr, MAXSTRING, F) == NULL)
 			break;
 
+		ch = BufStr[0];
+
 		if ((BufStr[0] == ';') || (BufStr[0] == ':') || (BufStr[0] == '.'))
 			break;
 
 		if (BufStr[0] == '#')
 			continue;
-
-		ch = BufStr[0];
 
         printf("String-read: %s\n", BufStr);
 
@@ -828,13 +828,21 @@ void ReadPiece()
 
 		short len;
 
+		FILE *fp;
+
 		strcpy(pngString, BmpHandler.OutStr);
 		len = strlen(pngString);
 		pngString[len-3] = 'p';
 		pngString[len-2] = 'n';
 		pngString[len-1] = 'g';
+
+		fp = fopen (pngString, "r");
+		if (fp!=NULL)
+		{
+		fclose (fp);
 		sprintf(myCmd, "erase %s", pngString);
 		system(myCmd);
+		}
 		sprintf(myCmd, "bmp2png -9 %s", BmpHandler.OutStr);
 		system(myCmd);
 	}
