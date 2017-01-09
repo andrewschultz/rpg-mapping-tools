@@ -1168,6 +1168,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case '/': // upper left is color #1, double slash means diagonal is too
+		if (myBuf[startLoc] == '/')
+			startLoc++;
 		tst = CharToNum(myBuf[startLoc]);
 		tst2 = CharToNum(myBuf[startLoc+1]);
 		if (tst == '/')
@@ -1185,7 +1187,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case '\\': // upper right is color #1, double slash means diagonal is too
-		if (tst == '\\')
+		if (myBuf[startLoc] == '\\')
 			startLoc++;
 		tst = CharToNum(myBuf[startLoc]);
 		tst2 = CharToNum(myBuf[startLoc+1]);
@@ -1273,15 +1275,16 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 
 	case 'H': //horizontal trimming, with color after
 		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[2]);
 		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0; i < tst; i++)
+			for (i=0; i < tst2; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
 		return;
 
 	case 'V': //vertical trimming, with color after
 		tst = CharToNum(myBuf[1]);
-		tst2 = CharToNum(myBuf[1]);
-		for (j=0; j < tst; j++)
+		tst2 = CharToNum(myBuf[2]);
+		for (j=0; j < tst2; j++)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
 		return;
@@ -1296,7 +1299,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	default:
-		printf("Unknown command at %x.\n", q);
+		printf("Unknown command for icon %x: %s", q, myBuf);
 		return;
 	}
 	for (j=0;  j < BmpHandler.TheHeight; j++)
