@@ -35,6 +35,9 @@ let 1 icon = another but with colors switched somehow
 
 #define NUM_ICONS 256
 
+#define HEIGHT_FOUND 1
+#define WIDTH_FOUND 2
+
 #define BLACK 0
 #define WHITE 1
 #define TRANSPARENCYCOLOR BLACK
@@ -373,6 +376,7 @@ void AHSHelp()
 	printf("# means a comment.\n\
 h15 sets height to 15. (default 8, max 16)\n\
 w13 sets width to 13. (default 8, max 16)\n\
+hw/wh/s9 sets height and width to 9. (default 8, max 16)\n\
 0x0a=3 sets icon 0x0a to 3 (green).\n\
 0x0fc0e copies icon 0x0e to 0x0f.\n\
 0x12h03 makes 0x12 a horizontal flip of 03.\n\
@@ -589,6 +593,8 @@ short NMRRead(char FileStr[MAXSTRING])
 int ReadInIcons(char yzzy[MAXSTRING])
 {
 	FILE * F = fopen(yzzy, "r");
+	short hwdef = 0;
+	short temp = 0;
 	char buffer[200];
 	int i1, i2, i3;
 	for (i1 = 0;  i1 < NUM_ICONS;  i1++)
@@ -610,18 +616,67 @@ int ReadInIcons(char yzzy[MAXSTRING])
 		fgets(buffer, 40, F);
 		lineInFile++;
 		//printf("Reading %s", buffer);
+
+		temp = (short) strtol(buffer+1, NULL, 10);
+		if (temp > MAXICONSIZE)
+			temp = MAXICONSIZE;
+
 		switch(buffer[0])
 		{
 			case 'h':
-				BmpHandler.TheHeight = (short) strtol(buffer+1, NULL, 10);
-				if (BmpHandler.TheHeight > MAXICONSIZE)
-					BmpHandler.TheHeight = MAXICONSIZE;
+				if (hwdef & HEIGHT_FOUND)
+				{
+					printf("H redefined with line %s", buffer);
+					return -1;
+				}
+				if (buffer[1] == 'w')
+				{
+					if (hwdef & WIDTH_FOUND)
+					{
+						printf("W redefined with line %s", buffer);
+						return -1;
+					}
+					temp = (short) strtol(buffer+2, NULL, 10);
+					if (temp > MAXICONSIZE)
+						temp = MAXICONSIZE;
+					BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
+				}
+				else
+					BmpHandler.TheHeight = temp;
 				break;
 
 			case 'w':
-				BmpHandler.TheWidth = (short) strtol(buffer+1, NULL, 10);
-				if (BmpHandler.TheWidth > MAXICONSIZE)
-					BmpHandler.TheWidth = MAXICONSIZE;
+				if (hwdef & WIDTH_FOUND)
+				{
+					printf("W redefined with line %s", buffer);
+					return -1;
+				}
+				if (buffer[1] == 'h')
+				{
+					if (hwdef & HEIGHT_FOUND)
+					{
+						printf("H redefined with line %s", buffer);
+						return -1;
+					}
+					temp = (short) strtol(buffer+2, NULL, 10);
+					if (temp > MAXICONSIZE)
+						temp = MAXICONSIZE;
+					BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
+				}
+				else
+					BmpHandler.TheWidth = temp;
+				break;
+
+			case 's':
+				if (hwdef)
+				{
+					printf("H/W redefined with line %s", buffer);
+					return -1;
+				}
+				temp = (short) strtol(buffer+2, NULL, 10);
+				if (temp > MAXICONSIZE)
+					temp = MAXICONSIZE;
+				BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
 				break;
 
 			case '\n':	//blank line
@@ -1113,8 +1168,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case '/': // upper left is color #1, double slash means diagonal is too
-		tst = myBuf[1];
-		tst2 = myBuf[2];
+		tst = CharToNum(myBuf[startLoc]);
+		tst2 = CharToNum(myBuf[startLoc+1]);
 		if (tst == '/')
 			startLoc++;
 		for (j=0;  j < BmpHandler.TheHeight; j++)
@@ -1132,8 +1187,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case '\\': // upper right is color #1, double slash means diagonal is too
 		if (tst == '\\')
 			startLoc++;
-		tst = myBuf[1];
-		tst2 = myBuf[2];
+		tst = CharToNum(myBuf[startLoc]);
+		tst2 = CharToNum(myBuf[startLoc+1]);
 		for (j=0;  j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				if (i > j)
