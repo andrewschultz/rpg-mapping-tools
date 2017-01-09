@@ -259,7 +259,7 @@ main(int argc, char * argv[])
 
 			case 'p':
 				MAPCONV_STATUS |= MAPCONV_PNG_POST;
-				printf("Don't use built in header.\n");
+				printf("Convert generated BMPs to PNG, erasing old file if there.\n");
 				break;
 
 			case 'S':
@@ -525,14 +525,16 @@ short NMRRead(char FileStr[MAXSTRING])
 
 	while (1)
 	{
-		ch = fgetc(F);
-
-		if ((ch == '.') || (ch == ';') || (ch == ':') || (ch == EOF))
+		if (fgets(BufStr, MAXSTRING, F) == NULL)
 			break;
-		else
-			ungetc(ch, F);
 
-		fgets(BufStr, MAXSTRING, F);
+		if ((BufStr[0] == ';') || (BufStr[0] == ':') || (BufStr[0] == '.'))
+			break;
+
+		if (BufStr[0] == '#')
+			continue;
+
+		ch = BufStr[0];
 
         printf("String-read: %s\n", BufStr);
 
