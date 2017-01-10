@@ -71,6 +71,7 @@ short NewPIXFile;
 #define MAPCONV_DEBUG_ICONS 1024
 #define MAPCONV_PNG_POST 2048
 #define MAPCONV_DELETE_PNG_ARTIFACTS 4096
+#define MAPCONV_IGNORE_BINS 8192
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -227,13 +228,11 @@ main(int argc, char * argv[])
 			case 'b':
 				BmpHandler.BlankIcon = (short)strtol(argv[CurComd+1], NULL, 16);
 				printf("Blank icon is %x.\n", BmpHandler.BlankIcon);
-				CurComd++;
 				break;
 
 			case 'c':
 				BmpHandler.BlankColor = (short)strtol(argv[CurComd+1], NULL, 16);
 				printf("Use default color %x for blank icons.\n", BmpHandler.BlankColor);
-				CurComd++;
 				break;
 
 			case 'd': // delete intermediary files
@@ -247,7 +246,19 @@ main(int argc, char * argv[])
 				break;
 
 			case 'e':
-				CurComd++;
+				if (argv[CurComd][2] == 'b')
+				{
+					printf("Erasing .bin files.\n");
+					system("erase *.bin");
+					break;
+				}
+				if (argv[CurComd][2] == 'i')
+				{
+					printf("Erasing .bin files, ignoring creation.\n");
+					MAPCONV_STATUS |= MAPCONV_IGNORE_BINS;
+					system("erase *.bin");
+					break;
+				}
 				MAPCONV_STATUS |= MAPCONV_USE_EGA_HEADER;
 				printf("Using EGA header.\n");
 				break;
@@ -257,6 +268,11 @@ main(int argc, char * argv[])
 				break;
 
 			case 'i':
+				if (argv[CurComd][2] == 'b')
+				{
+					MAPCONV_STATUS |= MAPCONV_IGNORE_BINS;
+					break;
+				}
 				MAPCONV_STATUS |= MAPCONV_DEBUG_ICONS;
 				printf("Debugging icons.\n");
 				break;
@@ -369,6 +385,7 @@ Flag -a shows options for AHS files and how to write them.n\
 Flag -b specifies blank icon.\n\
 Flag -c to set default blank color, in hexadecimal.\n\
 Flag -d to get rid of *.png.(bak/000) files.\n\
+Flag -eb to erase binary files, -ei to erase and ignore, -ib to ignore binary.\n\
 Flag -db to give debug text (xtr files, etc.).\n\
 Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
