@@ -70,6 +70,7 @@ short NewPIXFile;
 #define MAPCONV_BOTTOMTOP 512
 #define MAPCONV_DEBUG_ICONS 1024
 #define MAPCONV_PNG_POST 2048
+#define MAPCONV_DELETE_PNG_ARTIFACTS 4096
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -268,6 +269,11 @@ main(int argc, char * argv[])
 			case 'p':
 				MAPCONV_STATUS |= MAPCONV_PNG_POST;
 				printf("Convert generated BMPs to PNG, erasing old file if there.\n");
+				if (argv[CurComd][2] == 'a')
+				{
+					printf("Erasing *.png.bak/001 etc as well.\n");
+					MAPCONV_STATUS |= MAPCONV_DELETE_PNG_ARTIFACTS;
+				}
 				break;
 
 			case 'S':
@@ -368,7 +374,7 @@ Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
 Flag -i to show icon debugging.\n\
 Flag -nh to show NMR help.\n\
-Flag -p to postprocess to png.\n\
+Flag -p to postprocess to png. -pa also erases png.bak/000 files.\n\
 Flag -r to reverse when IDing unused icons (default is top to bottom).\n\
 Flag -s to show used/unused icon stats at the end.\n\
 Flag -S to print out sort warning for icon files.\n\
@@ -495,7 +501,6 @@ short NMRRead(char FileStr[MAXSTRING])
 		}
 	}
 
-	printf("%d", BmpHandler.ary[7][3]);
 	for (j=0;  j < InMapH;  j++)
 		for (i=0;  i < InMapW;  i++)
 		{
@@ -592,10 +597,15 @@ short NMRRead(char FileStr[MAXSTRING])
 		//if bin-string = "X" then don't print a BIN file.
 
 		WriteToBmp();
-		printf("%d", BmpHandler.ary[7][3]);
 
 		NewPIXFile = 0;
 
+	}
+
+	if (MAPCONV_STATUS & MAPCONV_DELETE_PNG_ARTIFACTS)
+	{
+		system("erase *.png.bak");
+		system("erase *.png.0*");
 	}
 
 	if ((ch == '.') || (ch == EOF))
