@@ -176,6 +176,8 @@ long InMapW = 256;
 
 short lineInFile = 0;
 
+short debug = 0;
+
 main(int argc, char * argv[])
 {
 	char myFile[50];
@@ -233,6 +235,11 @@ main(int argc, char * argv[])
 				break;
 
 			case 'd': // delete intermediary files
+				if (argv[CurComd][2] == 'b')
+				{
+					debug = 1;
+					break;
+				}
 				system("erase *.png.bak");
 				system("erase *.png.0*");
 				break;
@@ -355,6 +362,7 @@ Flag -a shows options for AHS files and how to write them.n\
 Flag -b specifies blank icon.\n\
 Flag -c to set default blank color, in hexadecimal.\n\
 Flag -d to get rid of *.png.(bak/000) files.\n\
+Flag -db to give debug text (xtr files, etc.).\n\
 Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
 Flag -i to show icon debugging.\n\
@@ -522,6 +530,9 @@ short NMRRead(char FileStr[MAXSTRING])
 	}
 
 //      else printf("Icon read successful.\n");
+
+	if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
+		ModifyArray();
 
 	while (1)
 	{
@@ -782,9 +793,6 @@ void ReadPiece()
 		for (j=0;  j < InMapW;  j++)
 			BmpHandler.ary[j][InMapH-i-1] = fgetc(F1);
 
-	if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
-		ModifyArray();
-
 	if (MAPCONV_STATUS & MAPCONV_BIN_FLAG_KNOWN)
 	{
 		for (i = BmpHandler.Yi;  i < BmpHandler.Yf;  i++)
@@ -931,13 +939,14 @@ void ModifyArray()
 
 	FILE * F;
 
-	long xc, yc, nv, myBase, i, j;
+	long xc, yc, nv, i, j, myBase = 10;
 	long xi=0, yi=0, x2=0, y2=0;
 	long count;
 	
 	char buffer[200];
 	char * SecondString;
 	short XtrTransparencyRead = 0;
+	short everBase = 0;
 
 	strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
 
@@ -960,12 +969,14 @@ void ModifyArray()
 		switch(buffer[0])
 		{
 		case ';':
-			fclose(F);
-			return;
+			goto evercheck;
 			break;
+
 		case '=':
 			myBase = strtol(buffer+1, &SecondString, 10);
+			everBase = 1;
 			break;
+
 		case 't':
 			if (buffer[1] == '-')
 				XtrTransparencyRead = 0;
@@ -1035,7 +1046,7 @@ void ModifyArray()
 			break;
 
 		case '#':
-			continue;
+			break;
 
 		case 'i':
 			if (buffer[1] != '\n')
@@ -1116,7 +1127,11 @@ void ModifyArray()
 			else
 				nv = strtol(buffer+count+1, &SecondString, 16);
 
-//			printf("Converting %d %d to %d with char %d string %s\n", xc+xi, yc+yi, nv, count, buffer);
+			if (debug == 1)
+			{
+			printf("xc %d xi %d yc %d yi %d, base %d\n", xc, xi, yc, yi, myBase);
+			printf("Converting %d %d to %d with char %d from string %s\n", xc+xi, yc+yi, nv, count, buffer);
+			}
 
 //			BmpHandler.ary[xc][255-yc] = nv;
 			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
@@ -1134,7 +1149,13 @@ void ModifyArray()
 			break;
 
 	}
+
+evercheck:
 	fclose(F);
+	if (everBase == 0)
+	{
+		printf("Note, you never defined a base with =##, so I assumed base 10.\n");
+	}
 	return;
 }
 
