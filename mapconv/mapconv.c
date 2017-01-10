@@ -764,9 +764,11 @@ void WriteToBmp()
 {
 	long temp;
 	FILE * F1 = fopen(BmpHandler.BmpStr, "rb");
-	FILE * F2 = fopen(BmpHandler.BinStr, "wb");
+	FILE * F2;
 	FILE * F3 = fopen(BmpHandler.OutStr, "wb");
 	int i, j, i2, j2, j3, count;
+
+	
 	for (i = 0;  i < HEADERSIZE;  i++)
 	{
         switch(i)
@@ -814,20 +816,35 @@ void WriteToBmp()
                 break;
          }
  	}
-	if (MAPCONV_STATUS & MAPCONV_BIN_FLAG_KNOWN)
+
+	if (BmpHandler.BinStr[0] != 0)
 	{
-		for (i = BmpHandler.Yi;  i < BmpHandler.Yf;  i++)
-			for (j = BmpHandler.Xi;  j < BmpHandler.Xf;  j++)
-				if (BmpHandler.IconUsed[BmpHandler.ary[j][i]])
-					fputc(0, F2);
-				else
+		F2 = fopen(BmpHandler.BinStr, "wb");
+
+		if (debug)
+			printf("Writing binary file to %s.\n", BmpHandler.BinStr);
+
+		if (MAPCONV_STATUS & MAPCONV_BIN_FLAG_KNOWN)
+		{
+			for (i = BmpHandler.Yi;  i < BmpHandler.Yf;  i++)
+				for (j = BmpHandler.Xi;  j < BmpHandler.Xf;  j++)
+					if (BmpHandler.IconUsed[BmpHandler.ary[j][i]])
+						fputc(0, F2);
+					else
+						fputc(BmpHandler.ary[j][i], F2);
+		}
+		else
+		{
+			for (i = BmpHandler.Yi;  i < BmpHandler.Yf;  i++)
+				for (j = BmpHandler.Xi;  j < BmpHandler.Xf;  j++)
 					fputc(BmpHandler.ary[j][i], F2);
+		}
+		fclose(F2);
 	}
 	else
 	{
-		for (i = BmpHandler.Yi;  i < BmpHandler.Yf;  i++)
-			for (j = BmpHandler.Xi;  j < BmpHandler.Xf;  j++)
-				fputc(BmpHandler.ary[j][i], F2);
+		if (debug)
+			printf("Not writing a binary file.\n");
 	}
 
 	for (j = BmpHandler.Yi;  j < BmpHandler.Yf;  j++)
@@ -847,7 +864,6 @@ void WriteToBmp()
 			    fputc(0, F3);
 		}
 	fclose(F1);
-	fclose(F2);
 	fclose(F3);
 
 	if (MAPCONV_STATUS & MAPCONV_PNG_POST)
