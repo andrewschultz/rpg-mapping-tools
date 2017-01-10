@@ -164,7 +164,8 @@ void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
 int LatestNumber(FILE *);
 int CharToNum(int);
-void ReadPiece();
+void ReadFromBmp();
+void WriteToBmp();
 void ModifyArray();
 void PrintOutUnused();
 void printGrid();
@@ -297,7 +298,7 @@ main(int argc, char * argv[])
 
 			case 'x':
 				MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS;
-				printf("Use .xtr file to amend the BMPs.\n");
+				printf("This run will look for the .xtr file to amend the BMPs.\n");
 				break;
 
 			default:
@@ -494,8 +495,7 @@ short NMRRead(char FileStr[MAXSTRING])
 		}
 	}
 
-	printf("%d %d\n", InMapH, InMapW);
-
+	printf("%d", BmpHandler.ary[7][3]);
 	for (j=0;  j < InMapH;  j++)
 		for (i=0;  i < InMapW;  i++)
 		{
@@ -531,6 +531,8 @@ short NMRRead(char FileStr[MAXSTRING])
 
 //      else printf("Icon read successful.\n");
 
+	ReadFromBmp();
+
 	if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
 		ModifyArray();
 
@@ -547,7 +549,7 @@ short NMRRead(char FileStr[MAXSTRING])
 		if (BufStr[0] == '#')
 			continue;
 
-        printf("String-read: %s\n", BufStr);
+        printf("String-read: %s", BufStr);
 
 		BufStrCount = 0;
 
@@ -589,7 +591,8 @@ short NMRRead(char FileStr[MAXSTRING])
 		//Here, we process one.  If there is a new PIX file we read it in otherwise we just read from the BMP.
 		//if bin-string = "X" then don't print a BIN file.
 
-		ReadPiece();
+		WriteToBmp();
+		printf("%d", BmpHandler.ary[7][3]);
 
 		NewPIXFile = 0;
 
@@ -734,65 +737,73 @@ int ReadInIcons(char yzzy[MAXSTRING])
 
 }
 
-void ReadPiece()
-
+void ReadFromBmp()
 {
-      long temp;
+	FILE * F1 = fopen(BmpHandler.BmpStr, "rb");
+	int i, j;
+	for (i=0; i < 0x436; i++)
+		fgetc(F1);
+
+	for (i=0;  i < InMapH;  i++)
+		for (j=0;  j < InMapW;  j++)
+			BmpHandler.ary[j][InMapH-i-1] = fgetc(F1);
+	fclose(F1);
+}
+
+void WriteToBmp()
+{
+	long temp;
 	FILE * F1 = fopen(BmpHandler.BmpStr, "rb");
 	FILE * F2 = fopen(BmpHandler.BinStr, "wb");
 	FILE * F3 = fopen(BmpHandler.OutStr, "wb");
 	int i, j, i2, j2, j3, count;
 	for (i = 0;  i < HEADERSIZE;  i++)
 	{
-                switch(i)
-                {
-					case 0x12:
-						temp = (long)(BmpHandler.Xf-BmpHandler.Xi)*(long)BmpHandler.TheWidth;
-						putlong(temp, F3);
-						i += 3;
+        switch(i)
+        {
+			case 0x12:
+				temp = (long)(BmpHandler.Xf-BmpHandler.Xi)*(long)BmpHandler.TheWidth;
+				putlong(temp, F3);
+				i += 3;
+				fgetc(F1);
+				fgetc(F1);
+				fgetc(F1);
+				fgetc(F1);
+				break;
+			case 0x16:
+				putlong((long)(BmpHandler.Yf-BmpHandler.Yi)*(long)BmpHandler.TheHeight, F3);
+				i += 3;
+				fgetc(F1);
+				fgetc(F1);
+				fgetc(F1);
+				fgetc(F1);
+				break;
+			case 0x36:
+				if (MAPCONV_STATUS & MAPCONV_NO_HEADER_FLAG)
+					fputc(fgetc(F1), F3);
+				else if (MAPCONV_STATUS & MAPCONV_USE_EGA_HEADER)
+				{
+					for (j=0; j < ADJ_HEADER_SIZE; j++)
+					{
 						fgetc(F1);
-						fgetc(F1);
-						fgetc(F1);
-						fgetc(F1);
-						break;
-					case 0x16:
-						putlong((long)(BmpHandler.Yf-BmpHandler.Yi)*(long)BmpHandler.TheHeight, F3);
-						i += 3;
-						fgetc(F1);
-						fgetc(F1);
-						fgetc(F1);
-						fgetc(F1);
-						break;
-					case 0x36:
-						if (MAPCONV_STATUS & MAPCONV_NO_HEADER_FLAG)
-							fputc(fgetc(F1), F3);
-						else if (MAPCONV_STATUS & MAPCONV_USE_EGA_HEADER)
-						{
-							for (j=0; j < ADJ_HEADER_SIZE; j++)
-							{
-								fgetc(F1);
-								fputc(EgaHdr[j], F3);
-							}
-						}
-						else
-						{
-						for (j=0;  j < ADJ_HEADER_SIZE;  j++)
-						{
-							count = fgetc(F1);
-							fputc(TheHdr[j], F3);
-						}
-						i += (ADJ_HEADER_SIZE - 1);
-						}
-						break;
-                    default:
-                        fputc(fgetc(F1), F3);
-                        break;
-                 }
+						fputc(EgaHdr[j], F3);
+					}
+				}
+				else
+				{
+				for (j=0;  j < ADJ_HEADER_SIZE;  j++)
+				{
+					count = fgetc(F1);
+					fputc(TheHdr[j], F3);
+				}
+				i += (ADJ_HEADER_SIZE - 1);
+				}
+				break;
+            default:
+                fputc(fgetc(F1), F3);
+                break;
+         }
  	}
-	for (i=0;  i < InMapH;  i++)
-		for (j=0;  j < InMapW;  j++)
-			BmpHandler.ary[j][InMapH-i-1] = fgetc(F1);
-
 	if (MAPCONV_STATUS & MAPCONV_BIN_FLAG_KNOWN)
 	{
 		for (i = BmpHandler.Yi;  i < BmpHandler.Yf;  i++)
@@ -1127,10 +1138,11 @@ void ModifyArray()
 			else
 				nv = strtol(buffer+count+1, &SecondString, 16);
 
-			if (debug == 1)
+			if (debug > 0)
 			{
-			printf("xc %d xi %d yc %d yi %d, base %d\n", xc, xi, yc, yi, myBase);
-			printf("Converting %d %d to %d with char %d from string %s\n", xc+xi, yc+yi, nv, count, buffer);
+				if (debug == 2)
+					printf("xc %d xi %d yc %d yi %d, base %d\n", xc, xi, yc, yi, myBase);
+				printf("Array[%d][%d]=%d with char %d from string %s", xc+xi, yc+yi, nv, count, buffer);
 			}
 
 //			BmpHandler.ary[xc][255-yc] = nv;
