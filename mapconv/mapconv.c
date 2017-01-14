@@ -153,6 +153,7 @@ typedef struct
 
 	short Icons[256][16][16];
 	short IconUsed[256];
+	short IconDefined[256];
 
 	short IsNewPIX;
 
@@ -167,7 +168,7 @@ int ReadInIcons(char [MAXSTRING]);
 short NMRRead(char [MAXSTRING]);
 void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
-void LCDize(short whichNum, short whichIcon);
+void LCDize(short whichNum, short whichIcon, short usedYet);
 int LatestNumber(FILE *);
 int CharToNum(int);
 void ReadFromBmp();
@@ -186,10 +187,14 @@ short lineInFile = 0;
 
 short debug = 0;
 
+short lcd_fill = 1;
+short lcd_blank = 0;
+
 main(int argc, char * argv[])
 {
 	char myFile[50];
 	short CurComd = 1;
+	short i;
 
 	myFile[0] = 0;
 
@@ -199,6 +204,9 @@ main(int argc, char * argv[])
 	BmpHandler.LastIconViewed = -1;
 
 	BmpHandler.printHTMLFile = 0;
+
+	for (i=0; i < 256; i++)
+		BmpHandler.IconDefined[i] = 0;
 
 	if (argc < 2)
 /*	{
@@ -727,11 +735,20 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
 				break;
 
+			case 'l':
 			case 'L':
-				temp = (short) strtol(buffer+2, NULL, 16);
+				if ((buffer[1] == 'c') || (buffer[1] == 'C'))
+				{
+					temp = (short) strtol(buffer+2, NULL, 16);
+					lcd_fill = temp % 16;
+					lcd_blank = (temp & 0xff) / 16;
+					break;
+				}
+				temp = (short) strtol(buffer+1, NULL, 16);
 				for (i1 = 0; i1 < 10; i1++)
-					LCDize(i1, (short)(temp + i1));
+					LCDize(i1, (short)(temp + i1), (short)(buffer[0] == 'L'));
 				break;
+
 
 			case '\n':	//blank line
 				printf("Warning, blank line %d.\n", lineInFile);
@@ -1419,7 +1436,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	}
 }
 
-void LCDize(short whichNum, short whichIcon)
+void LCDize(short whichNum, short whichIcon, short allowPrevDefined)
 {
 	short lcdbin = LCDs[whichNum];
 	short wm = BmpHandler.TheWidth / 2;
@@ -1429,47 +1446,55 @@ void LCDize(short whichNum, short whichIcon)
 
 	for (j=0; j < BmpHandler.TheHeight; j++)
 		for (i=0; i < BmpHandler.TheWidth; i++)
-			BmpHandler.Icons[whichIcon][i][j] = 0;
+			BmpHandler.Icons[whichIcon][i][j] = lcd_blank;
 
-	if (BmpHandler.TheHeight % 2 + BmpHandler.TheWidth % 2 < 2)
+	if ((allowPrevDefined == 0) && (BmpHandler.IconDefined[whichIcon] != 0))
 	{
-		printf("You need even width and height to LCDize. It's %d by %d now.\n", BmpHandler.TheWidth, BmpHandler.TheHeight);
+		printf("Icon %x already used, so I am not reassigning it.\n", whichIcon);
 		return;
 	}
+
+	if ((BmpHandler.IconDefined[whichIcon] != 0) && (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS))
+	{
+		printf("Warning: icon %x already used, overwriting.\n", whichIcon);
+	}
+
+	BmpHandler.IconDefined[whichIcon] = 1;
+
 	if (hw < 2)
 		hw = 2;
 
 	if (lcdbin & 1)
 		for (i= wm - hw; i <= wm + hw; i++)
-			BmpHandler.Icons[whichIcon][i][1] = 1;
+			BmpHandler.Icons[whichIcon][i][1] = lcd_fill;
 
 	if (lcdbin & 2)
 		for (i= 1; i <= hm; i++)
-			BmpHandler.Icons[whichIcon][wm-hw][i] = 1;
+			BmpHandler.Icons[whichIcon][wm-hw][i] = lcd_fill;
 
 	if (lcdbin & 4)
 		for (i= 1; i <= hm; i++)
-			BmpHandler.Icons[whichIcon][wm+hw][i] = 1;
+			BmpHandler.Icons[whichIcon][wm+hw][i] = lcd_fill;
 
 	if (lcdbin & 8)
 		for (i= wm - hw; i <= wm + hw; i++)
-			BmpHandler.Icons[whichIcon][i][hm] = 1;
+			BmpHandler.Icons[whichIcon][i][hm] = lcd_fill;
 
 	if (lcdbin & 16)
 		for (i= hm; i <= BmpHandler.TheHeight - 2; i++)
-			BmpHandler.Icons[whichIcon][wm-hw][i] = 1;
+			BmpHandler.Icons[whichIcon][wm-hw][i] = lcd_fill;
 
 	if (lcdbin & 32)
 		for (i= hm; i <= BmpHandler.TheHeight - 2; i++)
-			BmpHandler.Icons[whichIcon][wm+hw][i] = 1;
+			BmpHandler.Icons[whichIcon][wm+hw][i] = lcd_fill;
 
 	if (lcdbin & 64)
 		for (i= wm - hw; i <= wm + hw; i++)
-			BmpHandler.Icons[whichIcon][i][BmpHandler.TheHeight - 2] = 1;
+			BmpHandler.Icons[whichIcon][i][BmpHandler.TheHeight - 2] = lcd_fill;
 
 	if (lcdbin & 128)
 		for (i=1; i <= BmpHandler.TheHeight - 2; i++)
-			BmpHandler.Icons[whichIcon][wm][i] = 1;
+			BmpHandler.Icons[whichIcon][wm][i] = lcd_fill;
 }
 
 int LatestNumber(FILE * F)
