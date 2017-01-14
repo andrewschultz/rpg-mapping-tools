@@ -730,7 +730,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 			case 'L':
 				temp = (short) strtol(buffer+2, NULL, 16);
 				for (i1 = 0; i1 < 10; i1++)
-					LCDize(i1, temp);
+					LCDize(i1, (short)(temp + i1));
 				break;
 
 			case '\n':	//blank line
@@ -1425,7 +1425,11 @@ void LCDize(short whichNum, short whichIcon)
 	short wm = BmpHandler.TheWidth / 2;
 	short hm = BmpHandler.TheWidth / 2;
 	short hw = (BmpHandler.TheWidth + 1) / 4;
-	short i;
+	short i, j;
+
+	for (j=0; j < BmpHandler.TheHeight; j++)
+		for (i=0; i < BmpHandler.TheWidth; i++)
+			BmpHandler.Icons[whichIcon][i][j] = 0;
 
 	if (BmpHandler.TheHeight % 2 + BmpHandler.TheWidth % 2 < 2)
 	{
@@ -1444,7 +1448,7 @@ void LCDize(short whichNum, short whichIcon)
 			BmpHandler.Icons[whichIcon][wm-hw][i] = 1;
 
 	if (lcdbin & 4)
-		for (i= hm; i <= hm; i++)
+		for (i= 1; i <= hm; i++)
 			BmpHandler.Icons[whichIcon][wm+hw][i] = 1;
 
 	if (lcdbin & 8)
