@@ -1,6 +1,7 @@
 /*Mapconv.c
 Takes a bitmap file and a text file on the side and processes them.
 Search for HelpBombOut for the parameters it takes in.
+AHSHelp gives parameters for an AHS file.
 
 In order to process a bitmap successfully, we need the following files:
 
@@ -24,9 +25,10 @@ In order to process a bitmap successfully, we need the following files:
   > ; ends it
 
 Future options: set all unused to zero
-let 1 icon equal another
 let 1 icon = another but with colors switched somehow
-1 icon = another rotated or flipped.
+
+Want to check next we can change AHS or BMP in the middle of an NMR file.
+Maybe have option to start with a certain line or end with it as well.
 */
 
 #include <stdio.h>
@@ -120,6 +122,8 @@ char EgaHdr[ADJ_HEADER_SIZE] = {
 	(char)0xff, (char)0xff, (char)0xff,
 };
 
+short LCDs[10] = { 119, 128, 93, 109, 46, 107, 122, 37, 127, 47 };
+
 typedef struct
 {
 	short printHTMLFile;
@@ -161,9 +165,9 @@ DomesdayBook BmpHandler;
 
 int ReadInIcons(char [MAXSTRING]);
 short NMRRead(char [MAXSTRING]);
-void AHSHelp();
 void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
+void LCDize(short whichNum, short whichIcon);
 int LatestNumber(FILE *);
 int CharToNum(int);
 void ReadFromBmp();
@@ -173,6 +177,7 @@ void PrintOutUnused();
 void printGrid();
 
 void HelpBombOut();
+void AHSHelp();
 
 long InMapH = 256;
 long InMapW = 256;
@@ -639,7 +644,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 	short hwdef = 0;
 	short temp = 0;
 	char buffer[200];
-	int i1, i2, i3;
+	short i1, i2, i3;
 	for (i1 = 0;  i1 < NUM_ICONS;  i1++)
 		for (i2 = 0;  i2 < MAXICONSIZE;  i2++)
 			for (i3 = 0;  i3 < MAXICONSIZE;  i3++)
@@ -720,6 +725,12 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				if (temp > MAXICONSIZE)
 					temp = MAXICONSIZE;
 				BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
+				break;
+
+			case 'L':
+				temp = (short) strtol(buffer+2, NULL, 16);
+				for (i1 = 0; i1 < 10; i1++)
+					LCDize(i1, temp);
 				break;
 
 			case '\n':	//blank line
@@ -1406,6 +1417,55 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 							}
                 }
 	}
+}
+
+void LCDize(short whichNum, short whichIcon)
+{
+	short lcdbin = LCDs[whichNum];
+	short wm = BmpHandler.TheWidth / 2;
+	short hm = BmpHandler.TheWidth / 2;
+	short hw = (BmpHandler.TheWidth + 1) / 4;
+	short i;
+
+	if (BmpHandler.TheHeight % 2 + BmpHandler.TheWidth % 2 < 2)
+	{
+		printf("You need even width and height to LCDize. It's %d by %d now.\n", BmpHandler.TheWidth, BmpHandler.TheHeight);
+		return;
+	}
+	if (hw < 2)
+		hw = 2;
+
+	if (lcdbin & 1)
+		for (i= wm - hw; i <= wm + hw; i++)
+			BmpHandler.Icons[whichIcon][i][1] = 1;
+
+	if (lcdbin & 2)
+		for (i= 1; i <= hm; i++)
+			BmpHandler.Icons[whichIcon][wm-hw][i] = 1;
+
+	if (lcdbin & 4)
+		for (i= hm; i <= hm; i++)
+			BmpHandler.Icons[whichIcon][wm+hw][i] = 1;
+
+	if (lcdbin & 8)
+		for (i= wm - hw; i <= wm + hw; i++)
+			BmpHandler.Icons[whichIcon][i][hm] = 1;
+
+	if (lcdbin & 16)
+		for (i= hm; i <= BmpHandler.TheHeight - 2; i++)
+			BmpHandler.Icons[whichIcon][wm-hw][i] = 1;
+
+	if (lcdbin & 32)
+		for (i= hm; i <= BmpHandler.TheHeight - 2; i++)
+			BmpHandler.Icons[whichIcon][wm+hw][i] = 1;
+
+	if (lcdbin & 64)
+		for (i= wm - hw; i <= wm + hw; i++)
+			BmpHandler.Icons[whichIcon][i][BmpHandler.TheHeight - 2] = 1;
+
+	if (lcdbin & 128)
+		for (i=1; i <= BmpHandler.TheHeight - 2; i++)
+			BmpHandler.Icons[whichIcon][wm][i] = 1;
 }
 
 int LatestNumber(FILE * F)
