@@ -190,6 +190,8 @@ short debug = 0;
 short lcd_fill = 1;
 short lcd_blank = 0;
 
+short curBase = 16;
+
 main(int argc, char * argv[])
 {
 	char myFile[50];
@@ -436,6 +438,7 @@ hw/wh/s9 sets height and width to 9. (default 8, max 16)\n\
 0x12H34 horizonally clips an icon by 3, with color 4 trim.\n\
 0x12V34 vertically clips an icon by 3, with color 4 trim.\n\
 0x12S34 switches 2 colors in an icon, in this case, 3 and 4.\n\
+L00 = start LCD 0-9 at number given (l means don't overwrite icons that are there).\n\
 \n\
 \'#\' detects the character instead of, say, 0x0a.\n\
 > runs something from the command line.\n\
@@ -653,6 +656,8 @@ int ReadInIcons(char yzzy[MAXSTRING])
 	short temp = 0;
 	char buffer[200];
 	short i1, i2, i3;
+	short blankWarn = 0;
+
 	for (i1 = 0;  i1 < NUM_ICONS;  i1++)
 		for (i2 = 0;  i2 < MAXICONSIZE;  i2++)
 			for (i3 = 0;  i3 < MAXICONSIZE;  i3++)
@@ -751,20 +756,36 @@ int ReadInIcons(char yzzy[MAXSTRING])
 
 
 			case '\n':	//blank line
+				blankWarn++;
 				printf("Warning, blank line %d.\n", lineInFile);
+				if (blankWarn == 10)
+				{
+					printf("Too many blank lines, bailing.\n");
+					return INVALID;
+				}
 				break;
 
 			case '#':	//comment
 				break;
 
 			case '0': // hexadecimal representation
-				if (buffer[1] != 'x')
+				if (buffer[1] == 'd')
+				{
+					//printf("Icon %d decimal printed.\n", v);
+					curBase = 10;
+					OneIcon(CharToNum(buffer[2])*10+CharToNum(buffer[3]), buffer+4, F);
+				}
+				else if (buffer[1] == 'x')
+				{
+					//printf("Icon %x hex printed.\n", v);
+					curBase = 16;
+					OneIcon(CharToNum(buffer[2])*16+CharToNum(buffer[3]), buffer+4, F);
+				}
+				else
 				{
 					printf("Bad hexadecimal at %d.\n", lineInFile);
 					return INVALID;
 				}
-				OneIcon(CharToNum(buffer[2])*16+CharToNum(buffer[3]), buffer+4, F);
-				//printf("Icon %d printed.\n", v);
 				break;
 
 			case '\'': // character representation i.e. 'a'
@@ -1123,6 +1144,7 @@ void ModifyArray()
 		case 'x':
 			xi = strtol(buffer+1, &SecondString, myBase);
 			break;
+
 		case 'y':
 			yi = strtol(buffer+1, &SecondString, myBase);
 			break;
@@ -1265,9 +1287,13 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 
 	BmpHandler.LastIconViewed = q;
 
-	BmpHandler.IconUsed[q] = 1;
+	if (BmpHandler.IconDefined[q] == 1)
+	{
+		printf("Warning, icon %x hex is maybe being overwritten.\n", q);
+	}
+	BmpHandler.IconDefined[q] = 1;
 
-	tst = (short) strtol(myBuf+1, NULL, 16);
+	tst = (short) strtol(myBuf+1, NULL, curBase);
 
 	switch(myBuf[0])
 	{
@@ -1318,36 +1344,66 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case 'c': //copies one icon to another
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: copied-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[tst][i][j];
 		return;
 
 	case 'e': // 180 degree rotation
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
 		return;
 
 	case 'f': // flip across the SW/NE diagonal
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
 		return;
 
 	case 'F': // flip across the SE/NW diagonal
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][j][i] = BmpHandler.Icons[tst][i][j];
 		return;
 
 	case 'h': //copies one icon to another, flipped horizontally
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][j] = BmpHandler.Icons[tst][i][j];
 		return;
 
 	case 'l': //rotate 90 degrees left
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		if (BmpHandler.TheHeight != BmpHandler.TheWidth)
 		{
 			printf ("Need height = width to rotate.\n");
@@ -1359,6 +1415,11 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case 'r': //rotate 90 degrees right
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		if (BmpHandler.TheHeight != BmpHandler.TheWidth)
 		{
 			printf ("Need height = width to rotate.\n");
@@ -1370,6 +1431,11 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		return;
 
 	case 'v': //copies one icon to another, flipped vertically
+		if (BmpHandler.IconDefined[tst] == 0)
+		{
+			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			return;
+		}
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
@@ -1378,7 +1444,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'x': //alternating checkerboard colors
 		tst = CharToNum(myBuf[1]);
 		tst2 = CharToNum(myBuf[2]);
-		fgetc(F);
+		//printf("Checkerboard! %d %d\n", tst, tst2);
 		for (j=0;  j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				if ((i+j)%2)
