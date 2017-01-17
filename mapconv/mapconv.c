@@ -151,7 +151,7 @@ typedef struct
 	short ary[640][640];
 	short transpary[640][640];
 
-	short Icons[256][16][16];
+	short Icons[257][16][16]; // the extra icon space is for rotating an icon about itself
 	short IconUsed[256];
 	short IconDefined[256];
 
@@ -1277,6 +1277,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	short tst, tst2;
 	char buffer[MAXSTRING];
 	short startLoc = 1;
+	short overwriteCheck = 1; // this is on by default but may get reset
 
 	if (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS)
 		printf("Icon-read %x:%c\n", q, myBuf[0] == '\n' ? '.' : myBuf[0]);
@@ -1287,13 +1288,18 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 
 	BmpHandler.LastIconViewed = q;
 
-	if (BmpHandler.IconDefined[q] == 1)
-	{
-		printf("Warning, icon %x hex is maybe being overwritten.\n", q);
-	}
-	BmpHandler.IconDefined[q] = 1;
-
 	tst = (short) strtol(myBuf+1, NULL, curBase);
+
+	// have an icon interact on itself. Usually not necessary but this lets you combine, say, checkerboard with an outline.
+	if (q == tst)
+	{
+		for (j=0;  j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				BmpHandler.Icons[256][i][j] = BmpHandler.Icons[q][i][j];
+		tst = 256;
+		if (BmpHandler.IconDefined[q] == 0)
+			printf("Warning, operating reflexively on icon %02x hex but it's undefined.");
+	}
 
 	switch(myBuf[0])
 	{
@@ -1305,7 +1311,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0;  j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][j] = tst;
-		return;
+		break;
 
 	case '/': // upper left is color #1, double slash means diagonal is too
 		if (myBuf[startLoc] == '/')
@@ -1324,7 +1330,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 					BmpHandler.Icons[q][i][j] = tst;
 				else
 					BmpHandler.Icons[q][i][j] = tst2;
-		return;
+		break;
 
 	case '\\': // upper right is color #1, double slash means diagonal is too
 		if (myBuf[startLoc] == '\\')
@@ -1341,7 +1347,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 					BmpHandler.Icons[q][i][j] = tst;
 				else
 					BmpHandler.Icons[q][i][j] = tst2;
-		return;
+		break;
 
 	case 'c': //copies one icon to another
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1352,7 +1358,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'e': // 180 degree rotation
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1363,7 +1369,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'f': // flip across the SW/NE diagonal
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1374,7 +1380,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'F': // flip across the SE/NW diagonal
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1385,7 +1391,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][j][i] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'h': //copies one icon to another, flipped horizontally
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1396,7 +1402,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][j] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'l': //rotate 90 degrees left
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1412,7 +1418,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'r': //rotate 90 degrees right
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1428,7 +1434,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][i] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'v': //copies one icon to another, flipped vertically
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1439,7 +1445,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
-		return;
+		break;
 
 	case 'x': //alternating checkerboard colors
 		tst = CharToNum(myBuf[1]);
@@ -1451,7 +1457,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 					BmpHandler.Icons[q][i][j] = tst2;
 				else
 					BmpHandler.Icons[q][i][j] = tst;
-		return;
+		break;
 
 	case 'H': //horizontal trimming, with color after
 		tst = CharToNum(myBuf[1]);
@@ -1459,7 +1465,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0; i < tst2; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
-		return;
+		break;
 
 	case 'V': //vertical trimming, with color after
 		tst = CharToNum(myBuf[1]);
@@ -1467,7 +1473,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < tst2; j++)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
-		return;
+		break;
 
 	case 'S': //switch 2 colors. Actually, you can switch with a null color with no problem.
 		tst = CharToNum(myBuf[1]);
@@ -1476,12 +1482,24 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			for (i=0; i < BmpHandler.TheWidth; i++)
 				if ((BmpHandler.Icons[q][i][j] == tst) || (BmpHandler.Icons[q][i][j] == tst2))
 					BmpHandler.Icons[q][i][j] = tst + tst2 - BmpHandler.Icons[q][i][j];
-		return;
+		overwriteCheck = -1;
+		break;
 
 	default:
 		printf("Unknown command for icon %x: %s", q, myBuf);
 		return;
 	}
+	if ((overwriteCheck == 1) && (BmpHandler.IconDefined[q] == 1))
+	{
+		printf("Warning, icon %x hex is maybe being overwritten.\n", q);
+	}
+	if ((overwriteCheck == -1) && (BmpHandler.IconDefined[q] == 0))
+	{
+		printf("Warning, tried to do something with blank icon %x hex.\n", q);
+	}
+
+	BmpHandler.IconDefined[q] = 1;
+
 	for (j=0;  j < BmpHandler.TheHeight; j++)
 	{
 		lineInFile++;
