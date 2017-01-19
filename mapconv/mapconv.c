@@ -69,11 +69,12 @@ short NewPIXFile;
 #define MAPCONV_SORT_PIX 64
 #define MAPCONV_DEBUG_ONLY_FIRST 128
 #define MAPCONV_SHOW_END_STATS 256
-#define MAPCONV_BOTTOMTOP 512
+#define MAPCONV_BOTTOM_TOP 512
 #define MAPCONV_DEBUG_ICONS 1024
 #define MAPCONV_PNG_POST 2048
 #define MAPCONV_DELETE_PNG_ARTIFACTS 4096
 #define MAPCONV_IGNORE_BINS 8192
+#define MAPCONV_REGENERATE_BASE_FILE 16384
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -307,6 +308,14 @@ main(int argc, char * argv[])
 				}
 				break;
 
+			case 'r':
+				MAPCONV_STATUS |= MAPCONV_REGENERATE_BASE_FILE;
+				break;
+
+			case 'R':
+				MAPCONV_STATUS |= MAPCONV_BOTTOM_TOP;
+				break;
+
 			case 'S':
 				MAPCONV_STATUS |= MAPCONV_SORT_PIX;
 				printf("Warning you if PIX file is not sorted.\n");
@@ -407,7 +416,8 @@ Flag -n to turn off default header.\n\
 Flag -i to show icon debugging.\n\
 Flag -nh to show NMR help.\n\
 Flag -p to postprocess to png. -pa also erases png.bak/000 files.\n\
-Flag -r to reverse when IDing unused icons (default is top to bottom).\n\
+Flag -r to regenerate the base BMP file.\n\
+Flag -R to reverse when IDing unused icons (default is top to bottom).\n\
 Flag -s to show used/unused icon stats at the end.\n\
 Flag -S to print out sort warning for icon files.\n\
 Flag -t(xx) to flag transparency and specify the color. Black=default.\n\
@@ -543,7 +553,15 @@ short NMRRead(char FileStr[MAXSTRING])
 
 	while(1)
 	{
-	fgets(BmpHandler.PixStr, MAXSTRING, F);
+	fgets(BufStr, MAXSTRING, F);
+
+	if ((BufStr[0] == 'c') && (BufStr[0] == '=') && MAPCONV_REGENERATE_BASE_FILE)
+	{
+		system(BufStr+2);
+		fgets(BmpHandler.PixStr, MAXSTRING, F);
+	}
+	else
+		strcpy(BmpHandler.PixStr, BufStr);
 
 	if (BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] == '\n')
 		BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] = 0;
@@ -979,7 +997,7 @@ void PrintOutUnused()
 	for (j = BmpHandler.Yi; j < BmpHandler.Yf; j++)
 	{
 		k=j;
-		if (MAPCONV_STATUS & MAPCONV_BOTTOMTOP)
+		if (MAPCONV_STATUS & MAPCONV_BOTTOM_TOP)
 		{
 			k = BmpHandler.Yf + BmpHandler.Yi - k - 1;
 		}
