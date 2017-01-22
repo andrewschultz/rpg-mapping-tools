@@ -169,6 +169,7 @@ int ReadInIcons(char [MAXSTRING]);
 short NMRRead(char [MAXSTRING]);
 void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
+short otherIcon(char x);
 void LCDize(short whichNum, short whichIcon, short usedYet);
 int LatestNumber(FILE *);
 int CharToNum(int);
@@ -1293,12 +1294,13 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 {
 	int i,j;
 	short tst, tst2;
+	short processFurther = 0;
 	char buffer[MAXSTRING];
 	short startLoc = 1;
 	short overwriteCheck = 1; // this is on by default but may get reset
 
 	if (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS)
-		printf("Icon-read %x:%c\n", q, myBuf[0] == '\n' ? '.' : myBuf[0]);
+		printf("Icon-read %x, %c\n", q, myBuf[0] == '\n' ? '.' : myBuf[0]);
 
 	if (MAPCONV_STATUS & MAPCONV_SORT_PIX)
 		if (q < BmpHandler.LastIconViewed)
@@ -1309,7 +1311,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	tst = (short) strtol(myBuf+1, NULL, curBase);
 
 	// have an icon interact on itself. Usually not necessary but this lets you combine, say, checkerboard with an outline.
-	if (q == tst)
+	if ((q == tst) && otherIcon(myBuf[0]))
 	{
 		for (j=0;  j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
@@ -1323,6 +1325,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	{
 	case ' ': //ok, if they don't see the space, pretend it's a return, for now
 	case '\n':
+		processFurther = 1;
 		break;
 
 	case '=':	//changes one icon to all one color.
@@ -1518,6 +1521,9 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 
 	BmpHandler.IconDefined[q] = 1;
 
+	if (!processFurther)
+		return;
+
 	for (j=0;  j < BmpHandler.TheHeight; j++)
 	{
 		lineInFile++;
@@ -1535,6 +1541,24 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 								  printf("Likely early carriage return.\n");
 							}
                 }
+	}
+}
+
+short otherIcon(char x)
+{
+	switch(x)
+	{
+	case 'c':
+	case 'e':
+	case 'f':
+	case 'F':
+	case 'h':
+	case 'l':
+	case 'r':
+	case 'v':
+		return 1;
+	default:
+		return 0;
 	}
 }
 
