@@ -1,5 +1,4 @@
-2400-ground.bmp
-2400.ahs
-0,32,256,224,2400.bin,2400_ground_floor.bmp
-.
+r=2400-ground.bmp
+i=2400.ahs
+o=0,32,256,224,2400.bin,2400_ground_floor.bmp
 ;
