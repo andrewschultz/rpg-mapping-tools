@@ -582,10 +582,8 @@ short NMRRead(char FileStr[MAXSTRING])
 				sscanf(token, "%d", &BmpHandler.Yf);
 				token = strtok(NULL, seps);
 
-				printf("4\n");
 				sscanf(token, "%s", &BmpHandler.OutStr);
 				token = strtok(NULL, seps);
-				printf("5\n");
 
 				BmpHandler.BinStr[0] = (char)0x00;
 
@@ -600,11 +598,7 @@ short NMRRead(char FileStr[MAXSTRING])
 					if (BmpHandler.BmpStr[strlen(BmpHandler.BmpStr) - 1] == '\n')
 						BmpHandler.BmpStr[strlen(BmpHandler.BmpStr) - 1] = 0;
 				}
-				printf("%s %s\n", BmpHandler.BinStr, BmpHandler.BmpStr);
-
-				printf("6\n");
 				WriteToBmp();
-				printf("7\n");
 				NewPIXFile = 0;
 
 			}
@@ -619,6 +613,37 @@ short NMRRead(char FileStr[MAXSTRING])
 				printf("Warning: Writing over Xtr file.\n");
 			}
 			strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
+
+			G = fopen(BmpHandler.BmpStr, "rb");
+
+			for (i=0;  i < 0x436;  i++)
+			{
+				switch (i)
+				{
+				case 0x12:
+					InMapH = fgetc(G);
+					break;
+				case 0x13:
+					InMapH += fgetc(G) * 256;
+					break;
+				case 0x16:
+					InMapW = fgetc(G);
+					break;
+				case 0x17:
+					InMapW += fgetc(G) * 256;
+					break;
+				default:
+					fgetc(G);
+					break;
+				}
+			}
+
+			for (j=0;  j < InMapH;  j++)
+				for (i=0;  i < InMapW;  i++)
+				{
+					BmpHandler.ary[i][InMapH-j-1] = fgetc(G);
+					BmpHandler.transpary[i][j] = 0;
+				}
 			break;
 
 		case 'x': //read in an XTR file
@@ -647,34 +672,7 @@ short NMRRead(char FileStr[MAXSTRING])
 		return NMR_READ_NOBMPFILE;
 	}
 
-	for (i=0;  i < 0x436;  i++)
-	{
-		switch (i)
-		{
-		case 0x12:
-			InMapH = fgetc(G);
-			break;
-		case 0x13:
-			InMapH += fgetc(G) * 256;
-			break;
-		case 0x16:
-			InMapW = fgetc(G);
-			break;
-		case 0x17:
-			InMapW += fgetc(G) * 256;
-			break;
-		default:
-			fgetc(G);
-			break;
-		}
-	}
 
-	for (j=0;  j < InMapH;  j++)
-		for (i=0;  i < InMapW;  i++)
-		{
-			BmpHandler.ary[i][InMapH-j-1] = fgetc(G);
-			BmpHandler.transpary[i][j] = 0;
-		}
 
 	while(1)
 	{
