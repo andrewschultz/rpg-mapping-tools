@@ -1,0 +1,36 @@
+world.xml
+init=5e
+xi=0
+m=Rhutgaard
+>14
+m=Volcano
+xi=0
+yi=20
+m=dark depths
+>28
+m=tower ruins 1
+y-9
+m=tower ruins 2
+y+1
+m=tower ruins 3
+xi=0
+yi=44
+m=castle yrral
+>22
+m=castle zandra
+xi=0
+yi=64
+m=koboldtowne
+>10
+m=guardians
+>10
+m=songfeld
+xi=0
+yi=80
+m=ulk village
+##################
+xi=48
+yi=0
+m=Merkania
+launch
+;
