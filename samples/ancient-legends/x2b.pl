@@ -19,6 +19,7 @@ my $readFile = "";;
 my $xmlFile;
 my %iconHash;
 my $iconIdx = 0;
+my $totalIcon = 0;
 
 my $xi=0;
 my $yi=0;
@@ -33,6 +34,7 @@ my $outFile = "al-raw.bmp";
 
 if (defined($ARGV[0]))
 {
+  if (($ARGV[0] eq "?") || ($ARGV[0] eq "?")) { usage(); }
   if (-f "$ARGV[0]") { $readFile = "$ARGV[0]"; }
   elsif (-d "$ARGV[0]") { $readFile = "$ARGV[0]\\al.txt"; }
 }
@@ -40,7 +42,7 @@ else { die ("Need a vaild directory for world.xml, or a file.");  }
 
 initArray(0);
 
-open(A, "$readFile") || die ("Can't open read-file $readFile");
+open(A, "$readFile") || die ("Can't open read-file $readFile. If you want options, or how to write an extractor file, push -?");
 while ($line = <A>)
 {
   if ($line =~ /^;/) { last; }
@@ -72,10 +74,11 @@ while ($line = <A>)
   if ($line =~ /^y[+-]/) { $line =~ s/^y//; $yc += $line; next; }
   if ($line =~ /^>/) { $line =~ s/^>//; $xc += $line; $yc = $yl; next; }
   if ($line =~ /^m=/) { $line =~ s/^m=//; writeMapChunk($line); next; }
+  $line = lc($line);
+  if ($line eq "ir" or $line eq "reset") { $iconIdx = 0; %iconHash = (); next; }
   if ($line eq "launch") { $launch = 1; next; }
   if ($line eq "debug") { $debug = 1; next; }
   if ($line eq "nodebug") { $debug = 0; next; }
-  if (lc($line) eq "reset") { $iconIdx = 0; %iconHash = (); }
   print "Unknown line $line\n";
 }
 close(A);
@@ -157,6 +160,7 @@ sub writeMapChunk
 		{
 		  $iconHash{$_} = $iconIdx;
 		  $iconIdx++;
+		  if ($iconIdx == 257) { die ("Too many icons read in at line $.. Use ir in a line somewhere, or open another file."); }
 		}
 		if ($debug)
 		{
@@ -179,5 +183,28 @@ sub writeMapChunk
   $yl = $yc;
   $yc = $ycur - $yi;
   print "yc ends at $yc, yi at $yi\n";
+
+}
+
+sub usage
+{
+print<<EOT;
+x2b.pl extracts a bitmap from the world.xml code that Outlaw Editor generates.
+Type in the name of the map file you wish to read in. This script should do the rest.
+m= = name of map, specified by <map name="..." ... ignore the 3d/2d
+xi=x initial, a frame of reference for
+xr=x relative, where we move the starting x-coordinates
+yi= y initial, a frame of reference for
+yr=y relative, where we move the starting x-coordinates
+x(+/-)=move the x-coordinate right or left
+y(+/-)=move the y-coordinate down or up
+>=move x-coordinate right, and y back up
+m=write a map chunk according to the map name
+ir/reset=clear the icon hash
+launch=launch after
+debug=turn on debug
+nodebug=turn off debug
+EOT
+exit();
 
 }
