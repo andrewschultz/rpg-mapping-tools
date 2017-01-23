@@ -80,6 +80,8 @@ short NewPIXFile;
 #define NMR_READ_NOFILE 1
 #define NMR_READ_PIXCORRUPT 2
 #define NMR_READ_NOBMPFILE 3
+#define NMR_READ_OLDVERSION 4
+#define NMR_READ_BAD_LINE 5
 
 long MAPCONV_STATUS = 0;
 
@@ -201,6 +203,8 @@ main(int argc, char * argv[])
 	short i;
 
 	myFile[0] = 0;
+
+	memset(&BmpHandler, 0, sizeof(BmpHandler));
 
 	BmpHandler.BlankColor = BLANKCOLOR;
 	BmpHandler.BlankIcon = BLANKICON;
@@ -482,6 +486,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 	short BufStrCount;
 	short ch;
+	short thisLine = 0;
 
 	short i, j;
 
@@ -512,6 +517,125 @@ short NMRRead(char FileStr[MAXSTRING])
 		BmpHandler.IconUsed[i] = 0;
 	//set all icons as unused
 
+	while (1)
+	{
+		thisLine++;
+		fgets(BufStr, MAXSTRING, F);
+
+		if (BufStr[0] == '#')
+			continue;
+		if (BufStr[0] == ';')
+			break;
+		if (!BufStr[0])
+			break;
+
+		if (BufStr[0] == '\n')
+			printf("Warning: line %d is blank.\n", thisLine);
+
+		if (BufStr[1] != '=')
+		{
+			printf("Warning: new NMR routines need (char)= for each line.\n");
+			return NMR_READ_OLDVERSION;
+		}
+
+		switch(BufStr[0])
+		{
+		case 'c': //run a command
+			if (MAPCONV_REGENERATE_BASE_FILE)
+				system(BufStr+2);
+			else
+				printf("Skipping %s", BufStr + 2);
+			break;
+
+		case 'h':
+			if (BmpHandler.TheWidth != 0)
+				printf("Line %d redefines width.\n", thisLine);
+			BmpHandler.TheWidth = (short)strtol(BufStr, &BufStr2, 10);
+			break;
+
+		case 'i': //read in an icons file
+			strcpy(BmpHandler.PixStr, BufStr + 2);
+			if (BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] == '\n')
+				BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] = 0;
+			if (ReadInIcons(BmpHandler.PixStr) == INVALID)
+			{
+				printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
+				return NMR_READ_PIXCORRUPT;
+			}
+			break;
+
+		case 'o': //output a BMP file
+			{
+				char * token;
+				char seps[] = ",";
+				token = strtok(BufStr+2, seps);
+
+				sscanf(token, "%d", &BmpHandler.Xi);
+				token = strtok(NULL, seps);
+
+				sscanf(token, "%d", &BmpHandler.Yi);
+				token = strtok(NULL, seps);
+
+				sscanf(token, "%d", &BmpHandler.Xf);
+				token = strtok(NULL, seps);
+
+				sscanf(token, "%d", &BmpHandler.Yf);
+				token = strtok(NULL, seps);
+
+				printf("4\n");
+				sscanf(token, "%s", &BmpHandler.OutStr);
+				token = strtok(NULL, seps);
+				printf("5\n");
+
+				BmpHandler.BinStr[0] = (char)0x00;
+
+				if (token)
+				{
+					sscanf(token, "%s", &BmpHandler.BinStr);
+					if (BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 1] == '\n')
+						BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 1] = 0;
+				}
+				else
+				{
+					if (BmpHandler.BmpStr[strlen(BmpHandler.BmpStr) - 1] == '\n')
+						BmpHandler.BmpStr[strlen(BmpHandler.BmpStr) - 1] = 0;
+				}
+				printf("%s %s\n", BmpHandler.BinStr, BmpHandler.BmpStr);
+
+				printf("6\n");
+				WriteToBmp();
+				printf("7\n");
+				NewPIXFile = 0;
+
+			}
+			break;
+
+		case 'r': //read in a raw-data file
+			strcpy(BmpHandler.BmpStr, BufStr + 2);
+			BmpHandler.BmpStr[strlen(BmpHandler.BmpStr)-1] = 0;
+
+			if (BmpHandler.XtrStr[0])
+			{
+				printf("Warning: Writing over Xtr file.\n");
+			}
+			strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
+			break;
+
+		case 'x': //read in an XTR file
+			strcpy(BmpHandler.XtrStr, BufStr + 2);
+			break;
+
+		case 'w':
+			if (BmpHandler.TheHeight != 0)
+				printf("Line %d redefines width.\n", thisLine);
+			BmpHandler.TheHeight = (short)strtol(BufStr, &BufStr2, 10);
+			break;
+
+		default:
+			printf("%c not recognized at line %d.\n", BufStr[0], thisLine);
+			return NMR_READ_BAD_LINE;
+		}
+	}
 	fgets(BmpHandler.BmpStr, MAXSTRING, F);
 	BmpHandler.BmpStr[strlen(BmpHandler.BmpStr)-1] = 0;
 
@@ -556,35 +680,8 @@ short NMRRead(char FileStr[MAXSTRING])
 	{
 	fgets(BufStr, MAXSTRING, F);
 
-	if ((BufStr[0] == 'c') && (BufStr[0] == '=') && MAPCONV_REGENERATE_BASE_FILE)
-	{
-		system(BufStr+2);
-		fgets(BmpHandler.PixStr, MAXSTRING, F);
-	}
-	else
-		strcpy(BmpHandler.PixStr, BufStr);
 
-	if (BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] == '\n')
-		BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] = 0;
-	NewPIXFile = 1;
 
-	if (ReadInIcons(BmpHandler.PixStr) == INVALID)
-	{
-		printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
-		return NMR_READ_PIXCORRUPT;
-	}
-
-	if (BmpHandler.TheWidth == 0)
-	{
-		fgets(BufStr, MAXSTRING, F);
-		BmpHandler.TheWidth = (short)strtol(BufStr, &BufStr2, 10);
-	}
-
-	if (BmpHandler.TheHeight == 0)
-	{
-	fgets(BufStr, MAXSTRING, F);
-	BmpHandler.TheHeight = (short)strtol(BufStr, &BufStr2, 10);
-	}
 
 //      else printf("Icon read successful.\n");
 
@@ -932,6 +1029,7 @@ void WriteToBmp()
 			printf("Not writing a binary file.\n");
 	}
 
+	printf("1\n");
 	for (j = BmpHandler.Yi;  j < BmpHandler.Yf;  j++)
 		for (j2 = 0;  j2 < BmpHandler.TheHeight;  j2++)
 		{
@@ -951,6 +1049,7 @@ void WriteToBmp()
 	fclose(F1);
 	fclose(F3);
 
+	printf("1\n");
 	if (MAPCONV_STATUS & MAPCONV_PNG_POST)
 	{
 		char pngString[80];
