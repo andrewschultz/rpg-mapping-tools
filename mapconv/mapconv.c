@@ -75,6 +75,7 @@ short NewPIXFile;
 #define MAPCONV_DELETE_PNG_ARTIFACTS 4096
 #define MAPCONV_IGNORE_BINS 8192
 #define MAPCONV_REGENERATE_BASE_FILE 16384
+#define MAPCONV_XTRA_AMENDMENTS_ALT_NAME 32768
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -350,6 +351,11 @@ main(int argc, char * argv[])
 			case 'x':
 				MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS;
 				printf("This run will look for the .xtr file to amend the BMPs.\n");
+				if (argv[CurComd][2] == 'n')
+				{
+					MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS_ALT_NAME;
+					printf("Also, a.bmp will now be a-xtr.bmp.\n");
+				}
 				break;
 
 			default:
@@ -482,10 +488,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 	char BufStr[MAXSTRING];
 	char * BufStr2;
-	char * BufStr3;
 
-	short BufStrCount;
-	short ch;
 	short thisLine = 0;
 
 	short i, j;
@@ -661,7 +664,7 @@ short NMRRead(char FileStr[MAXSTRING])
 			return NMR_READ_BAD_LINE;
 		}
 	}
-	fgets(BmpHandler.BmpStr, MAXSTRING, F);
+
 	BmpHandler.BmpStr[strlen(BmpHandler.BmpStr)-1] = 0;
 
 	G = fopen(BmpHandler.BmpStr, "rb");
@@ -671,83 +674,8 @@ short NMRRead(char FileStr[MAXSTRING])
 		printf("Empty BMP file.\n");
 		return NMR_READ_NOBMPFILE;
 	}
-
-
-
-	while(1)
-	{
-	fgets(BufStr, MAXSTRING, F);
-
-
-
-
-//      else printf("Icon read successful.\n");
-
-	ReadFromBmp();
-
-	if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
-		ModifyArray();
-
-	while (1)
-	{
-		if (fgets(BufStr, MAXSTRING, F) == NULL)
-			break;
-
-		ch = BufStr[0];
-
-		if ((BufStr[0] == ';') || (BufStr[0] == ':') || (BufStr[0] == '.'))
-			break;
-
-		if (BufStr[0] == '#')
-			continue;
-
-        printf("String-read: %s", BufStr);
-
-		BufStrCount = 0;
-
-		BmpHandler.Xi = (short)strtol(BufStr+BufStrCount, &BufStr2, 10);
-
-		while (BufStr[BufStrCount] != ',')
-			BufStrCount++;
-		BufStrCount++;
-
-		BmpHandler.Yi = (short)strtol(BufStr+BufStrCount, &BufStr2, 10);
-
-		while (BufStr[BufStrCount] != ',')
-			BufStrCount++;
-		BufStrCount++;
-
-		BmpHandler.Xf = (short)strtol(BufStr+BufStrCount, &BufStr2, 10);
-
-		while (BufStr[BufStrCount] != ',')
-			BufStrCount++;
-		BufStrCount++;
-
-		BmpHandler.Yf = (short)strtol(BufStr+BufStrCount, &BufStr2, 10);
-
-		while (BufStr[BufStrCount] != ',')
-			BufStrCount++;
-		BufStrCount++;
-
-		BufStr3 = BufStr + BufStrCount;
-
-		while(BufStr[BufStrCount] != ',')
-			BufStrCount++;
-
-		BufStr[BufStrCount] = 0;
-
-		strcpy(BmpHandler.BinStr,BufStr3);
-		strcpy(BmpHandler.OutStr,BufStr+BufStrCount+1);
-		BmpHandler.OutStr[strlen(BmpHandler.OutStr)-1] = 0;
-
-		//Here, we process one.  If there is a new PIX file we read it in otherwise we just read from the BMP.
-		//if bin-string = "X" then don't print a BIN file.
-
-		WriteToBmp();
-
-		NewPIXFile = 0;
-
-	}
+	else
+		fclose(G);
 
 	if (MAPCONV_STATUS & MAPCONV_DELETE_PNG_ARTIFACTS)
 	{
@@ -755,12 +683,8 @@ short NMRRead(char FileStr[MAXSTRING])
 		system("erase *.png.0*");
 	}
 
-	if ((ch == '.') || (ch == EOF))
-		return NMR_READ_SUCCESS;
+	return NMR_READ_SUCCESS;
 
-	fgetc(F);
-
-	}
 }
 
 int ReadInIcons(char yzzy[MAXSTRING])
@@ -943,12 +867,33 @@ void ReadFromBmp()
 void WriteToBmp()
 {
 	long temp;
-	FILE * F1 = fopen(BmpHandler.BmpStr, "rb");
+	FILE * F1 = fopen(BmpHandler.OutStr, "rb");
 	FILE * F2;
-	FILE * F3 = fopen(BmpHandler.OutStr, "wb");
+	FILE * F3;
+
 	int i, j, i2, j2, j3, count;
 
+	if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS_ALT_NAME)
+	{
+		char outStr[100];
+		short len;
+		
+		strcpy(outStr, BmpHandler.OutStr);
+		len = strlen(outStr);
+
+		outStr[len-4] = '-';
+		outStr[len-3] = 'x';
+		outStr[len-2] = 't';
+		outStr[len-1] = 'r';
+
+		strcat(outStr, ".bmp");
+		printf("%s is new out file\n", outStr);
+		F3 = fopen(outStr, "wb");
+	}
+	else
+		F3 = fopen(BmpHandler.OutStr, "wb");
 	
+	printf("1\n");
 	for (i = 0;  i < HEADERSIZE;  i++)
 	{
         switch(i)
