@@ -1,3 +1,11 @@
+#Ancient Legends XTR file
+#base 10 for where to start
+s=10
+#we can have 0xff as an icon number/value
+i=16
+#main icon coordinatebase is 10 e.g. 10 comes after 09
+m=10
+#the above are the default, but we want to make sure to set them anyway
 # ff = ... fe = $ fd = X fc=CROWN
 # fb = exit fa=final fight f9=random fight f8 = healer
 # f7 = magic f6=weapons f5=bar f4=armor
@@ -5,8 +13,8 @@
 # ef = up/out ed = down ?? these can be restated another way ec = small teleport
 # eb = lose hit points ea = important detail
 ####1 Castle Yrral
-x=0
-y=44
+x0
+y44
 ##############"It's empty" 0,0-2,5
 #00,01,ff
 #00,02,ff
@@ -18,7 +26,7 @@ y=44
 #02,03,ff
 #02,04,ff
 #02,05,ff
-02,15,fe
+#02,15,fe
 03,11,fd
 08,14,fd
 05,01,ff
@@ -31,15 +39,15 @@ y=44
 09,14,ff
 09,16,fb
 11,14,ff
-12,12,fe
+#12,12,fe
 13,02,ff
 15,04,ff
 15,08,ff
 15,10,ff
 15,12,ff
 ####2 Castle Zandra
-x=22
-y=44
+x22
+y44
 ####empties to 1,5
 #00,02,ff
 #00,03,ff
@@ -48,7 +56,7 @@ y=44
 #01,05,ff
 ####multiple above
 02,11,ff
-02,15,fe
+#02,15,fe
 03,01,ff
 03,03,ff
 03,14,ff
@@ -67,8 +75,8 @@ y=44
 16,03,ff
 16,11,ff
 ####3 Dark Depths
-x=0
-y=20
+x0
+y20
 #02,13,ff # this is a portal but it already has a special icon
 #fa = traps that bounce you back
 03,05,fa
@@ -97,35 +105,38 @@ y=20
 18,01,ff
 18,07,ff
 23,05,ff
-$$$$####
+####$$$$
 #14,08,ff
 #23,10,ff
 ####4 Guardians
-x=10
-y=64
-04,03,fd
-04,05,fd
-06,01,fd
-06,07,fd
-07,07,fd
-07,08,fd
-08,01,fd
-08,07,fd
-10,03,fd
-10,05,fd
+x7
+y64
+04,03,fb
+04,05,fb
+06,01,fb
+06,07,fb
+07,07,fb
+07,08,fb
+08,01,fb
+08,07,fb
+10,03,fb
+10,05,fb
+05,03,ff
+06,02,ff
+##############improvement
+t+
+05,06,f2
+07,01,f2
 04,04,f2
-05,03,f2
-06,02,f2
 09,02,f2
 09,06,f2
 10,04,f2
-05,06,ff
-07,01,ff
+t-
 07,04,f3
 07,06,ff
 ####5 Koboldtowne
-#x=0
-#y=64
+x0
+y64
 ####fights
 #00,01,ff
 #00,02,ff
@@ -171,8 +182,8 @@ y=64
 07,02,ff
 08,02,f0
 ####6 Merkania
-x=48
-y=0
+x48
+y0
 #07,07,ff
 ####multiple below
 #08,12,ff
@@ -232,8 +243,8 @@ y=0
 #59,11,ff
 #59,18,ff
 ####7 Rhutgaard
-x=0
-y=0
+x0
+y0
 00,06,f9
 01,09,f9
 02,02,f9
@@ -255,40 +266,43 @@ y=0
 05,01,ff
 05,13,ff
 07,07,ff
-07,08,ef
+#07,08,0f
 07,12,f0
 08,12,ff
 11,04,ff
 ####8 Songfeld
-x=20
-y=64
+x20
+y64
 00,04,f0
-01,01,f8
 01,02,ff
 02,01,ff
 01,04,ff
 02,06,ff
-02,07,f7
 03,08,fb
 04,07,fb
 04,08,fb
 05,08,fb
+t+
+08,03,f4
+05,04,f5
 04,00,f6
+02,07,f7
+01,01,f8
+t-
 04,01,ff
 04,04,ff
 05,03,ff
 04,06,ff
-05,04,f5
 07,03,ff
-08,03,f4
 ####The tower ruins don't need special keys or whatever
 ####9 Tower Ruins 1
 ####10 Tower Ruins 2
 ####11 Tower Ruins 3
 #03,02,fa
 ####12 Ulk Village
-x=0
-y=80
+x0
+y80
+############exits
 05,08,fb
 05,09,fb
 05,10,fb
@@ -302,8 +316,9 @@ y=80
 17,09,fb
 17,10,fb
 17,11,fb
-+x
+t+
 06,08,ff
+###########fights
 06,10,f9
 07,05,f9
 08,07,f9
@@ -325,30 +340,30 @@ y=80
 16,08,f9
 16,09,f9
 16,11,f9
--x
 06,11,f8
+09,09,f7
+13,14,f5
+14,10,f4
+12,05,f6
+t-
 07,11,ff
 09,08,ff
 09,10,ff
 10,09,ff
-09,09,f7
 10,13,ff
 11,05,ff
 12,06,ff
 #####spring
 #11,09,ff
-12,05,f6
 13,10,ff
 14,09,ff
 14,11,ff
 15,10,ff
 ####multiple above
 13,13,ff
-13,14,f5
-14,10,f4
 ####13 Volcano
-x=20
-y=0
+x20
+y0
 01,12,ec
 02,07,ff
 03,09,ff
@@ -359,12 +374,12 @@ y=0
 04,05,ff
 04,09,ff
 05,10,f3
-06,05,eb
-08,06,eb
-09,05,eb
-10,06,eb
-11,07,eb
-12,07,eb
+#06,05,eb
+#08,06,eb
+#09,05,eb
+#10,06,eb
+#11,07,eb
+#12,07,eb
 06,06,ff
 08,07,ff
 09,04,ff

@@ -1,5 +1,6 @@
 r=al.bmp
 i=al.ahs
+x=al.xtr
 o=0,0,40,42,ancient-legends-dungeons.bmp,al-d.bin
 o=48,0,115,60,ancient-legends-merkania.bmp,al-m.bin
 o=0,44,42,62,ancient-legends-castles.bmp
