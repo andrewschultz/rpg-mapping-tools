@@ -1127,6 +1127,8 @@ void ModifyArray(char XtrStr[MAXSTRING])
 	long count;
 	short lineNum = 0;
 	short XtrErr[256] = {0};
+
+	short transparencyWarnYet = 0;
 	
 	char buffer[200];
 	char * SecondString;
@@ -1270,10 +1272,17 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			break;
 
 		case 't':
+			if ((!transparencyWarnYet) && (MAPCONV_USE_TRANSPARENCY & MAPCONV_STATUS))
+			{
+				transparencyWarnYet = 1;
+				printf("WARNING line %d has a transparency toggle but you aren't running the -t option.\n", lineNum);
+			}
 			if (buffer[1] == '-')
 				XtrTransparencyRead = 0;
-			else
+			else if (buffer[1] == '+')
 				XtrTransparencyRead = 1;
+			else
+				printf("%s = bad transparency line at %d. Need t+ or t-.\n", buffer, lineNum);
 			break;
 
 		case '~':
