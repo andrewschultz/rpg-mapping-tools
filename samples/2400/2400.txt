@@ -1,3 +1,7 @@
+#####################################
+#
+#this maps everything aboveground for 2400 AD
+#
 # uses boot and player disks from asimov
 # note if no w/h specified, oops
 H256
@@ -37,7 +41,7 @@ o2100
 o2f00
 o3000
 o3e00
-#######################column 3 = cehter
+#######################column 3 = center
 x96
 y32
 o3300
