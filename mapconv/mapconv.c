@@ -1272,7 +1272,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			break;
 
 		case 't':
-			if ((!transparencyWarnYet) && (MAPCONV_USE_TRANSPARENCY & MAPCONV_STATUS))
+			if ((!transparencyWarnYet) && !(MAPCONV_USE_TRANSPARENCY & MAPCONV_STATUS))
 			{
 				transparencyWarnYet = 1;
 				printf("WARNING line %d has a transparency toggle but you aren't running the -t option.\n", lineNum);
