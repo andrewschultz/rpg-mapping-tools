@@ -163,6 +163,11 @@ typedef struct
 
 	short LastIconViewed;
 
+	//for XTR files
+	long startIconBase;
+	long iconNumBase;
+	long mainXtrBase;
+
 }
 DomesdayBook;
 
@@ -215,6 +220,10 @@ main(int argc, char * argv[])
 	BmpHandler.LastIconViewed = -1;
 
 	BmpHandler.printHTMLFile = 0;
+
+	BmpHandler.iconNumBase = 16;
+	BmpHandler.startIconBase = 10;
+	BmpHandler.mainXtrBase = 10;
 
 	for (i=0; i < 256; i++)
 		BmpHandler.IconDefined[i] = 0;
@@ -1152,15 +1161,74 @@ void ModifyArray()
 			break;
 
 		case '=':
-			myBase = strtol(buffer+1, &SecondString, 10);
+			BmpHandler.iconNumBase = strtol(buffer+1, &SecondString, 10);
+			BmpHandler.startIconBase = BmpHandler.mainXtrBase = BmpHandler.iconNumBase;
 			everBase = 1;
 			break;
 
-		case 't':
-			if (buffer[1] == '-')
-				XtrTransparencyRead = 0;
+		case 'i': // base for icon number
+			if (buffer[1] == '=')
+			{
+				everBase = 1;
+				BmpHandler.iconNumBase = strtol(buffer+2, &SecondString, 10);
+				break;
+			}
+			if (buffer[1] != '\n')
+				count = strtol(buffer+1, NULL, 10);
 			else
-				XtrTransparencyRead = 1;
+				count = 1;
+
+			yc-= count;
+			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
+				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
+			else
+				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
+			break;
+
+		case 'j':
+			if (buffer[1] != '\n')
+				count = strtol(buffer+1, NULL, 10);
+			else count = 1;
+			xc-= count;
+			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
+				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
+			else
+				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
+			break;
+
+		case 'k':
+			if (buffer[1] != '\n')
+				count = strtol(buffer+1, NULL, 10);
+			else count = 1;
+			xc+= count;
+			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
+				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
+			else
+				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
+			break;
+
+		case 'm': // base for main icon output
+			if (buffer[1] == '=')
+			{
+				everBase = 1;
+				BmpHandler.mainXtrBase = strtol(buffer+2, &SecondString, 10);
+				break;
+			}
+			if (buffer[1] != '\n')
+				count = strtol(buffer+1, NULL, 10);
+			else count = 1;
+			yc+= count;
+			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
+				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
+			else
+				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
+			break;
+
+		case 'n': // base for main icon output
+			if (buffer[1] == '=')
+				BmpHandler.mainXtrBase = strtol(buffer+2, &SecondString, 10);
+			else
+				printf("Line %d has bad i= for main icon number output base.\n", lineNum);
 			break;
 
 		case 'r':
@@ -1178,6 +1246,24 @@ void ModifyArray()
 						BmpHandler.ary[x1+i][y1+j] = (short)defColor;
 				break;
 			}
+
+		case 's': // base for where to start eg moving x=/y=
+			if (buffer[1] == '=')
+			{
+				everBase = 1;
+				BmpHandler.startIconBase = strtol(buffer+1, &SecondString, 10);
+			}
+			else
+				printf("Line %d has bad s= for start coordinates.\n", lineNum);
+			break;
+
+		case 't':
+			if (buffer[1] == '-')
+				XtrTransparencyRead = 0;
+			else
+				XtrTransparencyRead = 1;
+			break;
+
 		case '~':
 			//swap bytes
 		case '>':
@@ -1226,50 +1312,6 @@ void ModifyArray()
 			break;
 
 		case '#':
-			break;
-
-		case 'i':
-			if (buffer[1] != '\n')
-				count = strtol(buffer+1, NULL, 10);
-			else count = 1;
-			yc-= count;
-			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
-				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
-			else
-				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
-			break;
-
-		case 'j':
-			if (buffer[1] != '\n')
-				count = strtol(buffer+1, NULL, 10);
-			else count = 1;
-			xc-= count;
-			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
-				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
-			else
-				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
-			break;
-
-		case 'k':
-			if (buffer[1] != '\n')
-				count = strtol(buffer+1, NULL, 10);
-			else count = 1;
-			xc+= count;
-			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
-				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
-			else
-				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
-			break;
-
-		case 'm':
-			if (buffer[1] != '\n')
-				count = strtol(buffer+1, NULL, 10);
-			else count = 1;
-			yc+= count;
-			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
-				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
-			else
-				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
 			break;
 
 		case '0':
@@ -1337,7 +1379,7 @@ evercheck:
 	fclose(F);
 	if (everBase == 0)
 	{
-		printf("Note, you never defined a base with =##, so I assumed base 10.\n");
+		printf("Note, you never defined a base with (smi)=##, so I assumed base 10.\n");
 	}
 	return;
 }
