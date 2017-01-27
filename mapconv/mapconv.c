@@ -77,6 +77,7 @@ short NewPIXFile;
 #define MAPCONV_IGNORE_BINS 8192
 #define MAPCONV_REGENERATE_BASE_FILE 16384
 #define MAPCONV_XTRA_AMENDMENTS_ALT_NAME 32768
+#define MAPCONV_NOTE_NO_XTR 65536
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -364,6 +365,11 @@ main(int argc, char * argv[])
 				break;
 
 			case 'x':
+				if (argv[CurComd][2] == '0')
+				{
+					MAPCONV_STATUS |= MAPCONV_NOTE_NO_XTR;
+					break;
+				}
 				MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS;
 				printf("This run will look for the .xtr file to amend the BMPs.\n");
 				if (argv[CurComd][2] == 'n')
@@ -456,7 +462,7 @@ Flag -t(xx) to flag transparency and specify the color. Black=default.\n\
 Flag -u to debug squares with no icon.\n\
 Flag -uf to debug squares with no icon, only showing the first.\n\
 Flag -v to reVerse the default top-down process of -uf.\n\
-Flag -x to add extra modifications to the base BMP files.\n");
+Flag -x to add extra modifications to the base BMP files, -xn to add -xtr, and -x0 to disable XTR file/add -nox.\n");
 
 }
 
@@ -894,28 +900,42 @@ void WriteToBmp()
 	FILE * F1 = fopen(BmpHandler.BmpStr, "rb");
 	FILE * F2;
 	FILE * F3;
+	char outStr[MAXSTRING];
+	short len = strlen(BmpHandler.OutStr);
 
 	int i, j, i2, j2, j3, count;
 
+	strcpy(outStr, BmpHandler.OutStr);
+
 	if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS_ALT_NAME)
 	{
-		char outStr[100];
-		short len;
-		
-		strcpy(outStr, BmpHandler.OutStr);
-		len = strlen(outStr);
+		if (len < 4)
+		{
+			printf("The BMP output file name is too short.\n");
+			return;
+		}
 
-		outStr[len-4] = '-';
-		outStr[len-3] = 'x';
-		outStr[len-2] = 't';
-		outStr[len-1] = 'r';
+		outStr[len-4] = 0;
+		strcat(outStr, "-xtr.bmp");
 
-		strcat(outStr, ".bmp");
-		printf("%s is new out file\n", outStr);
-		F3 = fopen(outStr, "wb");
+		if (debug)
+			printf("%s is new out file\n", outStr);
 	}
-	else
-		F3 = fopen(BmpHandler.OutStr, "wb");
+	else if ((MAPCONV_STATUS & MAPCONV_NOTE_NO_XTR) && !(MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS))
+	{
+		if (len < 4)
+		{
+			printf("The BMP output file name is too short.\n");
+			return;
+		}
+
+		outStr[len-4] = 0;
+		strcat(outStr, "-nox.bmp");
+
+		if (debug)
+			printf("%s is new out file\n", outStr);
+	}
+	F3 = fopen(outStr, "wb");
 	
 	for (i = 0;  i < HEADERSIZE;  i++)
 	{
@@ -1023,7 +1043,7 @@ void WriteToBmp()
 
 		FILE *fp;
 
-		strcpy(pngString, BmpHandler.OutStr);
+		strcpy(pngString, outStr);
 		len = strlen(pngString);
 		pngString[len-3] = 'p';
 		pngString[len-2] = 'n';
@@ -1036,7 +1056,7 @@ void WriteToBmp()
 		sprintf(myCmd, "erase %s", pngString);
 		system(myCmd);
 		}
-		sprintf(myCmd, "bmp2png -9 %s", BmpHandler.OutStr);
+		sprintf(myCmd, "bmp2png -9 %s", outStr);
 		system(myCmd);
 	}
 
