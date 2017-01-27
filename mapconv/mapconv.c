@@ -34,6 +34,7 @@ Maybe have option to start with a certain line or end with it as well.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <io.h>
 
 #define NUM_ICONS 256
 
@@ -83,6 +84,7 @@ short NewPIXFile;
 #define NMR_READ_NOBMPFILE 3
 #define NMR_READ_OLDVERSION 4
 #define NMR_READ_BAD_LINE 5
+#define NMR_READ_BAD_MACRO 6
 
 long MAPCONV_STATUS = 0;
 
@@ -180,10 +182,11 @@ void OneIcon(int, char [MAXSTRING], FILE *);
 short otherIcon(char x);
 void LCDize(short whichNum, short whichIcon, short usedYet);
 int LatestNumber(FILE *);
+void ReadRawData();
 int CharToNum(int);
 void ReadFromBmp();
 void WriteToBmp();
-void ModifyArray();
+void ModifyArray(char [MAXSTRING]);
 void PrintOutUnused();
 void printGrid();
 void snip();
@@ -509,7 +512,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 	short thisLine = 0;
 
-	short i, j;
+	short i;
 
 	if (F == NULL)
 	{
@@ -559,8 +562,46 @@ short NMRRead(char FileStr[MAXSTRING])
 			return NMR_READ_OLDVERSION;
 		}
 
+		snip(BufStr);
 		switch(BufStr[0])
 		{
+
+		case 'A':
+			if (BufStr[1] == '=')
+				BufStr2 = BufStr + 2;
+			else
+			{
+				strcpy(BufStr2, FileStr);
+				BufStr2[strlen(BufStr2)-4] = 0;
+			}
+			strcpy(BmpHandler.PixStr, BufStr2);
+			strcat(BmpHandler.PixStr, ".ahs");
+			if(_access(BmpHandler.PixStr, 0) == 0)
+			{
+				strcpy(BmpHandler.PixStr, BufStr2);
+				strcat(BmpHandler.PixStr, ".pix");
+				if(_access(BmpHandler.PixStr, 0) == 0)
+				{
+					printf("Could not find %s.pix/.ahs file, bailing.", BufStr);
+					return NMR_READ_BAD_MACRO;
+				}
+			}
+			strcpy(BmpHandler.BmpStr, BufStr2);
+			strcat(BmpHandler.BmpStr, ".bmp");
+			ReadRawData();
+
+			if (ReadInIcons(BmpHandler.PixStr) == INVALID)
+			{
+				printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
+				return NMR_READ_PIXCORRUPT;
+			}
+
+			strcpy(BmpHandler.XtrStr, BufStr);
+			strcat(BmpHandler.XtrStr, ".xtr");
+
+			if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
+				ModifyArray(BmpHandler.XtrStr);
+
 		case 'c': //run a command
 			if (MAPCONV_REGENERATE_BASE_FILE)
 				system(BufStr+2);
@@ -578,10 +619,6 @@ short NMRRead(char FileStr[MAXSTRING])
 			strcpy(BmpHandler.PixStr, BufStr + 2);
 			snip(BmpHandler.PixStr);
 
-			if (foundExtra)
-			{
-				printf("WARNING: i= is before x= in the NMR file. This may cause false errors to be thrown.\n");
-			}
 			if (ReadInIcons(BmpHandler.PixStr) == INVALID)
 			{
 				printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
@@ -627,60 +664,15 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'r': //read in a raw-data file
 			strcpy(BmpHandler.BmpStr, BufStr + 2);
-			snip(BmpHandler.BmpStr);
-
-			if (BmpHandler.XtrStr[0])
-			{
-				printf("Warning: Writing over Xtr file.\n");
-			}
-			strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
-			{
-				short l = strlen(BmpHandler.XtrStr);
-				BmpHandler.XtrStr[l-3] = 'x';
-				BmpHandler.XtrStr[l-2] = 't';
-				BmpHandler.XtrStr[l-1] = 'r';
-				printf("%s...\n", BmpHandler.XtrStr);
-			}
-
-			G = fopen(BmpHandler.BmpStr, "rb");
-
-			for (i=0;  i < 0x436;  i++)
-			{
-				switch (i)
-				{
-				case 0x12:
-					InMapH = fgetc(G);
-					break;
-				case 0x13:
-					InMapH += fgetc(G) * 256;
-					break;
-				case 0x16:
-					InMapW = fgetc(G);
-					break;
-				case 0x17:
-					InMapW += fgetc(G) * 256;
-					break;
-				default:
-					fgetc(G);
-					break;
-				}
-			}
-
-			for (j=0;  j < InMapH;  j++)
-				for (i=0;  i < InMapW;  i++)
-				{
-					BmpHandler.ary[i][InMapH-j-1] = fgetc(G);
-					BmpHandler.transpary[i][j] = 0;
-				}
+			ReadRawData();
 			break;
 
 		case 'x': //read in an XTR file
 			strcpy(BmpHandler.XtrStr, BufStr + 2);
 			snip(BmpHandler.XtrStr);
 
-			BmpHandler.XtrStr[strlen(BmpHandler.XtrStr)-1] = 0;
 			if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
-				ModifyArray();
+				ModifyArray(BmpHandler.XtrStr);
 			break;
 
 		case 'w':
@@ -722,6 +714,11 @@ int ReadInIcons(char yzzy[MAXSTRING])
 	char buffer[200];
 	short i1, i2, i3;
 	short blankWarn = 0;
+
+	if (foundExtra)
+	{
+		printf("WARNING: i= is before x= in the NMR file. This may cause false errors to be thrown.\n");
+	}
 
 	for (i1 = 0;  i1 < NUM_ICONS;  i1++)
 		for (i2 = 0;  i2 < MAXICONSIZE;  i2++)
@@ -1121,10 +1118,8 @@ void printGrid()
 	}
 }
 
-void ModifyArray()
+void ModifyArray(char XtrStr[MAXSTRING])
 {
-	short u = strlen(BmpHandler.BmpStr);
-
 	FILE * F;
 
 	long xc, yc, nv, i, j, myBase = 10;
@@ -1138,7 +1133,7 @@ void ModifyArray()
 	short XtrTransparencyRead = 0;
 	short everBase = 0;
 
-	if (BmpHandler.XtrStr[0] == 0)
+/*	if (BmpHandler.XtrStr[0] == 0)
 	{
 		strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
 
@@ -1147,17 +1142,17 @@ void ModifyArray()
 		BmpHandler.XtrStr[u-1] = 'r';
 
 		printf("Using default bmp -> xtr string, %s.\n", BmpHandler.XtrStr);
-	}
+	}*/
 
-	F = fopen(BmpHandler.XtrStr, "r");
+	F = fopen(XtrStr, "r");
 
 	if (F == NULL)
 	{
-		printf("No such xtr file as %s.\n", BmpHandler.XtrStr);
+		printf("No such xtr file as %s.\n", XtrStr);
 		return;
 	}
 	else
-		printf("Reading %s.\n", BmpHandler.XtrStr);
+		printf("Reading %s.\n", XtrStr);
 
 	foundExtra = 1;
 
@@ -1755,6 +1750,54 @@ int LatestNumber(FILE * F)
         return jjj;
 }
 
+void ReadRawData()
+{
+	short i, j, l;
+	FILE * G;
+
+	if (!BmpHandler.XtrStr[0])
+	{
+		printf("Assigning XTR file to the raw BMP string.\n");
+		strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
+		l = strlen(BmpHandler.XtrStr);
+		BmpHandler.XtrStr[l-3] = 'x';
+		BmpHandler.XtrStr[l-2] = 't';
+		BmpHandler.XtrStr[l-1] = 'r';
+	}
+
+	G = fopen(BmpHandler.BmpStr, "rb");
+
+	for (i=0;  i < 0x436;  i++)
+	{
+		switch (i)
+		{
+		case 0x12:
+			InMapH = fgetc(G);
+			break;
+		case 0x13:
+			InMapH += fgetc(G) * 256;
+			break;
+		case 0x16:
+			InMapW = fgetc(G);
+			break;
+		case 0x17:
+			InMapW += fgetc(G) * 256;
+			break;
+		default:
+			fgetc(G);
+			break;
+		}
+	}
+
+	for (j=0;  j < InMapH;  j++)
+		for (i=0;  i < InMapW;  i++)
+		{
+			BmpHandler.ary[i][InMapH-j-1] = fgetc(G);
+			BmpHandler.transpary[i][j] = 0;
+		}
+
+	fclose(G);
+}
 void snip(char x[MAXSTRING])
 {
 	short j = strlen(x);
@@ -1774,4 +1817,3 @@ int CharToNum(int z)
 		return (z-'A'+10);
 	return (z - '0');
 }
-
