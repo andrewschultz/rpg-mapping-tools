@@ -186,6 +186,7 @@ void WriteToBmp();
 void ModifyArray();
 void PrintOutUnused();
 void printGrid();
+void snip();
 
 void HelpBombOut();
 void AHSHelp();
@@ -575,8 +576,8 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'i': //read in an icons file
 			strcpy(BmpHandler.PixStr, BufStr + 2);
-			if (BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] == '\n')
-				BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] = 0;
+			snip(BmpHandler.PixStr);
+
 			if (foundExtra)
 			{
 				printf("WARNING: i= is before x= in the NMR file. This may cause false errors to be thrown.\n");
@@ -614,14 +615,10 @@ short NMRRead(char FileStr[MAXSTRING])
 				if (token)
 				{
 					sscanf(token, "%s", &BmpHandler.BinStr);
-					if (BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 1] == '\n')
-						BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 1] = 0;
+					snip(BmpHandler.BinStr);
 				}
 				else
-				{
-					if (BmpHandler.BmpStr[strlen(BmpHandler.BmpStr) - 1] == '\n')
-						BmpHandler.BmpStr[strlen(BmpHandler.BmpStr) - 1] = 0;
-				}
+					snip(BmpHandler.BinStr);
 				WriteToBmp();
 				NewPIXFile = 0;
 
@@ -630,7 +627,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'r': //read in a raw-data file
 			strcpy(BmpHandler.BmpStr, BufStr + 2);
-			BmpHandler.BmpStr[strlen(BmpHandler.BmpStr)-1] = 0;
+			snip(BmpHandler.BmpStr);
 
 			if (BmpHandler.XtrStr[0])
 			{
@@ -679,6 +676,8 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'x': //read in an XTR file
 			strcpy(BmpHandler.XtrStr, BufStr + 2);
+			snip(BmpHandler.XtrStr);
+
 			BmpHandler.XtrStr[strlen(BmpHandler.XtrStr)-1] = 0;
 			if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
 				ModifyArray();
@@ -1754,6 +1753,17 @@ int LatestNumber(FILE * F)
         int jjj;
         jjj = (16*CharToNum(fgetc(F)) + CharToNum(fgetc(F)));
         return jjj;
+}
+
+void snip(char x[MAXSTRING])
+{
+	short j = strlen(x);
+
+	if (!j)
+		return;
+
+	if (x[j-1] == '\n')
+		x[j-1] = 0;
 }
 
 int CharToNum(int z)
