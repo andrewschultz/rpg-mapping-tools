@@ -365,7 +365,7 @@ main(int argc, char * argv[])
 				if (argv[CurComd][2] == 'n')
 				{
 					MAPCONV_STATUS |= MAPCONV_XTRA_AMENDMENTS_ALT_NAME;
-					printf("Also, a.bmp will now be a-xtr.bmp.\n");
+					printf("Also, a.bmp (for example) will now be a-xtr.bmp.\n");
 				}
 				break;
 
@@ -400,6 +400,12 @@ main(int argc, char * argv[])
 		printf("The NMR file didn't seem to read successfully.\n");
 		return 0;
 	}
+
+	if (!foundExtra && (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS))
+		printf("You ran the -x option but the NMR file didn't reference a proper XTR file.\n");
+
+	if (foundExtra && !(MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS))
+		printf("The NMR file referenced an extra file but you didn't run the -x option.\n");
 
 	if (BmpHandler.printHTMLFile > 0)
 	{
@@ -571,6 +577,10 @@ short NMRRead(char FileStr[MAXSTRING])
 			strcpy(BmpHandler.PixStr, BufStr + 2);
 			if (BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] == '\n')
 				BmpHandler.PixStr[strlen(BmpHandler.PixStr)-1] = 0;
+			if (foundExtra)
+			{
+				printf("WARNING: i= is before x= in the NMR file. This may cause false errors to be thrown.\n");
+			}
 			if (ReadInIcons(BmpHandler.PixStr) == INVALID)
 			{
 				printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
