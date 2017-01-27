@@ -1,4 +1,22 @@
 r=2400-ground.bmp
 i=2400.ahs
-o=0,32,256,224,2400.bin,2400_ground_floor.bmp
+o=0,32,256,224,2400_ground_floor.bmp
+r=2400-1up.bmp
+o=0,32,256,224,2400_one_level_up.bmp
+r=2400-2up.bmp
+o=0,32,256,224,2400_two_levels_up.bmp
+r=2400-3up.bmp
+o=0,32,256,224,2400_three_levels_up.bmp
+r=2400-4up.bmp
+o=0,32,256,224,2400_four_levels_up.bmp
+r=2400-u.bmp
+o=0,32,256,224,2400_one_level_down.bmp
+r=2400-u2.bmp
+o=0,32,256,224,2400_two_levels_down.bmp
+r=2400-u3.bmp
+o=0,32,256,224,2400_three_levels_down.bmp
+r=2400-u4.bmp
+o=0,32,256,224,2400_four_levels_down.bmp
+i=240016.ahs
+#todo: get the maze file written and put it here
 ;
