@@ -197,6 +197,8 @@ short lcd_blank = 0;
 
 short curBase = 16;
 
+short foundExtra = 0;
+
 main(int argc, char * argv[])
 {
 	char myFile[50];
@@ -616,6 +618,13 @@ short NMRRead(char FileStr[MAXSTRING])
 				printf("Warning: Writing over Xtr file.\n");
 			}
 			strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
+			{
+				short l = strlen(BmpHandler.XtrStr);
+				BmpHandler.XtrStr[l-3] = 'x';
+				BmpHandler.XtrStr[l-2] = 't';
+				BmpHandler.XtrStr[l-1] = 'r';
+				printf("%s...\n", BmpHandler.XtrStr);
+			}
 
 			G = fopen(BmpHandler.BmpStr, "rb");
 
@@ -651,6 +660,9 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'x': //read in an XTR file
 			strcpy(BmpHandler.XtrStr, BufStr + 2);
+			BmpHandler.XtrStr[strlen(BmpHandler.XtrStr)-1] = 0;
+			if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
+				ModifyArray();
 			break;
 
 		case 'w':
@@ -665,17 +677,14 @@ short NMRRead(char FileStr[MAXSTRING])
 		}
 	}
 
-	BmpHandler.BmpStr[strlen(BmpHandler.BmpStr)-1] = 0;
-
 	G = fopen(BmpHandler.BmpStr, "rb");
 
 	if (G == NULL)
 	{
-		printf("Empty BMP file.\n");
+		printf("Empty BMP read-in file.\n");
 		return NMR_READ_NOBMPFILE;
 	}
-	else
-		fclose(G);
+	fclose(G);
 
 	if (MAPCONV_STATUS & MAPCONV_DELETE_PNG_ARTIFACTS)
 	{
@@ -867,7 +876,7 @@ void ReadFromBmp()
 void WriteToBmp()
 {
 	long temp;
-	FILE * F1 = fopen(BmpHandler.OutStr, "rb");
+	FILE * F1 = fopen(BmpHandler.BmpStr, "rb");
 	FILE * F2;
 	FILE * F3;
 
@@ -893,7 +902,6 @@ void WriteToBmp()
 	else
 		F3 = fopen(BmpHandler.OutStr, "wb");
 	
-	printf("1\n");
 	for (i = 0;  i < HEADERSIZE;  i++)
 	{
         switch(i)
@@ -972,7 +980,6 @@ void WriteToBmp()
 			printf("Not writing a binary file.\n");
 	}
 
-	printf("1\n");
 	for (j = BmpHandler.Yi;  j < BmpHandler.Yf;  j++)
 		for (j2 = 0;  j2 < BmpHandler.TheHeight;  j2++)
 		{
@@ -992,7 +999,6 @@ void WriteToBmp()
 	fclose(F1);
 	fclose(F3);
 
-	printf("1\n");
 	if (MAPCONV_STATUS & MAPCONV_PNG_POST)
 	{
 		char pngString[80];
@@ -1106,17 +1112,23 @@ void ModifyArray()
 	long xc, yc, nv, i, j, myBase = 10;
 	long xi=0, yi=0, x2=0, y2=0;
 	long count;
+	short lineNum = 0;
 	
 	char buffer[200];
 	char * SecondString;
 	short XtrTransparencyRead = 0;
 	short everBase = 0;
 
-	strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
+	if (BmpHandler.XtrStr[0] == 0)
+	{
+		strcpy(BmpHandler.XtrStr, BmpHandler.BmpStr);
 
-	BmpHandler.XtrStr[u-3] = 'x';
-	BmpHandler.XtrStr[u-2] = 't';
-	BmpHandler.XtrStr[u-1] = 'r';
+		BmpHandler.XtrStr[u-3] = 'x';
+		BmpHandler.XtrStr[u-2] = 't';
+		BmpHandler.XtrStr[u-1] = 'r';
+
+		printf("Using default bmp -> xtr string, %s.\n", BmpHandler.XtrStr);
+	}
 
 	F = fopen(BmpHandler.XtrStr, "r");
 
@@ -1128,8 +1140,11 @@ void ModifyArray()
 	else
 		printf("Reading %s.\n", BmpHandler.XtrStr);
 
+	foundExtra = 1;
+
 	while (fgets(buffer, 200, F))
 	{
+		lineNum++;
 		switch(buffer[0])
 		{
 		case ';':
@@ -1304,10 +1319,12 @@ void ModifyArray()
 				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
 			else
 				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
+			if (debug)
+				printf("%2x %2x = %2x %2x + %2x %2x\n", xc+xi, yc+yi, xc, yc, xi, yi);
 			break;
 
 		default:
-			printf("Xtr file has faulty line:\n%s", buffer);
+			printf("Xtr file has faulty line #%d:\n%s", lineNum, buffer);
 			break;
 		}
 
