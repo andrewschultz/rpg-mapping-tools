@@ -1122,6 +1122,7 @@ void ModifyArray()
 	long xi=0, yi=0, x2=0, y2=0;
 	long count;
 	short lineNum = 0;
+	short XtrErr[256] = {0};
 	
 	char buffer[200];
 	char * SecondString;
@@ -1235,11 +1236,18 @@ void ModifyArray()
 			{
 				long x1, y1, x2, y2, defColor;
 
-				x1=strtol(buffer+1, &SecondString, myBase);
-				y1=strtol(buffer+4, &SecondString, myBase);
-				x2=strtol(buffer+7, &SecondString, myBase);
-				y2=strtol(buffer+10, &SecondString, myBase);
-				defColor=strtol(buffer+13, &SecondString, myBase);
+				if (BmpHandler.startIconBase != BmpHandler.startIconBase)
+					printf("WARNING line %d has startIconBase != mainXtrBase.\n", lineNum);
+
+				x1=strtol(buffer+1, &SecondString, BmpHandler.startIconBase);
+				y1=strtol(buffer+4, &SecondString, BmpHandler.startIconBase);
+				x2=strtol(buffer+7, &SecondString, BmpHandler.startIconBase);
+				y2=strtol(buffer+10, &SecondString, BmpHandler.startIconBase);
+				defColor=strtol(buffer+13, &SecondString, BmpHandler.startIconBase);
+				if (defColor > 256)
+				{
+					printf("WARNING: Skipping icon value of %2x on line %d, can't be over x100/256.\n", defColor, lineNum);
+				}
 
 				for (j=0; j < y2; j++)
 					for (i=0; i < x2; i++)
@@ -1304,11 +1312,11 @@ void ModifyArray()
 			}
 
 		case 'x':
-			xi = strtol(buffer+1, &SecondString, myBase);
+			xi = strtol(buffer+1, &SecondString, BmpHandler.startIconBase);
 			break;
 
 		case 'y':
-			yi = strtol(buffer+1, &SecondString, myBase);
+			yi = strtol(buffer+1, &SecondString, BmpHandler.startIconBase);
 			break;
 
 		case '#':
@@ -1330,13 +1338,13 @@ void ModifyArray()
 		case 'd':
 		case 'e':
 		case 'f':
-			xc = strtol(buffer, &SecondString, myBase);
+			xc = strtol(buffer, &SecondString, BmpHandler.mainXtrBase);
 			count = 0;
 			while (buffer[count] && (buffer[count] != ','))
 				count++;
 			if (!buffer[count]) { printf("XTR file string too short: %s", buffer); break; }
 
-			yc = strtol(buffer+count+1, &SecondString, myBase);
+			yc = strtol(buffer+count+1, &SecondString, BmpHandler.mainXtrBase);
 
 			count++;
 
@@ -1347,7 +1355,7 @@ void ModifyArray()
 			if (buffer[count] == '=')
 				nv = (char)buffer[count+1] & 0xff;	//ie =T, character stuff
 			else
-				nv = strtol(buffer+count+1, &SecondString, 16);
+				nv = strtol(buffer+count+1, &SecondString, BmpHandler.iconNumBase);
 
 			if (debug > 0)
 			{
@@ -1355,6 +1363,13 @@ void ModifyArray()
 					printf("xc %d xi %d yc %d yi %d, base %d\n", xc, xi, yc, yi, myBase);
 				printf("Array[%d][%d]=%d with char %d from string %s", xc+xi, yc+yi, nv, count, buffer);
 			}
+
+			if (!BmpHandler.IconDefined[nv])
+				if (!XtrErr[nv])
+				{
+					XtrErr[nv] = 1;
+					printf("Line %d has greyed out icon %02x.\n", lineNum, nv);
+				}
 
 //			BmpHandler.ary[xc][255-yc] = nv;
 			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
