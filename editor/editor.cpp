@@ -47,6 +47,8 @@ void DrawPointerRectangle(HWND hwnd, long xOffset, long yOffset, COLORREF myColo
 void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME]);
 void ReloadTheMap(HWND hwnd);
 void drawMyIcons(HWND hwnd);
+void changeBarText(HWND hwnd);
+
 void CreateNewMapfile(long, long);
 void SaveMapfile(void);
 void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf);
@@ -950,6 +952,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				}
 				break;
 
+			case VK_D:
 			case VK_S:
 				{
 					char buffer[100];
@@ -957,7 +960,11 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					sprintf(buffer, "Lay piece down. %d",wparam);
 
 					if (KEY_DOWN(VK_CONTROL))
+					{
+						if (wparam == VK_S) //saving should not delete a wall
+							break;
 						LRWallArray[xCurrent+1][yCurrent] = 0;
+					}
 					else
 						LRWallArray[xCurrent+1][yCurrent] = (short)WallIconNumber;
 
@@ -1261,10 +1268,23 @@ if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, // class
 						  NULL,	   // handle to menu
 						  hinstance,// instance
 						  NULL)))	// creation parms
-return(0);
+	return(0);
 
-// save the window handle in a global
-hwnd = hwnd;
+	// save the window handle in a global
+	hwnd = hwnd;
+
+	if (lpcmdline[0])
+	{
+		if (_access(lpcmdline, 0) == 0)
+			strcpy(CurrentFileName, lpcmdline);
+		else
+			MessageBox(hwnd, lpcmdline, "No such file", MB_OK);
+	}
+	else
+	{
+		CurrentFileName[0] = 0;
+	}
+	changeBarText(hwnd);
 
     hAccelTable = LoadAccelerators(hinstance, "MYACCEL");
 // enter main event loop
@@ -1363,11 +1383,9 @@ char        locFileTitle[MAXFILENAME];
 	  i--;
 	  if (locFileName[i] == 'p')
 	  {
-		  char guiTitle[200] = "GUI Map Editor - ";
 		  ReadBinaryMap(hwnd, locFileName);
 		  strcpy(CurrentFileName, locFileName);
-		  strcat(guiTitle, PathFindFileName(CurrentFileName));
-		  SetWindowText(hwnd, guiTitle);
+		  changeBarText(hwnd);
 	  }
   }
 }
@@ -1455,6 +1473,7 @@ void SaveMapfile()
 	long q;
 	
 	if (CurrentFileName[0] == 0)
+	{
 		q = MessageBox(hwnd, "Blank file, save to blank.map?", "Blank file", MB_OKCANCEL);
 		if (q == 1)
 		{
@@ -1470,6 +1489,7 @@ void SaveMapfile()
 		}
 		else
 			return;
+	}
 
 	F = fopen(CurrentFileName, "wb");
 
@@ -1737,4 +1757,14 @@ void drawMyIcons(HWND hwnd)
 	TextOut(localhdc,600,128,buffer,strlen(buffer));
 	ReleaseDC(hwnd,localhdc);
 
+}
+
+void changeBarText(HWND hwnd)
+{ 
+	char guiTitle[100] = "GUI Map Drawer - ";
+	if (CurrentFileName[0] == 0)
+		strcat(guiTitle, "new file");
+	else
+		strcat(guiTitle, PathFindFileName(CurrentFileName));
+	SetWindowText(hwnd, guiTitle);
 }
