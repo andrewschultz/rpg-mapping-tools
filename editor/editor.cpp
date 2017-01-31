@@ -11,8 +11,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <commdlg.h>
+#include <io.h>
 
 #include <stdlib.h>
+
+#include "Shlwapi.h"
 
 #include "editor.h"
 
@@ -1360,8 +1363,11 @@ char        locFileTitle[MAXFILENAME];
 	  i--;
 	  if (locFileName[i] == 'p')
 	  {
+		  char guiTitle[200] = "GUI Map Editor - ";
 		  ReadBinaryMap(hwnd, locFileName);
 		  strcpy(CurrentFileName, locFileName);
+		  strcat(guiTitle, PathFindFileName(CurrentFileName));
+		  SetWindowText(hwnd, guiTitle);
 	  }
   }
 }
@@ -1446,9 +1452,24 @@ void SaveMapfile()
 {
 	FILE * F;
 	long i, j;
+	long q;
 	
 	if (CurrentFileName[0] == 0)
-		return;
+		q = MessageBox(hwnd, "Blank file, save to blank.map?", "Blank file", MB_OKCANCEL);
+		if (q == 1)
+		{
+			long acc;
+			acc = _access("blank.map", 0);
+			if (acc == 0)
+			{
+				q = MessageBox(hwnd, "Blank.map exists, overwrite? (you can move it and resave)", "Blank.map nag", MB_OKCANCEL);
+			}
+			if (q == 2)
+				return;
+			strcpy(CurrentFileName, "blank.map");
+		}
+		else
+			return;
 
 	F = fopen(CurrentFileName, "wb");
 
