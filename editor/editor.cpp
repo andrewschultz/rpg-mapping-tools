@@ -374,9 +374,8 @@ switch(msg)
 			{
 				xCurrent -= 34;
 				yCurrent += 17;
-				if (yCurrent > 33)
-					yCurrent -= 34;
 			}
+			yCurrent %= 34;
 			DrawPointerRectangle(hwnd, 0, yCurrent+1, RGB(255,0,0));
 			DrawPointerRectangle(hwnd, xCurrent+1, 0, RGB(255,0,0));
 			break;
@@ -1627,8 +1626,6 @@ void SaveBitmapFile(HWND hwnd)
 	rPage.bottom = rPage.right = 552;
 
 	numBytes = 544 * 544 * 3;
-
-
 
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bmi.bmiHeader.biWidth = 544;
