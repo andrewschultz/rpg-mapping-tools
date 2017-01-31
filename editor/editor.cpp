@@ -897,7 +897,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				{
 					char buffer[100];
 
-						sprintf(buffer, "Lay piece down. %d",wparam);
+					sprintf(buffer, "Lay piece down. %d",wparam);
 
 					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT))
 						UDWallArray[xCurrent][yCurrent] = (UDWallArray[xCurrent][yCurrent] + 1) % 8;
@@ -920,6 +920,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					ReleaseDC(hwnd,hdc);
 
 					ReloadTheMap(hwnd);
+					workNotSaved = 1;
 
 					break;
 				}
@@ -951,6 +952,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					ReleaseDC(hwnd,hdc);
 
 					ReloadTheMap(hwnd);
+					workNotSaved = 1;
 
 					break;
 				}
@@ -983,6 +985,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					ReleaseDC(hwnd,hdc);
 
 					ReloadTheMap(hwnd);
+					workNotSaved = 1;
 
 					break;
 				}
@@ -992,10 +995,8 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				{
 					char buffer[100];
 
-					sprintf(buffer, "Lay piece down. %d",wparam);
-
-					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT))
-						UDWallArray[xCurrent][yCurrent+1] = (LRWallArray[xCurrent][yCurrent+1] + 1) % 8;
+					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT) != 0	)
+						UDWallArray[xCurrent][yCurrent+1] = (UDWallArray[xCurrent][yCurrent+1] + 1) % 8;
 					else if (KEY_DOWN(VK_CONTROL))
 						UDWallArray[xCurrent][yCurrent+1] = 0;
 					else
@@ -1015,6 +1016,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					ReleaseDC(hwnd,hdc);
 
 					ReloadTheMap(hwnd);
+					workNotSaved = 1;
 
 					break;
 				}
