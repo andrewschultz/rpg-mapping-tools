@@ -43,6 +43,7 @@
 #define YVAL(a,b) (SquareIconArray[a][b]/16)*16
 // FUNCTION DEFS
 void DoOpenFile(HWND hwnd);
+void DrawPointers(HWND hwnd, COLORREF myColor);
 void DrawPointerRectangle(HWND hwnd, long xOffset, long yOffset, COLORREF myColor);
 void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME]);
 void ReloadTheMap(HWND hwnd);
@@ -822,60 +823,58 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					else
 					{
 						//rectangle down the side & along top
-						DrawPointerRectangle(hwnd, 0, yCurrent+1, RGB(255,255,255));
-						DrawPointerRectangle(hwnd, xCurrent+1, 0, RGB(255,255,255));
+						DrawPointers(hwnd, RGB(255,255,255));
 
 						switch(wparam)
 						{
 						case VK_LEFT:
 							xCurrent--;
 							if (xCurrent & 0xf00)
-								xCurrent += MAXICONSWIDE;
-							break;
+								xCurrent += MAXICONSWIDE - 1;
+							break; 
 
 						case VK_RIGHT:
 							xCurrent++;
-							if (xCurrent == MAXICONSWIDE)
+							if (xCurrent == MAXICONSWIDE - 1)
 								xCurrent = 0;
 							break;
 
 						case VK_UP:
 							yCurrent--;
 							if (yCurrent & 0xf00)
-								yCurrent += MAXICONSHIGH;
+								yCurrent += MAXICONSHIGH - 1;
 							break;
 
 						case VK_DOWN:
 							yCurrent++;
-							if (yCurrent == MAXICONSHIGH)
+							if (yCurrent == MAXICONSHIGH - 1)
 								yCurrent = 0;
 							break;
 
 						}
 
-						DrawPointerRectangle(hwnd, 0, yCurrent+1, RGB(255,0,0));
-						DrawPointerRectangle(hwnd, xCurrent+1, 0, RGB(255,0,0));
+						DrawPointers(hwnd, RGB(255,0,0));
 
-				yc2 = yCurrent;
-				if (zeroBottom) yc2 = 31 - yc2;
-				sprintf(buffer, "%02d,%02d D\r\n%02x,%02x H", xCurrent, yc2, xCurrent, yc2);
-				hdc = GetDC(hwnd);
+						yc2 = yCurrent;
+						if (zeroBottom) yc2 = 31 - yc2;
+						sprintf(buffer, "%02d,%02d D\r\n%02x,%02x H", xCurrent, yc2, xCurrent, yc2);
+						hdc = GetDC(hwnd);
 
-				// set the colors 
-				SetTextColor(hdc, RGB(0,255,0));
-				SetBkColor(hdc,RGB(0,0,0));
-				SetBkMode(hdc,OPAQUE);
+						// set the colors 
+						SetTextColor(hdc, RGB(0,255,0));
+						SetBkColor(hdc,RGB(0,0,0));
+						SetBkMode(hdc,OPAQUE);
 
-				// output the message
-				rect.top=432;
-				rect.bottom=520;
-				rect.left=576;
-				rect.right=800;
+						// output the message
+						rect.top=432;
+						rect.bottom=520;
+						rect.left=576;
+						rect.right=800;
 
-				DrawText(hdc,buffer,strlen(buffer),&rect,DT_TOP|DT_LEFT);
+						DrawText(hdc,buffer,strlen(buffer),&rect,DT_TOP|DT_LEFT);
 
-				// release dc
-				ReleaseDC(hwnd,hdc);
+						// release dc
+						ReleaseDC(hwnd,hdc);
 
 					}
 
@@ -1304,7 +1303,7 @@ walldc = CreateCompatibleDC(localhdc);
 	drawMyIcons(hwnd);
 
 	SetBkColor(localhdc,RGB(255,255,255));
-	Rectangle(localhdc, 0,0,560,560);
+	Rectangle(localhdc, 0,0,576,576);
 
 	parseCmdLine(lpcmdline, hwnd);
 
@@ -1523,6 +1522,14 @@ void SaveMapfile()
 	workNotSaved = 0;
 }
 
+void DrawPointers(HWND hwnd, COLORREF myColor)
+{
+	DrawPointerRectangle(hwnd, xCurrent+1, 0, myColor);
+	DrawPointerRectangle(hwnd, 0, yCurrent+1, myColor);
+	DrawPointerRectangle(hwnd, xCurrent+1, 35, myColor);
+	DrawPointerRectangle(hwnd, 35, yCurrent+1, myColor);
+}
+
 void DrawPointerRectangle(HWND hwnd, long xOffset, long yOffset, COLORREF myColor)
 {
 	HDC hdc = GetDC(hwnd);
@@ -1568,24 +1575,23 @@ void ReloadTheMap(HWND hwnd)
 	RECT rect;
 
 	rect.top=0;
-	rect.bottom=ICONHEIGHT*MAXICONSHIGH;
+	rect.bottom=ICONHEIGHT*(MAXICONSHIGH+1);
 	rect.left=0;
-	rect.right=ICONWIDTH*MAXICONSWIDE;
+	rect.right=ICONWIDTH*(MAXICONSWIDE+1);
 
 	FillRect(hdc, &rect, hbrush);
 
 	DeleteObject(hbrush);
 
-	for (j=0; j < MAXICONSHIGH-1; j++)
+	for (j=0; j <= MAXICONSHIGH-1; j++)
 	{
-		for (i=0; i < MAXICONSWIDE-1; i++)
+		for (i=0; i <= MAXICONSWIDE-1; i++)
 			BitBlt(hdc, i*16+16, j*16+16, 16, 16, icondc, XVAL(i,j), YVAL(i,j), SRCCOPY);
 	}
 
 	if (showPointerRectangle)
 	{
-		DrawPointerRectangle(hwnd, xCurrent+1, 0, RGB(255,0,0));
-		DrawPointerRectangle(hwnd, 0, yCurrent+1, RGB(255,0,0));
+		DrawPointers(hwnd, RGB(255,0,0));
 	}
 	for (j=0; j < MAXICONSHIGH+1; j++)
 		for (i=0; i < MAXICONSWIDE+1; i++)
