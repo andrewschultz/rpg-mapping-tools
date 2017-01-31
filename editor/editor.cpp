@@ -1180,7 +1180,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 			case VK_6:
 			case VK_7:
 			case VK_8:
-			case VK_9:
+			case VK_9:	
 				if (KEY_DOWN(VK_SHIFT))
 				{
 					DrawPointerRectangle(hwnd, MAXICONSWIDE + 3 + WallIconNumber, 1, RGB(0,0,0));
@@ -1388,6 +1388,13 @@ char        locFileTitle[MAXFILENAME];
   locOFN.lpfnHook = NULL;
   locOFN.lpTemplateName = NULL;
 
+if (workNotSaved)
+{
+	long x = MessageBox(NULL, "Do you wish to open a new file without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
+	if (x != 1) 
+		return;
+}
+
   if (GetOpenFileName(&locOFN) == TRUE)
   {
 	  long i;
@@ -1398,6 +1405,7 @@ char        locFileTitle[MAXFILENAME];
 		  ReadBinaryMap(hwnd, locFileName);
 		  strcpy(CurrentFileName, locFileName);
 		  changeBarText(hwnd);
+		  workNotSaved = 0;
 	  }
   }
 }
