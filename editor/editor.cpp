@@ -899,7 +899,9 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 
 						sprintf(buffer, "Lay piece down. %d",wparam);
 
-					if (KEY_DOWN(VK_CONTROL))
+					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT))
+						UDWallArray[xCurrent][yCurrent] = (UDWallArray[xCurrent][yCurrent] + 1) % 8;
+					else if (KEY_DOWN(VK_CONTROL))
 						UDWallArray[xCurrent][yCurrent] = 0;
 					else
 						UDWallArray[xCurrent][yCurrent] = (short)WallIconNumber;
@@ -928,7 +930,9 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 
 					sprintf(buffer, "Lay piece down. %d",wparam);
 
-					if (KEY_DOWN(VK_CONTROL))
+					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT))
+						LRWallArray[xCurrent][yCurrent] = (LRWallArray[xCurrent][yCurrent] + 1) % 8;
+					else if (KEY_DOWN(VK_CONTROL))
 						LRWallArray[xCurrent][yCurrent] = 0;
 					else
 						LRWallArray[xCurrent][yCurrent] = (short)WallIconNumber;
@@ -952,19 +956,16 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				}
 				break;
 
-			case VK_D:
 			case VK_S:
 				{
 					char buffer[100];
 
 					sprintf(buffer, "Lay piece down. %d",wparam);
 
-					if (KEY_DOWN(VK_CONTROL))
-					{
-						if (wparam == VK_S) //saving should not delete a wall
-							break;
+					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT))
+						LRWallArray[xCurrent+1][yCurrent] = (LRWallArray[xCurrent+1][yCurrent] + 1) % 8;
+					else if (KEY_DOWN(VK_CONTROL))
 						LRWallArray[xCurrent+1][yCurrent] = 0;
-					}
 					else
 						LRWallArray[xCurrent+1][yCurrent] = (short)WallIconNumber;
 
@@ -993,7 +994,9 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 
 					sprintf(buffer, "Lay piece down. %d",wparam);
 
-					if (KEY_DOWN(VK_CONTROL))
+					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT))
+						UDWallArray[xCurrent][yCurrent+1] = (LRWallArray[xCurrent][yCurrent+1] + 1) % 8;
+					else if (KEY_DOWN(VK_CONTROL))
 						UDWallArray[xCurrent][yCurrent+1] = 0;
 					else
 						UDWallArray[xCurrent][yCurrent+1] = (short)WallIconNumber;
@@ -1493,6 +1496,7 @@ void SaveMapfile()
 			if (q == 2)
 				return;
 			strcpy(CurrentFileName, "blank.map");
+			changeBarText(hwnd);
 		}
 		else
 			return;
