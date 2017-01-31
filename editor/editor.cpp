@@ -739,6 +739,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				break;
 
 			case VK_DELETE:
+				workNotSaved = 1;
 				if (KEY_DOWN(VK_SHIFT))
 				{
 					UDWallArray[xCurrent][yCurrent] = 
@@ -1184,6 +1185,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				}
 				//no ctrl, alt or shift
 				SquareIconArray[xCurrent][yCurrent] = (short)prevDefArray[wparam-VK_0];
+				workNotSaved = 1;
 				ReloadTheMap(hwnd);
 				break;
 			default:
@@ -1207,13 +1209,19 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
         return(0);
         } break;
 
+	case WM_CLOSE:
+		if (workNotSaved)
+		{
+			long x = MessageBox(NULL, "Do you wish to exit without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
+			if (x != 1) 
+				return(0);
+		}
+		DestroyWindow(hwnd);
+		break;
+
 	case WM_DESTROY:
 		{
 		// kill the application
-			if (workNotSaved)
-			{
-				long x = MessageBox(NULL, "Do you wish to exit without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
-			}
 		PostQuitMessage(0);
 		return(0);
 		} break;
@@ -1524,10 +1532,13 @@ void SaveMapfile()
 
 void DrawPointers(HWND hwnd, COLORREF myColor)
 {
+	if (showPointerRectangle)
+	{
 	DrawPointerRectangle(hwnd, xCurrent+1, 0, myColor);
 	DrawPointerRectangle(hwnd, 0, yCurrent+1, myColor);
 	DrawPointerRectangle(hwnd, xCurrent+1, 35, myColor);
 	DrawPointerRectangle(hwnd, 35, yCurrent+1, myColor);
+	}
 }
 
 void DrawPointerRectangle(HWND hwnd, long xOffset, long yOffset, COLORREF myColor)
