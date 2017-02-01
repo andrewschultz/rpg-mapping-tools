@@ -83,6 +83,8 @@ BEGIN
 		MENUITEM SEPARATOR
 		MENUITEM "&Load palette", ID_OTHER_LOAD
 		MENUITEM "Show/hide pointer &rectangle\tr", ID_OTHER_SHOW_POINTER_RECTANGLE
+		MENUITEM SEPARATOR
+		MENUITEM "&Debug on/off\tctrl-d", ID_DEBUG_TOGGLE
 	END
 	POPUP "&Verify"
 	BEGIN

@@ -51,6 +51,7 @@ void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME]);
 void ReloadTheMap(HWND hwnd);
 void drawMyIcons(HWND hwnd);
 void changeBarText(HWND hwnd);
+void regularTextOut(char x[100], HWND hwnd);
 
 void CreateNewMapfile(long, long);
 void SaveMapfile(void);
@@ -91,6 +92,7 @@ char CurrentFileName[200];
 long cutHeight=0, cutWidth = 0;
 long zeroBottom = 1;
 short myEmpty = 0, myTransparency = 0, showPointerRectangle = 1;
+long showDebug = 1;
 
 long bufferL=0,bufferR=0,bufferU=0,bufferD=0;
 long wrapType = ID_OTHER_NOWRAP;
@@ -329,6 +331,14 @@ switch(msg)
 				CheckMenuItem( GetMenu(hwnd), ID_OTHER_SHOW_POINTER_RECTANGLE, MF_UNCHECKED);
 			break;
 
+		case ID_DEBUG_TOGGLE:
+			showDebug ^= 1;
+			if (showDebug)
+				CheckMenuItem( GetMenu(hwnd), ID_DEBUG_TOGGLE, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_DEBUG_TOGGLE, MF_UNCHECKED);
+			break;
+
 		case ID_MOVE_CENTER:
 			xCurrent = 16;
 			yCurrent = 16;
@@ -560,18 +570,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 
 				sprintf(buffer, "Ctrl key up %d %d      ", KEY_DOWN(VK_CONTROL), KEY_UP(VK_CONTROL));
 				// print out the key on the screen
-				hdc = GetDC(hwnd);
-        
-				// set the colors 
-				SetTextColor(hdc, RGB(0,255,0));
-				SetBkColor(hdc,RGB(0,0,0));
-				SetBkMode(hdc,OPAQUE);
-
-				// output the message
-				TextOut(hdc,600,440,buffer,strlen(buffer));
-
-				// release dc
-				ReleaseDC(hwnd,hdc);
+				regularTextOut(buffer, hwnd);
 				break;
 			}
 		}
@@ -810,18 +809,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 						DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
 
 						sprintf(buffer, "Icon %02x ",iconNumber);
-						hdc = GetDC(hwnd);
-    
-						// set the colors 
-						SetTextColor(hdc, RGB(0,255,0));
-						SetBkColor(hdc,RGB(0,0,0));
-						SetBkMode(hdc,OPAQUE);
-
-						// output the message
-						TextOut(hdc,600,440,buffer,strlen(buffer));
-
-						// release dc
-						ReleaseDC(hwnd,hdc);
+						regularTextOut(buffer, hwnd);
 					}
 					else
 					{
@@ -908,19 +896,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					else
 						UDWallArray[xCurrent][yCurrent] = (short)WallIconNumber;
 
-					hdc = GetDC(hwnd);
-        
-					// set the colors 
-					SetTextColor(hdc, RGB(0,255,0));
-					SetBkColor(hdc,RGB(0,0,0));
-					SetBkMode(hdc,OPAQUE);
-
-					// output the message
-					TextOut(hdc,600,440,buffer,strlen(buffer));
-
-					// release dc
-					ReleaseDC(hwnd,hdc);
-
+					regularTextOut(buffer, hwnd);
 					ReloadTheMap(hwnd);
 					workNotSaved = 1;
 
@@ -940,19 +916,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					else
 						LRWallArray[xCurrent][yCurrent] = (short)WallIconNumber;
 
-					hdc = GetDC(hwnd);
-        
-					// set the colors 
-					SetTextColor(hdc, RGB(0,255,0));
-					SetBkColor(hdc,RGB(0,0,0));
-					SetBkMode(hdc,OPAQUE);
-
-					// output the message
-					TextOut(hdc,600,440,buffer,strlen(buffer));
-
-					// release dc
-					ReleaseDC(hwnd,hdc);
-
+					regularTextOut(buffer, hwnd);
 					ReloadTheMap(hwnd);
 					workNotSaved = 1;
 
@@ -973,19 +937,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					else
 						LRWallArray[xCurrent+1][yCurrent] = (short)WallIconNumber;
 
-					hdc = GetDC(hwnd);
-        
-					// set the colors 
-					SetTextColor(hdc, RGB(0,255,0));
-					SetBkColor(hdc,RGB(0,0,0));
-					SetBkMode(hdc,OPAQUE);
-
-					// output the message
-					TextOut(hdc,600,440,buffer,strlen(buffer));
-
-					// release dc
-					ReleaseDC(hwnd,hdc);
-
+					regularTextOut(buffer, hwnd);
 					ReloadTheMap(hwnd);
 					workNotSaved = 1;
 
@@ -1006,19 +958,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					else
 						UDWallArray[xCurrent][yCurrent+1] = (short)WallIconNumber;
 
-					hdc = GetDC(hwnd);
-        
-					// set the colors 
-					SetTextColor(hdc, RGB(0,255,0));
-					SetBkColor(hdc,RGB(0,0,0));
-					SetBkMode(hdc,OPAQUE);
-
-					// output the message
-					TextOut(hdc,600,440,buffer,strlen(buffer));
-
-					// release dc
-					ReleaseDC(hwnd,hdc);
-
+					regularTextOut(buffer, hwnd);
 					ReloadTheMap(hwnd);
 					workNotSaved = 1;
 
@@ -1155,20 +1095,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					SquareIconArray[xCurrent][yCurrent] = (short)iconNumber;
 
 					//Write over original icon, draw out walls
-					/*
-					hdc = GetDC(hwnd);
-        
-					// set the colors 
-					SetTextColor(hdc, RGB(0,255,0));
-					SetBkColor(hdc,RGB(0,0,0));
-					SetBkMode(hdc,OPAQUE);
-
-					// output the message
-					TextOut(hdc,600,440,buffer,strlen(buffer));
-
-					// release dc
-					ReleaseDC(hwnd,hdc);
-					*/
+					//regularTextOut(buffer, hwnd);
 
 					ReloadTheMap(hwnd);
 
@@ -1807,4 +1734,26 @@ void changeBarText(HWND hwnd)
 	else
 		strcat(guiTitle, PathFindFileName(CurrentFileName));
 	SetWindowText(hwnd, guiTitle);
+}
+
+void regularTextOut(char x[100], HWND hwnd)
+{
+	HDC hdc;
+	if (!showDebug)
+		return;
+
+	hdc = GetDC(hwnd);
+
+	// set the colors 
+	SetTextColor(hdc, RGB(0,255,0));
+	SetBkColor(hdc,RGB(0,0,0));
+	SetBkMode(hdc,OPAQUE);
+
+	// output the message
+	TextOut(hdc,600,440,x,strlen(x));
+
+	// release dc
+	ReleaseDC(hwnd,hdc);
+
+	ReloadTheMap(hwnd);
 }
