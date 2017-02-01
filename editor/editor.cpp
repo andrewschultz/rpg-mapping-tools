@@ -25,6 +25,8 @@
 #define MAXICONSHIGH 35
 #define MAXFILENAME 256
 
+#define WALLICONSTART 38
+
 #define GRIDLINE 8
 #define MAXWALLICON 10
 #define PIXELS_IN 4
@@ -93,7 +95,7 @@ short myEmpty = 0, myTransparency = 0, showPointerRectangle = 1;
 long bufferL=0,bufferR=0,bufferU=0,bufferD=0;
 long wrapType = ID_OTHER_NOWRAP;
 
-long workNotSaved;
+long workNotSaved = 0;
 
 short prevDefArray[10] = {
 	0x3f, 0x26, 0x56, 0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0x3f
@@ -621,32 +623,32 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 			bufferU--;
 			bufferD--;
 
-				sprintf(buffer, "%02x,%02x to %02x,%02x.", bufferL, bufferU, bufferR+1, bufferD+1);
-				hdc = GetDC(hwnd);
-        
-				// set the colors 
-				SetTextColor(hdc, RGB(0,255,0));
-				SetBkColor(hdc,RGB(0,0,255));
-				SetBkMode(hdc,OPAQUE);
+			sprintf(buffer, "%02x,%02x to %02x,%02x.", bufferL, bufferU, bufferR+1, bufferD+1);
+			hdc = GetDC(hwnd);
+    
+			// set the colors 
+			SetTextColor(hdc, RGB(0,255,0));
+			SetBkColor(hdc,RGB(0,0,255));
+			SetBkMode(hdc,OPAQUE);
 
-				// output the message
-				TextOut(hdc,608,480,buffer,strlen(buffer));
+			// output the message
+			TextOut(hdc,608,480,buffer,strlen(buffer));
 
-				// release dc
-				ReleaseDC(hwnd,hdc);
+			// release dc
+			ReleaseDC(hwnd,hdc);
 
 			break;
 		}
 		//bufferL=bufferR=bufferU=bufferD=-1;
 
 //Mouse select new icons
-		if ((MouseDownX >= 38) && (MouseDownX <= 53))
+		if ((MouseDownX >= WALLICONSTART) && (MouseDownX < WALLICONSTART + 16))
 			if ((MouseDownY >= 10) && (MouseDownY <= 25))
 			{
-				DrawPointerRectangle(hwnd, 37, 10 + (iconNumber >> 4), BLACK);
-				DrawPointerRectangle(hwnd, 38 + (iconNumber & 0xf), 9, BLACK);
-				iconNumber = (MouseDownX - 38) + ((MouseDownY - 10) << 4);
-				DrawPointerRectangle(hwnd, 37, MouseDownY, RGB(255,0,0));
+				DrawPointerRectangle(hwnd, WALLICONSTART - 1, 10 + (iconNumber >> 4), BLACK);
+				DrawPointerRectangle(hwnd, WALLICONSTART + (iconNumber & 0xf), 9, BLACK);
+				iconNumber = (MouseDownX - WALLICONSTART) + ((MouseDownY - 10) << 4);
+				DrawPointerRectangle(hwnd, WALLICONSTART - 1, MouseDownY, RGB(255,0,0));
 				DrawPointerRectangle(hwnd, MouseDownX, 9, RGB(255,0,0));
 				break;
 			}
@@ -698,12 +700,12 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 			}
 
 			//Mouse select new walls
-		if ((MouseDownX >= 36) && (MouseDownX <= 45))
+		if ((MouseDownX >= WALLICONSTART) && (MouseDownX < WALLICONSTART + 10))
 			if ((MouseDownY >= 2) && (MouseDownY <= 3))
 			{
-				DrawPointerRectangle(hwnd, WallIconNumber, 1, BLACK);
-				WallIconNumber = MouseDownX - 36;
-				DrawPointerRectangle(hwnd, WallIconNumber, 1, RED);
+				DrawPointerRectangle(hwnd, WallIconNumber + WALLICONSTART, 1, BLACK);
+				WallIconNumber = MouseDownX - WALLICONSTART;
+				DrawPointerRectangle(hwnd, WallIconNumber + WALLICONSTART, 1, RED);
 				break;
 			}
 
@@ -994,6 +996,8 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 			case VK_Z:
 				{
 					char buffer[100];
+
+					sprintf(buffer, "Lay piece down. %d",wparam);
 
 					if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT) != 0	)
 						UDWallArray[xCurrent][yCurrent+1] = (UDWallArray[xCurrent][yCurrent+1] + 1) % 8;
@@ -1630,6 +1634,11 @@ void ReloadTheMap(HWND hwnd)
 			TransparentBlt(hdc, 16+i*16, 24+j*16, 16, 16, walldc,
 				UDWallArray[i][j+1]*16, 0, 16, 16, RGB(255,255,255));
 		}
+
+	DrawPointerRectangle(hwnd, MAXICONSWIDE + 3 + WallIconNumber, 1, RGB(255,0,0));
+
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
 
 	ReleaseDC(hwnd, hdc);
 }
