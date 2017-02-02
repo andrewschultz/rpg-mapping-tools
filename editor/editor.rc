@@ -42,6 +42,7 @@ BEGIN
     ",",            ID_EDIT_FLIP_STAIRS,    ASCII   
     "=",            ID_MOVE_CENTER,         ASCII   
     "^O",           ID_FILE_OPEN,           ASCII   
+    "^N",           ID_FILE_CREATE_NEW,           ASCII   
     "r",            ID_OTHER_SHOW_POINTER_RECTANGLE, ASCII 
     VK_DELETE,      ID_EDIT_WIPE,           VIRTKEY, CONTROL
     VK_PRIOR,       ID_MOVE_ALLUP,          VIRTKEY, CONTROL
@@ -80,9 +81,8 @@ BEGIN
     POPUP "File"
     BEGIN
         MENUITEM "&Open\tctrl-o",               ID_FILE_OPEN
-        MENUITEM "&Close",                      ID_FILE_CLOSE
-        MENUITEM SEPARATOR
         MENUITEM "Create &New mapfile",         ID_FILE_CREATE_NEW
+        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "Save &bitmap\tF3",            ID_FILE_SAVE_BITMAP
         MENUITEM "Save &trimmed mapfile\tctrl-F3", ID_FILE_SAVE_BITMAP_TRIM

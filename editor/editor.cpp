@@ -45,6 +45,7 @@
 #define YVAL(a,b) (SquareIconArray[a][b]/16)*16
 // FUNCTION DEFS
 void DoOpenFile(HWND hwnd);
+void DoCreateFile(HWND hwnd);
 void DrawPointers(HWND hwnd, COLORREF myColor);
 void DrawPointerRectangle(HWND hwnd, long xOffset, long yOffset, COLORREF myColor);
 void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME]);
@@ -127,7 +128,7 @@ switch(msg)
 		switch(LOWORD(wparam))
 		{
 		case ID_FILE_CREATE_NEW:
-			CreateNewMapfile(35, 35);
+			DoCreateFile(hwnd);
 			break;
 
 		case ID_FILE_OPEN:
@@ -1330,11 +1331,8 @@ char        locFileTitle[MAXFILENAME];
   locOFN.lpstrInitialDir = NULL;
   locOFN.lpstrTitle = TEXT("Open...");
   
-#ifdef WINCE
-  locOFN.Flags = OFN_FILEMUSTEXIST|OFN_HIDEREADONLY|OFN_LONGNAMES;
-#else
   locOFN.Flags = OFN_FILEMUSTEXIST;
-#endif
+
   locOFN.lpstrDefExt = NULL;
   locOFN.lCustData = 0;
   locOFN.lpfnHook = NULL;
@@ -1359,6 +1357,67 @@ if (workNotSaved)
 		  changeBarText(hwnd);
 		  workNotSaved = 0;
 	  }
+  }
+}
+
+VOID DoCreateFile(HWND hwnd)
+{
+
+OPENFILENAME  locOFN;
+char        locFilterSpec[128] = TEXT("MAP and TXT files\0*.map\0");
+char        locFileName[MAXFILENAME];
+char        locFileTitle[MAXFILENAME];
+
+  locFileName[0] = 0;
+  locFileTitle[0] = 0;
+
+
+  locOFN.lStructSize = sizeof(OPENFILENAME);
+  locOFN.hwndOwner = hwnd;
+  locOFN.hInstance = NULL;
+  locOFN.lpstrFilter = locFilterSpec;
+  locOFN.lpstrCustomFilter = NULL;
+  locOFN.nMaxCustFilter = 0L;
+  locOFN.nFilterIndex = 0L;
+  locOFN.lpstrFile = locFileName;
+  locOFN.nMaxFile = MAXFILENAME;
+  locOFN.lpstrFileTitle = locFileTitle;
+  locOFN.nMaxFileTitle = MAXFILENAME;
+  locOFN.lpstrInitialDir = NULL;
+  locOFN.lpstrTitle = TEXT("Open...");
+  
+  locOFN.Flags = 0;
+
+  locOFN.lpstrDefExt = NULL;
+  locOFN.lCustData = 0;
+  locOFN.lpfnHook = NULL;
+  locOFN.lpTemplateName = NULL;
+
+if (workNotSaved)
+{
+	long x = MessageBox(NULL, "Do you wish to open a new file without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
+	if (x != 1) 
+		return;
+}
+
+  if (GetOpenFileName(&locOFN) == TRUE)
+  {
+	  long acc;
+	  long q = strlen(locFileName);
+	  if ((strlen(locFileName) < 4) || 
+		  !((locFileName[q-1] == 'p') && (locFileName[q-2] == 'a') && (locFileName[q-3] == 'm') && (locFileName[q-4] == '.')))
+		  strcat(locFileName, ".map");
+
+	  acc = _access(locFileName, 0);
+	  if (acc == 0)
+	  {
+		  MessageBox(NULL, "The file already exists. Use ctrl-o to open.", "File exists", MB_OK);
+		  return;
+	  }
+	  
+	  strcpy(CurrentFileName, locFileName);
+	  changeBarText(hwnd);
+	  workNotSaved = 0;
   }
 }
 
