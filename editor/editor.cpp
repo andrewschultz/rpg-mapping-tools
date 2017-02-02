@@ -56,7 +56,7 @@ void regularTextOut(char x[100], HWND hwnd);
 void CreateNewMapfile(long, long);
 void SaveMapfile();
 void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf);
-void SaveBitmapFile(HWND hwnd);
+void SaveBitmapFile(HWND hwnd, short trim);
 void parseCmdLine(LPSTR cmdLine, HWND hwnd);
 
 char textToShift[200]; // receives name of item to delete. 
@@ -135,7 +135,12 @@ switch(msg)
 
 		case ID_FILE_SAVE_BITMAP:
 			ReloadTheMap(hwnd);
-			SaveBitmapFile(hwnd);
+			SaveBitmapFile(hwnd, 0);
+			break;
+
+		case ID_FILE_SAVE_BITMAP_TRIM:
+			ReloadTheMap(hwnd);
+			SaveBitmapFile(hwnd, 1);
 			break;
 
 		case ID_FILE_SAVE_MAPFILE:
@@ -679,7 +684,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 
 				if (zeroBottom) yc2 = 31 - yc2;
 
-				sprintf(buffer, "%02d,%02d D\r\n%02x,%02x H", xCurrent, yc2, xCurrent, yc2);
+				sprintf(buffer, "%02d,%02d decimal\r\n%02x,%02x hex", xCurrent, yc2, xCurrent, yc2);
 				hdc = GetDC(hwnd);
 
 				// set the colors 
@@ -1624,7 +1629,7 @@ void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf)
 	ReloadTheMap(hwnd);
 }
 
-void SaveBitmapFile(HWND hwnd)
+void SaveBitmapFile(HWND hwnd, short trim)
 {
 	HDC hWinDC;
 	HDC hDC;
@@ -1640,7 +1645,7 @@ void SaveBitmapFile(HWND hwnd)
 
 	TCHAR buf[80];
 
-	long xmin = 0, ymin = 0, xmax = 0, ymax = 0;
+	long xmin = 0, ymin = 0, xmax = 34, ymax = 34;
 
 	char buf2[200];
 
@@ -1648,9 +1653,66 @@ void SaveBitmapFile(HWND hwnd)
 	buf2[strlen(buf2)-3] = 'b';
 	buf2[strlen(buf2)-2] = 'm';
 	
-
 	if (!IsWindow(hwnd))	/* should never happen, but just in case... */
 		return;
+
+	if (trim)
+	{
+		short i, j, t;
+		char buffer[100];
+		xmin = ymin = 35;
+		xmax = ymax = -1;
+		for (j=0; j < MAXICONSHIGH - 1; j++)
+;			for (i=0; i < MAXICONSWIDE - 1; i++)
+			{
+				t = SquareIconArray[i][j];
+				if (t)
+				{
+					if (i < xmin)
+						xmin = i;
+					if (i > xmax)
+						xmax = i;
+					if (j < ymin)
+						ymin = j;
+					if (j > ymax)
+						ymax = j;
+				}
+			}
+;		for (j=0; j < MAXICONSHIGH - 1; j++)
+			for (i=0; i < MAXICONSHIGH - 1; i++)
+			{
+				t = UDWallArray[i][j];
+				if (t)
+				{
+					if (i < xmin)
+						xmin = i;
+					if (i > xmax)
+						xmax = i;
+					if (j < ymin)
+						ymin = j;
+					if (j > ymax)
+						ymax = j - 1;
+				}
+			}
+		for (j=0; j < MAXICONSHIGH - 1; j++)
+			for (i=0; i < MAXICONSHIGH - 1; i++)
+			{
+				t = LRWallArray[i][j];
+				if (t)
+				{
+					if (i < xmin)
+						xmin = i;
+					if (i > xmax)
+						xmax = i - 1;
+					if (j < ymin)
+						ymin = j;
+					if (j > ymax)
+						ymax = j;
+				}
+			}
+		sprintf(buffer, "New dimensions (%02d,%02d) to (%02d,%02d)", xmin, ymin, xmax, ymax);
+		MessageBox(hwnd, buffer, "Save to", MB_OK);
+	}
 
 	ReloadTheMap(hwnd);
 
@@ -1661,14 +1723,16 @@ void SaveBitmapFile(HWND hwnd)
 	shotcount++;
 
 	GetClientRect(hwnd,&rPage);
-	rPage.left = rPage.top = 8;
-	rPage.bottom = rPage.right = 552;
+	rPage.left = 8 + 16 * xmin;
+	rPage.right = 8 + 16 * xmax;
+	rPage.top = 8 + 16 * ymin;
+	rPage.bottom = 8 + 16 * ymax;
 
-	numBytes = 544 * 544 * 3;
+	numBytes = 16 * 16 * (xmax - xmin) * (ymax - ymin) * 3;
 
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = 544;
-	bmi.bmiHeader.biHeight = 544;
+	bmi.bmiHeader.biWidth = 16 * (xmax - xmin);
+	bmi.bmiHeader.biHeight = 16 * (ymax - ymin);
 	bmi.bmiHeader.biPlanes = 1;
 	bmi.bmiHeader.biBitCount = 24;
 	bmi.bmiHeader.biCompression = BI_RGB;
@@ -1689,7 +1753,7 @@ void SaveBitmapFile(HWND hwnd)
 	}
 
 	oldBM = (HBITMAP) SelectObject(hDC,tBM);
-	BitBlt(hDC,0,0,544,544,hWinDC,8,8,SRCCOPY);
+	BitBlt(hDC,0,0,16 * (xmax - xmin),16 * (ymax - ymin),hWinDC,8,8,SRCCOPY);
 
 	bmfh.bfType = 0x4d42;
 	bmfh.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + numBytes;
