@@ -1026,6 +1026,7 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 
 			case VK_H:
 				{
+					//GotoDlgCtrl(GetDlgItem(ID_TEXTBOX_ITEM_TO_JUMP));
 					DialogBox(NULL, MAKEINTRESOURCE(IDD_DLGFIRST), hwnd, reinterpret_cast<DLGPROC>(DlgProc));	
 					if (textToShift[0])
 					{
@@ -1791,8 +1792,11 @@ void regularTextOut(char x[100], HWND hwnd)
 BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) 
-    { 
-        case WM_COMMAND: 
+    {
+		case WM_INITDIALOG:
+			return TRUE;
+
+        case WM_COMMAND:
             switch (LOWORD(wParam)) 
             { 
                 case IDOK: 
