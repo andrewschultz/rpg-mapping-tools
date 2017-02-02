@@ -479,7 +479,7 @@ switch(msg)
 			{
 				long accounted=0;
 				long firstX=-1, firstY=-1, i, j, lastX, lastY, count=0;
-				long xi=0,yi=0,xf=33,yf=33;
+				long xi=0,yi=0,xf=32,yf=32;
 
 				if (LOWORD(wparam) == ID_VERIFY_TRIMMED)
 				{
@@ -505,8 +505,8 @@ switch(msg)
 					}
 				}
 
-				for (j=yi; j < yf; j++)
-					for (i=xi; i < xf; i++)
+				for (j=yi; j <= yf; j++)
+					for (i=xi; i <= xf; i++)
 					{
 						if (SquareIconArray[i][j] == 0)
 						{
@@ -529,8 +529,9 @@ switch(msg)
 				if (count)
 				{
 					char mybuf[200];
-					float myPct = ((1024-(float)count) * 100) / 1024;
-					sprintf(mybuf, "%d squares visited\n %d squares unvisited\nFirst %02x,%02x\nLast %02x,%02x\n%.02f pct done",
+					float myPct = (float)count /((xf-xi)*(yf-yi));
+					myPct = 100 * (1 - myPct);
+					sprintf(mybuf, "%d squares visited\n%d squares unvisited\nFirst %02x,%02x\nLast %02x,%02x\n%.02f pct done",
 						accounted, count, firstX, firstY, lastX, lastY, myPct);
 					MessageBox(hwnd, mybuf, "Still some to go", MB_OK);
 				} else MessageBox(hwnd, "Hooray!", "No blank squares left.", MB_OK);
@@ -1117,12 +1118,17 @@ switch(msg)
 				break;
 
 			case 0xbe:	//period
-;				if (iconNumber == BEENTHERE)
-					switchIconPointer(hwnd, 0);
+				if (SquareIconArray[xCurrent][yCurrent] == 0)
+				{
+					SquareIconArray[xCurrent][yCurrent] = BEENTHERE;
+					ReloadTheMap(hwnd);
+					break;
+				}
 				else
 				{
-					notPeriod = iconNumber;
-					switchIconPointer(hwnd, BEENTHERE);
+					char buffer[100];
+					sprintf(buffer, "Already hit %02d,%02d", xCurrent, yCurrent);
+					regularTextOut(buffer, hwnd);
 				}
 				break;
 
