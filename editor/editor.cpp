@@ -54,11 +54,14 @@ void changeBarText(HWND hwnd);
 void regularTextOut(char x[100], HWND hwnd);
 
 void CreateNewMapfile(long, long);
-void SaveMapfile(void);
+void SaveMapfile();
 void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf);
 void SaveBitmapFile(HWND hwnd);
 void parseCmdLine(LPSTR cmdLine, HWND hwnd);
 
+char textToShift[200]; // receives name of item to delete. 
+
+BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 // DEFINES ////////////////////////////////////////////////
 
@@ -1021,6 +1024,26 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				ReloadTheMap(hwnd);
 				break;
 
+			case VK_H:
+				{
+					DialogBox(NULL, MAKEINTRESOURCE(IDD_DLGFIRST), hwnd, reinterpret_cast<DLGPROC>(DlgProc));	
+					if (textToShift[0])
+					{
+						long x = strtol(textToShift, NULL, 16);
+						if (x >= 0x100)
+						{ 
+							MessageBox(NULL, "Must be between 0 and 0xff.", "Bad input", MB_OK);
+							break;
+						}
+					}
+					DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
+					DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
+					iconNumber = strtol(textToShift, NULL, 16);
+					DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
+					DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
+				}
+				break;
+
 			case 0xbc: // comma
 				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
 				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
@@ -1422,10 +1445,15 @@ void SaveMapfile()
 	FILE * F;
 	long i, j;
 	long q;
+	char MsgBoxMsg[200] = "Blank file, save to blank.map?\n\nCurrent directory is ";
+	char buffer2[200];
+
+	GetCurrentDirectory(200, buffer2);
+	strcat(MsgBoxMsg, buffer2);
 	
 	if (CurrentFileName[0] == 0)
 	{
-		q = MessageBox(hwnd, "Blank file, save to blank.map?", "Blank file", MB_OKCANCEL);
+		q = MessageBox(hwnd, MsgBoxMsg, "Blank file", MB_OKCANCEL);
 		if (q == 1)
 		{
 			long acc;
@@ -1611,6 +1639,8 @@ void SaveBitmapFile(HWND hwnd)
 
 	TCHAR buf[80];
 
+	long xmin = 0, ymin = 0, xmax = 0, ymax = 0;
+
 	char buf2[200];
 
 	strcpy(buf2, CurrentFileName);
@@ -1756,4 +1786,27 @@ void regularTextOut(char x[100], HWND hwnd)
 	ReleaseDC(hwnd,hdc);
 
 	ReloadTheMap(hwnd);
+}
+
+BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message) 
+    { 
+        case WM_COMMAND: 
+            switch (LOWORD(wParam)) 
+            { 
+                case IDOK: 
+                    GetDlgItemText(hwndDlg, ID_TEXTBOX_ITEM_TO_JUMP, textToShift, 80);
+                    EndDialog(hwndDlg, wParam); 
+					return TRUE;
+ 
+                    // Fall through. 
+ 
+                case IDCANCEL:
+					textToShift[0] = 0;
+                    EndDialog(hwndDlg, wParam); 
+                    return TRUE; 
+            } 
+    } 
+    return FALSE; 
 }
