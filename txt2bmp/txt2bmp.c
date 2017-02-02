@@ -54,17 +54,17 @@ void main(int argc, char * argv[])
 		if (buffer[0] == 'h')
 			if (buffer[1] == '=')
 			{
-				bmpHeight = strtol(buffer+2, NULL, 10);
+				bmpHeight = (short)strtol(buffer+2, NULL, 10);
 				continue;
 			}
 		if (buffer[0] == 'w')
 			if (buffer[1] == '=')
 			{
-				bmpWidth = strtol(buffer+2, NULL, 10);
+				bmpWidth = (short)strtol(buffer+2, NULL, 10);
 				continue;
 			}
 
-		for (j=0; j < strlen(buffer) -1; j++)
+		for (j=0; j < (short)(strlen(buffer)-1); j++)
 			map[j][i] = (char)buffer[j];
 		i++;
 	}
