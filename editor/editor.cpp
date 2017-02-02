@@ -60,6 +60,7 @@ void SaveBitmapFile(HWND hwnd, short trim);
 void parseCmdLine(LPSTR cmdLine, HWND hwnd);
 
 char textToShift[200]; // receives name of item to delete. 
+void setInitialChecks(HWND hwnd);
 
 BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -1280,6 +1281,8 @@ walldc = CreateCompatibleDC(localhdc);
 
 	parseCmdLine(lpcmdline, hwnd);
 
+	setInitialChecks(hwnd);
+
 while(1)
 	{
 	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
@@ -1877,4 +1880,19 @@ BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
             } 
     } 
     return FALSE; 
+}
+
+void setInitialChecks(HWND hwnd)
+{
+	if (showDebug)
+		CheckMenuItem( GetMenu(hwnd), ID_DEBUG_TOGGLE, MF_CHECKED);
+	else
+		CheckMenuItem( GetMenu(hwnd), ID_DEBUG_TOGGLE, MF_UNCHECKED);
+
+	CheckMenuItem( GetMenu(hwnd), wrapType, MF_CHECKED);
+
+	if (showPointerRectangle)
+		CheckMenuItem( GetMenu(hwnd), ID_OTHER_SHOW_POINTER_RECTANGLE, MF_CHECKED);
+	else
+		CheckMenuItem( GetMenu(hwnd), ID_OTHER_SHOW_POINTER_RECTANGLE, MF_UNCHECKED);
 }
