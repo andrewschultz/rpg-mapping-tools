@@ -61,6 +61,7 @@ void parseCmdLine(LPSTR cmdLine, HWND hwnd);
 
 char textToShift[200]; // receives name of item to delete. 
 void setInitialChecks(HWND hwnd);
+void switchIconPointer(HWND hwnd, short q);
 
 BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -1030,56 +1031,44 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 				ReloadTheMap(hwnd);
 				break;
 
+			case VK_G:
+				switchIconPointer(hwnd, SquareIconArray[xCurrent][yCurrent]);
+				break;
+
 			case VK_H:
+				//GotoDlgCtrl(GetDlgItem(ID_TEXTBOX_ITEM_TO_JUMP));
+				DialogBox(NULL, MAKEINTRESOURCE(IDD_DLGFIRST), hwnd, reinterpret_cast<DLGPROC>(DlgProc));	
+				if (textToShift[0])
 				{
-					//GotoDlgCtrl(GetDlgItem(ID_TEXTBOX_ITEM_TO_JUMP));
-					DialogBox(NULL, MAKEINTRESOURCE(IDD_DLGFIRST), hwnd, reinterpret_cast<DLGPROC>(DlgProc));	
-					if (textToShift[0])
-					{
-						long x = strtol(textToShift, NULL, 16);
-						if (x >= 0x100)
-						{ 
-							MessageBox(NULL, "Must be between 0 and 0xff.", "Bad input", MB_OK);
-							break;
-						}
+					long x = strtol(textToShift, NULL, 16);
+					if (x >= 0x100)
+					{ 
+						MessageBox(NULL, "Must be between 0 and 0xff.", "Bad input", MB_OK);
+						break;
 					}
-					DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
-					DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
-					iconNumber = strtol(textToShift, NULL, 16);
-					DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
-					DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
+					switchIconPointer(hwnd, (short)x);
 				}
 				break;
 
 			case 0xbc: // comma
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
 				if (iconNumber == BEENTHERE)
 				{
-					iconNumber = notPeriod;
+					switchIconPointer(hwnd, (short)notPeriod);
 				}
 				else
 				{
 					notPeriod = iconNumber;
 				}
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
-				drawMyIcons(hwnd);
 				break;
 
 			case 0xbe:	//period
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
 ;				if (iconNumber == BEENTHERE)
-					iconNumber = 0;
+					switchIconPointer(hwnd, 0);
 				else
 				{
 					notPeriod = iconNumber;
-					iconNumber = BEENTHERE;
+					switchIconPointer(hwnd, BEENTHERE);
 				}
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
-				DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
-				drawMyIcons(hwnd);
 				break;
 
 			case VK_C:
@@ -1098,12 +1087,6 @@ delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
 					UDWallArray[xCurrent][yCurrent+1] = 4;
 				ReloadTheMap(hwnd);
 				break;
-
-			case VK_G:
-				iconNumber = (long) SquareIconArray[xCurrent][yCurrent];
-				break;
-
-
 
 			case VK_BACK:
 				if (VK_CONTROL)
@@ -1895,4 +1878,13 @@ void setInitialChecks(HWND hwnd)
 		CheckMenuItem( GetMenu(hwnd), ID_OTHER_SHOW_POINTER_RECTANGLE, MF_CHECKED);
 	else
 		CheckMenuItem( GetMenu(hwnd), ID_OTHER_SHOW_POINTER_RECTANGLE, MF_UNCHECKED);
+}
+
+void switchIconPointer(HWND hwnd, short q)
+{
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(0,0,0));
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(0,0,0));
+	iconNumber = q;
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
 }
