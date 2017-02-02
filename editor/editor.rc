@@ -136,6 +136,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Verify &Two 16x16",           ID_VERIFY_TWO1616
         MENUITEM "Verify &Full 32x32",          ID_VERIFY_FULL3232
+		MENUITEM "Verify &Trimmed",             ID_VERIFY_TRIMMED
     END
     POPUP "&Move"
     BEGIN

@@ -472,34 +472,66 @@ switch(msg)
 
 		case ID_VERIFY_TWO1616:
 		case ID_VERIFY_FULL3232:
+		case ID_VERIFY_TRIMMED:
 			myEmpty = 32;
 			if (LOWORD(wparam) == ID_VERIFY_TWO1616)
 				myEmpty = 16;
 			{
+				long accounted=0;
 				long firstX=-1, firstY=-1, i, j, lastX, lastY, count=0;
+				long xi=0,yi=0,xf=33,yf=33;
 
-				for (j=0; j < 33; j++)
-					for (i=0; i < 33; i++)
+				if (LOWORD(wparam) == ID_VERIFY_TRIMMED)
+				{
+					xi=yi=35;
+					xf=yf=-1;
+					for (j=0; j < 34; j++)
+						for (i=0; i < 34; i++)
+							if (SquareIconArray[i][j])
+							{
+								if (i > xf)
+									xf=i;
+								if (i < xi)
+									xi=i;
+								if (j < yi)
+									yi=j;
+								if (j > yf)
+									yf=j;
+							}
+					if (xi == 35)
+					{
+						MessageBox(hwnd, "No visited icons to trim.", "Oops", MB_OK);
+						break;
+					}
+				}
+
+				for (j=yi; j < yf; j++)
+					for (i=xi; i < xf; i++)
 					{
 						if (SquareIconArray[i][j] == 0)
-							if ((i != myEmpty) && (j != myEmpty))
 						{
-							count++;
-							if (firstX == -1)
+							if ((i != myEmpty) && (j != myEmpty))
 							{
-								firstX = i;
-								firstY = j;
+								count++;
+								if (firstX == -1)
+								{
+									firstX = i;
+									firstY = j;
+								}
+								lastX = i;
+								lastY = j;
 							}
-							lastX = i;
-							lastY = j;
 						}
+						else
+							accounted++;
 					}
 
 				if (count)
 				{
 					char mybuf[200];
 					float myPct = ((1024-(float)count) * 100) / 1024;
-					sprintf(mybuf, "%d squares unvisited\nFirst %02x,%02x\nLast %02x,%02x\n%.02f pct done", count, firstX, firstY, lastX, lastY, myPct);
+					sprintf(mybuf, "%d squares visited\n %d squares unvisited\nFirst %02x,%02x\nLast %02x,%02x\n%.02f pct done",
+						accounted, count, firstX, firstY, lastX, lastY, myPct);
 					MessageBox(hwnd, mybuf, "Still some to go", MB_OK);
 				} else MessageBox(hwnd, "Hooray!", "No blank squares left.", MB_OK);
 
@@ -774,6 +806,14 @@ switch(msg)
 
 			case VK_LEFT:
 			case VK_RIGHT:
+				if (KEY_DOWN(VK_SHIFT) && KEY_DOWN(VK_CONTROL))
+				{
+					if (wparam == VK_RIGHT)
+						switchIconPointer(hwnd, iconNumber | 0xf);
+					else
+						switchIconPointer(hwnd, iconNumber & 0xf0);
+					break;
+				}
 				if (KEY_DOWN(VK_SHIFT))
 				{
 					DrawPointerRectangle(hwnd, MAXICONSWIDE + 3 + WallIconNumber, 1, RGB(0,0,0));
@@ -792,6 +832,14 @@ switch(msg)
 				}
 			case VK_UP:
 			case VK_DOWN:
+				if (KEY_DOWN(VK_SHIFT) && KEY_DOWN(VK_CONTROL))
+				{
+					if (wparam == VK_DOWN)
+						switchIconPointer(hwnd, iconNumber | 0xf0);
+					else
+						switchIconPointer(hwnd, iconNumber & 0x0f);
+					break;
+				}
 				// L-U-R-D.
 				{
 					char buffer[100];
