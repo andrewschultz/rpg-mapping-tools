@@ -1,5 +1,5 @@
 //editor.cpp
-//copyright ??? by Andrew Schultz
+//copyright 2008-2017 by Andrew Schultz
 //this program edits a wall based map and allows for
 //  icons inside squares
 //  tracking squares done
@@ -533,23 +533,29 @@ switch(msg)
 		case ID_HELP_ABOUT:
 			MessageBox(hwnd, "This program was conceived as a way to print out maps for games I couldn\'t"
 				" binary edit easily.\n"
-				"It prints out walls and items and may offer text commentaries one day.", "About", MB_OK);
+				"It prints out walls and items and may offer text commentaries one day.\n\n"
+				"Copyright 2008-2017 by Andrew Schultz, but if any code helps you, steal it!",
+					"About", MB_OK);
 			break;
 
 		case ID_HELP_DOCS:
 			MessageBox(hwnd,
-				"[] not implemented yet\nArrow keys move left side focus\nCtrl arrow keys move between icons\n\
-WASZ puts in walls, Shift-WASZ removes\n0-9 selects predefined icon\nshift 0-9 selects wall type 0-9\n\
-IJKM places special walls\n[home/end left-right, ctrl = up/down]\nspace places icons\n\
-delete deletes icons, shift-del deletes walls\n", "Docs", MB_OK);
+				"IJKM places walls, ctrl- means 1-way, shift deletes, ctrl-shift=other way\n"
+				"WASZ places fancier walls\n\nctrl-shift changes them, shift-(0-9) makes new default wall\n"
+				"G=get current icon, H=jump to that icon in hex\n"
+				"F2=save map file, (ctrl)-F3 = save (trimmed) BMP\n"
+				, "Docs", MB_OK);
 			break;
 
 		case ID_HELP_THANKS:
 			MessageBox(hwnd, "CodeGuru.com\n"
 				"Andre LaMothe for Windows for Dummies\n"
+				"Probably some of his code and comments still creeped in here\n"
 				"Microsoft\'s online help\n"
 				"http://www.gametutorials.com\n"
-				"Probably some of his code and comments still creeped in here\n", "Thanks", MB_OK);
+				"http://www.stackoverflow.com\n"
+				"http://github.com for helping me organize things\n",
+					"Thanks", MB_OK);
 			break;
 		}
 
