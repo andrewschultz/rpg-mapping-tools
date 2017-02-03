@@ -63,6 +63,7 @@ void parseCmdLine(LPSTR cmdLine, HWND hwnd);
 char textToShift[200]; // receives name of item to delete. 
 void setInitialChecks(HWND hwnd);
 void switchIconPointer(HWND hwnd, short q);
+void shiftTheMap(HWND hwnd, short x, short y);
 
 BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -99,6 +100,8 @@ long cutHeight=0, cutWidth = 0;
 long zeroBottom = 1;
 short myEmpty = 0, myTransparency = 0, showPointerRectangle = 1;
 long showDebug = 1;
+
+short shiftLeft = 0, shiftRight = 31, shiftUp = 0, shiftDown = 31;
 
 long bufferL=0,bufferR=0,bufferU=0,bufferD=0;
 long wrapType = ID_OTHER_NOWRAP;
@@ -289,6 +292,7 @@ switch(msg)
 				for (j=0; j < myH; j++)
 					for (i=0; i < myW; i++)
 						UDWallArray[i][j] = LRWallArray[i][j] = SquareIconArray[i][j] = 0;
+				workNotSaved = 1;
 			}
 			break;
 
@@ -347,6 +351,34 @@ switch(msg)
 			break;
 
 		case ID_EDIT_MOVE_TO_ICON:
+			//GotoDlgCtrl(GetDlgItem(ID_TEXTBOX_ITEM_TO_JUMP));
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_DLGFIRST), hwnd, reinterpret_cast<DLGPROC>(DlgProc));	
+			if (textToShift[0])
+			{
+				long x = strtol(textToShift, NULL, 16);
+				if (x >= 0x100)
+				{ 
+					MessageBox(NULL, "Must be between 0 and 0xff.", "Bad input", MB_OK);
+					break;
+				}
+				switchIconPointer(hwnd, (short)x);
+			}
+			break;
+
+		case ID_EDIT_SHIFT_LEFT:
+			shiftTheMap(hwnd,-1,0);
+			break;
+
+		case ID_EDIT_SHIFT_RIGHT:
+			shiftTheMap(hwnd,1,0);
+			break;
+
+		case ID_EDIT_SHIFT_UP:
+			shiftTheMap(hwnd,0,-1);
+			break;
+
+		case ID_EDIT_SHIFT_DOWN:
+			shiftTheMap(hwnd,0,1);
 			break;
 		
 		case ID_OTHER_NOWRAP:
@@ -1114,21 +1146,6 @@ switch(msg)
 			case VK_G:
 				if ((SquareIconArray[xCurrent][yCurrent]) && (SquareIconArray[xCurrent][yCurrent] != BEENTHERE))
 					switchIconPointer(hwnd, SquareIconArray[xCurrent][yCurrent]);
-				break;
-
-			case VK_H:
-				//GotoDlgCtrl(GetDlgItem(ID_TEXTBOX_ITEM_TO_JUMP));
-				DialogBox(NULL, MAKEINTRESOURCE(IDD_DLGFIRST), hwnd, reinterpret_cast<DLGPROC>(DlgProc));	
-				if (textToShift[0])
-				{
-					long x = strtol(textToShift, NULL, 16);
-					if (x >= 0x100)
-					{ 
-						MessageBox(NULL, "Must be between 0 and 0xff.", "Bad input", MB_OK);
-						break;
-					}
-					switchIconPointer(hwnd, (short)x);
-				}
 				break;
 
 			case 0xbc: // comma
@@ -2022,4 +2039,76 @@ void switchIconPointer(HWND hwnd, short q)
 	iconNumber = q;
 	DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
 	DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
+}
+
+void shiftTheMap(HWND hwnd, short x, short y)
+{
+	short i, j, k;
+	short tempArray[40][40];
+	char buffer[200];
+	if (x && y)
+	{
+		MessageBox(hwnd, "Whoah! That's too much to move at once, for now.", "Programmer too lazy error", MB_OK);
+		return;
+	}
+
+	if (!x && !y)
+	{
+		MessageBox(hwnd, "Nothing moved. This should not have happened.", "Bug. Let me know how", MB_OK);
+		return;
+	}
+
+	if (x)
+	{
+		for (i=shiftUp; i <= shiftDown + 1; i++)
+		{
+			if (LRWallArray[shiftLeft][i] != LRWallArray[shiftRight+1][i])
+			{
+				sprintf(buffer, "Mismatch at %d, %d to %d, %d.\n", shiftLeft, i, shiftRight, i);
+				MessageBox(hwnd, buffer, "Shifting would be corrupt", MB_OK);
+				return;
+			}
+		}
+		for (j = shiftUp; j <= shiftDown; j++)
+			for (i = shiftLeft; i <= shiftRight; i++)
+			{
+				k = i + x;
+				if (k < shiftLeft)
+					k += shiftRight - shiftLeft + 1;
+				if (k > shiftRight)
+					k -= shiftRight - shiftLeft + 1;
+				tempArray[k][j] = SquareIconArray[i][j];
+			}
+		for (j = shiftUp; j <= shiftDown; j++)
+			for (i = shiftLeft; i <= shiftRight; i++)
+				SquareIconArray[i][j] = tempArray[i][j];
+	}
+
+	if (y)
+	{
+		for (i=shiftLeft; i <= shiftRight + 1; i++)
+		{
+			if (UDWallArray[i][shiftUp] != UDWallArray[i][shiftDown+1])
+			{
+				sprintf(buffer, "Mismatch at %d, %d to %d, %d: wall type %d vs %d.\n", i, shiftUp, i, shiftDown,
+					LRWallArray[i][shiftUp], LRWallArray[i][shiftDown+1]);
+				MessageBox(hwnd, buffer, "Shifting would be corrupt", MB_OK);
+				return;
+			}
+		}
+		for (j = shiftUp; j <= shiftDown; j++)
+			for (i = shiftLeft; i <= shiftRight; i++)
+			{
+				k = j + y;
+				if (k < shiftUp)
+					k += shiftDown - shiftUp + 1;
+				if (k > shiftDown)
+					k -= shiftDown - shiftUp + 1;
+				tempArray[i][k] = SquareIconArray[i][j];
+			}
+		for (j = shiftUp; j <= shiftDown; j++)
+			for (i = shiftLeft; i <= shiftRight; i++)
+				SquareIconArray[i][j] = tempArray[i][j];
+	}
+	ReloadTheMap(hwnd);
 }

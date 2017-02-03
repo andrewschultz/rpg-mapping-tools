@@ -59,7 +59,7 @@ BEGIN
     VK_F1,          ID_HELP_ABOUT,          VIRTKEY 
     "^X",           ID_EDIT_CUT,            ASCII   
     "^C",           ID_EDIT_COPY,           ASCII   
-    "^C",           ID_EDIT_CLEARALL,           ASCII, SHIFT
+    VK_C,           ID_EDIT_CLEARALL,           VIRTKEY, SHIFT, CONTROL
     VK_TAB,         ID_MOVE_NEXT16,         VIRTKEY 
     VK_TAB,         ID_MOVE_PREV16,         VIRTKEY, CONTROL
     "^V",           ID_EDIT_PASTE,          ASCII   
@@ -116,6 +116,11 @@ BEGIN
         MENUITEM "Empty gridlines\tctrl-\\",    ID_EDIT_EMPTY_GRIDLINES
         MENUITEM SEPARATOR
         MENUITEM "Move to icon dialog",         ID_EDIT_MOVE_TO_ICON
+		MENUITEM SEPARATOR
+		MENUITEM "Shift left",                  ID_EDIT_SHIFT_LEFT
+		MENUITEM "Shift right",                  ID_EDIT_SHIFT_RIGHT
+		MENUITEM "Shift up",                  ID_EDIT_SHIFT_UP
+		MENUITEM "Shift down",                  ID_EDIT_SHIFT_DOWN
     END
     POPUP "&Other"
     BEGIN
