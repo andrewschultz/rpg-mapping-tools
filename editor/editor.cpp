@@ -212,7 +212,19 @@ switch(msg)
 					break;
 
 				cutHeight = bufferU-bufferD+1;
-				cutWidth = bufferL-bufferR+1;
+				cutWidth = bufferR-bufferL+1;
+
+				if (bufferL > bufferR)
+				{
+					MessageBox(hwnd, "left-right buffer is wrong", "oops", MB_OK);
+					break;
+				}
+
+				if (bufferU > bufferD)
+				{
+					MessageBox(hwnd, "up-down buffer is wrong", "oops", MB_OK);
+					break;
+				}
 
 				for (j=bufferU; j <= bufferD; j++)
 					for (i=bufferL; i <= bufferR; i++)
@@ -239,6 +251,8 @@ switch(msg)
 					for (j=bufferU; j <= bufferD; j++)
 						for (i=bufferL; i <= bufferR+1; i++)
 							LRWallArray[i][j] = 0;
+
+					workNotSaved = 1;
 				}
 				ReloadTheMap(hwnd);
 			}
@@ -265,7 +279,17 @@ switch(msg)
 						if ((!myTransparency) || (CutLRWallArray[i+xCurrent-bufferL][j+yCurrent-bufferU]))
 							LRWallArray[i+xCurrent-bufferL][j+yCurrent-bufferU] = CutLRWallArray[i-bufferL][j-bufferU];
 			}
+			workNotSaved = 1;
 			ReloadTheMap(hwnd);
+			break;
+
+		case ID_EDIT_CLEARALL:
+			{
+				short i, j;
+				for (j=0; j < myH; j++)
+					for (i=0; i < myW; i++)
+						UDWallArray[i][j] = LRWallArray[i][j] = SquareIconArray[i][j] = 0;
+			}
 			break;
 
 		case ID_EDIT_TRANSPARENCY:
@@ -1130,15 +1154,6 @@ switch(msg)
 					char buffer[100];
 					sprintf(buffer, "Already hit %02d,%02d", xCurrent, yCurrent);
 					regularTextOut(buffer, hwnd);
-				}
-				break;
-
-			case VK_C:
-				{
-					short i, j;
-					for (j=0; j < myH; j++)
-						for (i=0; i < myW; i++)
-							UDWallArray[i][j] = LRWallArray[i][j] = SquareIconArray[i][j] = 0;
 				}
 				break;
 

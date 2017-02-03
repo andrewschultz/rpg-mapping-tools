@@ -59,6 +59,7 @@ BEGIN
     VK_F1,          ID_HELP_ABOUT,          VIRTKEY 
     "^X",           ID_EDIT_CUT,            ASCII   
     "^C",           ID_EDIT_COPY,           ASCII   
+    "^C",           ID_EDIT_CLEARALL,           ASCII, SHIFT
     VK_TAB,         ID_MOVE_NEXT16,         VIRTKEY 
     VK_TAB,         ID_MOVE_PREV16,         VIRTKEY, CONTROL
     "^V",           ID_EDIT_PASTE,          ASCII   
@@ -105,6 +106,7 @@ BEGIN
         MENUITEM "Copy\tctrl-c",                ID_EDIT_COPY
         MENUITEM "Cut\tctrl-x",                 ID_EDIT_CUT
         MENUITEM "Paste\tctrl-v",               ID_EDIT_PASTE
+        MENUITEM "Clear all\tctrl-shift-c",               ID_EDIT_CLEARALL
         MENUITEM "Transparency\tctrl-t",        ID_EDIT_TRANSPARENCY
         MENUITEM SEPARATOR
         MENUITEM "Icon for cut/paste\t'",       ID_EDIT_CHOOSEMASSCPICON
