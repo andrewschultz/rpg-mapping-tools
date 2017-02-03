@@ -529,7 +529,7 @@ switch(msg)
 				if (count)
 				{
 					char mybuf[200];
-					float myPct = (float)count /((xf-xi)*(yf-yi));
+					float myPct = (float)count /((1+xf-xi)*(1+yf-yi));
 					myPct = 100 * (1 - myPct);
 					sprintf(mybuf, "%d squares visited\n%d squares unvisited\nFirst %02x,%02x\nLast %02x,%02x\n%.02f pct done",
 						accounted, count, firstX, firstY, lastX, lastY, myPct);
@@ -1088,7 +1088,8 @@ switch(msg)
 				break;
 
 			case VK_G:
-				switchIconPointer(hwnd, SquareIconArray[xCurrent][yCurrent]);
+				if ((SquareIconArray[xCurrent][yCurrent]) && (SquareIconArray[xCurrent][yCurrent] != BEENTHERE))
+					switchIconPointer(hwnd, SquareIconArray[xCurrent][yCurrent]);
 				break;
 
 			case VK_H:
