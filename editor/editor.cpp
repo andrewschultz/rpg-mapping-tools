@@ -65,7 +65,8 @@ void setInitialChecks(HWND hwnd);
 void switchIconPointer(HWND hwnd, short q);
 void shiftTheMap(HWND hwnd, short x, short y);
 
-BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK ShiftDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK HexDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
 // DEFINES ////////////////////////////////////////////////
 
@@ -352,7 +353,7 @@ switch(msg)
 
 		case ID_EDIT_MOVE_TO_ICON:
 			//GotoDlgCtrl(GetDlgItem(ID_TEXTBOX_ITEM_TO_JUMP));
-			DialogBox(NULL, MAKEINTRESOURCE(IDD_DLGFIRST), hwnd, reinterpret_cast<DLGPROC>(DlgProc));	
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_HEXDIALOG), hwnd, reinterpret_cast<DLGPROC>(HexDlgProc));	
 			if (textToShift[0])
 			{
 				long x = strtol(textToShift, NULL, 16);
@@ -379,6 +380,10 @@ switch(msg)
 
 		case ID_EDIT_SHIFT_DOWN:
 			shiftTheMap(hwnd,0,1);
+			break;
+
+		case ID_EDIT_SHIFT_DIALOG:
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_SHIFTDIALOG), hwnd, reinterpret_cast<DLGPROC>(ShiftDlgProc));
 			break;
 		
 		case ID_OTHER_NOWRAP:
@@ -1991,7 +1996,7 @@ void regularTextOut(char x[100], HWND hwnd)
 	ReloadTheMap(hwnd);
 }
 
-BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK HexDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) 
     {
@@ -2004,6 +2009,77 @@ BOOL CALLBACK DlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
                 case IDOK: 
                     GetDlgItemText(hwndDlg, ID_TEXTBOX_ITEM_TO_JUMP, textToShift, 80);
                     EndDialog(hwndDlg, wParam); 
+					return TRUE;
+ 
+                    // Fall through. 
+ 
+                case IDCANCEL:
+					textToShift[0] = 0;
+                    EndDialog(hwndDlg, wParam); 
+                    return TRUE; 
+            } 
+    } 
+    return FALSE; 
+}
+
+BOOL CALLBACK ShiftDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message) 
+    {
+		case WM_INITDIALOG:
+			{
+				char temp[5];
+				SetDlgItemText(hwndDlg, ID_TEXTBOX_LEFT_SHIFT, itoa(shiftLeft, temp, 10));
+				SetDlgItemText(hwndDlg, ID_TEXTBOX_RIGHT_SHIFT, itoa(shiftRight, temp, 10));
+				SetDlgItemText(hwndDlg, ID_TEXTBOX_UP_SHIFT, itoa(shiftUp, temp, 10));
+				SetDlgItemText(hwndDlg, ID_TEXTBOX_DOWN_SHIFT, itoa(shiftDown, temp, 10));
+			}
+			return TRUE;
+
+        case WM_COMMAND:
+            switch (LOWORD(wParam)) 
+            { 
+                case IDOK:
+					{
+						char temp[80];
+						short templ, tempr, tempu, tempd;
+						GetDlgItemText(hwndDlg, ID_TEXTBOX_LEFT_SHIFT, temp, 80);
+						templ = (short)strtol(temp, NULL, 10);
+						GetDlgItemText(hwndDlg, ID_TEXTBOX_RIGHT_SHIFT, temp, 80);
+						tempr = (short)strtol(temp, NULL, 10);
+						GetDlgItemText(hwndDlg, ID_TEXTBOX_UP_SHIFT, temp, 80);
+						tempu = (short)strtol(temp, NULL, 10);
+						GetDlgItemText(hwndDlg, ID_TEXTBOX_DOWN_SHIFT, temp, 80);
+						tempd = (short)strtol(temp, NULL, 10);
+
+						if (tempd <= tempu)
+						{
+							MessageBox(hwndDlg, "down must be > up.", "Error", MB_OK);
+							return TRUE;
+						}
+						if (tempr <= templ)
+						{
+							MessageBox(hwndDlg, "left must be > right.", "Error", MB_OK);
+							return TRUE;
+						}
+						if ((templ < 0) || (tempu < 0))
+						{
+							MessageBox(hwndDlg, "No negative values.", "Error", MB_OK);
+							return TRUE;
+						}
+						if ((tempd > 34) || (tempr > 34))
+						{
+							MessageBox(hwndDlg, "Down/right boundaries must be below 35.", "Error", MB_OK);
+							return TRUE;
+						}
+
+						shiftLeft = templ;
+						shiftRight = tempr;
+						shiftUp = tempu;
+						shiftDown = tempd;
+
+						EndDialog(hwndDlg, wParam);
+					}
 					return TRUE;
  
                     // Fall through. 

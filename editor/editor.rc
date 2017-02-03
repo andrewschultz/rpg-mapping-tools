@@ -42,7 +42,7 @@ BEGIN
     ",",            ID_EDIT_FLIP_STAIRS,    ASCII   
     "=",            ID_MOVE_CENTER,         ASCII   
     "^O",           ID_FILE_OPEN,           ASCII   
-    "^N",           ID_FILE_CREATE_NEW,           ASCII   
+    "^N",           ID_FILE_CREATE_NEW,     ASCII   
     "r",            ID_OTHER_SHOW_POINTER_RECTANGLE, ASCII 
     VK_DELETE,      ID_EDIT_WIPE,           VIRTKEY, CONTROL
     VK_PRIOR,       ID_MOVE_ALLUP,          VIRTKEY, CONTROL
@@ -54,16 +54,17 @@ BEGIN
     VK_F5,          ID_EDIT_RELOAD,         VIRTKEY 
     VK_F5,          ID_EDIT_RELOAD_ALL,     VIRTKEY, CONTROL
     VK_F3,          ID_FILE_SAVE_BITMAP,    VIRTKEY 
-    VK_F3,          ID_FILE_SAVE_BITMAP_TRIM,    VIRTKEY, CONTROL
+    VK_F3,          ID_FILE_SAVE_BITMAP_TRIM, VIRTKEY, CONTROL
     VK_F2,          ID_FILE_SAVE_MAPFILE,   VIRTKEY 
     VK_F1,          ID_HELP_ABOUT,          VIRTKEY 
-	VK_NUMPAD2,           ID_EDIT_SHIFT_DOWN,     VIRTKEY
-	VK_NUMPAD8,           ID_EDIT_SHIFT_UP,       VIRTKEY
-	VK_NUMPAD4,           ID_EDIT_SHIFT_LEFT,     VIRTKEY
-	VK_NUMPAD6,           ID_EDIT_SHIFT_RIGHT,       VIRTKEY
+    VK_NUMPAD2,     ID_EDIT_SHIFT_DOWN,     VIRTKEY 
+    VK_NUMPAD8,     ID_EDIT_SHIFT_UP,       VIRTKEY 
+    VK_NUMPAD4,     ID_EDIT_SHIFT_LEFT,     VIRTKEY 
+    VK_NUMPAD6,     ID_EDIT_SHIFT_RIGHT,    VIRTKEY 
+    VK_NUMPAD5,     ID_EDIT_SHIFT_DIALOG,   VIRTKEY 
     "^X",           ID_EDIT_CUT,            ASCII   
     "^C",           ID_EDIT_COPY,           ASCII   
-    VK_C,           ID_EDIT_CLEARALL,           VIRTKEY, SHIFT, CONTROL
+    "C",            ID_EDIT_CLEARALL,       VIRTKEY, SHIFT, CONTROL
     VK_TAB,         ID_MOVE_NEXT16,         VIRTKEY 
     VK_TAB,         ID_MOVE_PREV16,         VIRTKEY, CONTROL
     "^V",           ID_EDIT_PASTE,          ASCII   
@@ -110,7 +111,7 @@ BEGIN
         MENUITEM "Copy\tctrl-c",                ID_EDIT_COPY
         MENUITEM "Cut\tctrl-x",                 ID_EDIT_CUT
         MENUITEM "Paste\tctrl-v",               ID_EDIT_PASTE
-        MENUITEM "Clear all\tctrl-shift-c",               ID_EDIT_CLEARALL
+        MENUITEM "Clear all\tctrl-shift-c",     ID_EDIT_CLEARALL
         MENUITEM "Transparency\tctrl-t",        ID_EDIT_TRANSPARENCY
         MENUITEM SEPARATOR
         MENUITEM "Icon for cut/paste\t'",       ID_EDIT_CHOOSEMASSCPICON
@@ -120,11 +121,12 @@ BEGIN
         MENUITEM "Empty gridlines\tctrl-\\",    ID_EDIT_EMPTY_GRIDLINES
         MENUITEM SEPARATOR
         MENUITEM "Move to icon dialog",         ID_EDIT_MOVE_TO_ICON
-		MENUITEM SEPARATOR
-		MENUITEM "Shift left",                  ID_EDIT_SHIFT_LEFT
-		MENUITEM "Shift right",                  ID_EDIT_SHIFT_RIGHT
-		MENUITEM "Shift up",                  ID_EDIT_SHIFT_UP
-		MENUITEM "Shift down",                  ID_EDIT_SHIFT_DOWN
+        MENUITEM SEPARATOR
+        MENUITEM "Shift left\tnumpad 4",        ID_EDIT_SHIFT_LEFT
+        MENUITEM "Shift right\tnumpad 6",       ID_EDIT_SHIFT_RIGHT
+        MENUITEM "Shift up\tnumpad 8",          ID_EDIT_SHIFT_UP
+        MENUITEM "Shift down\tnumpad 2",        ID_EDIT_SHIFT_DOWN
+		MENUITEM "Shift dialog\tnumpad 5"       ID_EDIT_SHIFT_DIALOG
     END
     POPUP "&Other"
     BEGIN
@@ -147,7 +149,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Verify &Two 16x16",           ID_VERIFY_TWO1616
         MENUITEM "Verify &Full 32x32",          ID_VERIFY_FULL3232
-		MENUITEM "Verify &Trimmed",             ID_VERIFY_TRIMMED
+        MENUITEM "Verify &Trimmed",             ID_VERIFY_TRIMMED
     END
     POPUP "&Move"
     BEGIN
@@ -184,14 +186,30 @@ END
 // Dialog
 //
 
-IDD_DLGFIRST DIALOG DISCARDABLE  260, 200, 156, 26
+IDD_HEXDIALOG DIALOG DISCARDABLE  260, 200, 156, 26
 STYLE DS_MODALFRAME | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Hex value for icon"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    EDITTEXT        ID_TEXTBOX_ITEM_TO_JUMP,1,10,100,12,WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,104,4,50,14,WS_TABSTOP
+    EDITTEXT        ID_TEXTBOX_ITEM_TO_JUMP,1,10,100,12
+    DEFPUSHBUTTON   "OK",IDOK,104,4,50,14
     LTEXT           "New hexadecimal value",1122,1,1,100,10
+END
+
+IDD_SHIFTDIALOG DIALOG DISCARDABLE  260, 200, 140, 82
+STYLE DS_MODALFRAME | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Shift dimensions"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LTEXT           "Left",ID_TEXTBOX_LEFT_TXT,2,1,29,10
+    EDITTEXT        ID_TEXTBOX_LEFT_SHIFT,30,0,100,12
+    LTEXT           "Right",ID_TEXTBOX_RIGHT_TXT,2,18,29,10
+    EDITTEXT        ID_TEXTBOX_RIGHT_SHIFT,30,17,100,12
+    LTEXT           "Up",ID_TEXTBOX_UP_TXT,2,35,29,10
+    EDITTEXT        ID_TEXTBOX_UP_SHIFT,30,34,100,12
+    LTEXT           "Down",ID_TEXTBOX_DOWN_TXT,2,52,29,10
+    EDITTEXT        ID_TEXTBOX_DOWN_SHIFT,30,51,100,12
+    DEFPUSHBUTTON   "OK",IDOK,53,65,50,14
 END
 
 
