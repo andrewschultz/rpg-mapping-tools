@@ -57,6 +57,10 @@ BEGIN
     VK_F3,          ID_FILE_SAVE_BITMAP_TRIM,    VIRTKEY, CONTROL
     VK_F2,          ID_FILE_SAVE_MAPFILE,   VIRTKEY 
     VK_F1,          ID_HELP_ABOUT,          VIRTKEY 
+	VK_NUMPAD2,           ID_EDIT_SHIFT_DOWN,     VIRTKEY
+	VK_NUMPAD8,           ID_EDIT_SHIFT_UP,       VIRTKEY
+	VK_NUMPAD4,           ID_EDIT_SHIFT_LEFT,     VIRTKEY
+	VK_NUMPAD6,           ID_EDIT_SHIFT_RIGHT,       VIRTKEY
     "^X",           ID_EDIT_CUT,            ASCII   
     "^C",           ID_EDIT_COPY,           ASCII   
     VK_C,           ID_EDIT_CLEARALL,           VIRTKEY, SHIFT, CONTROL

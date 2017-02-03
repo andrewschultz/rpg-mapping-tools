@@ -2069,7 +2069,8 @@ void shiftTheMap(HWND hwnd, short x, short y)
 				return;
 			}
 		}
-		for (j = shiftUp; j <= shiftDown; j++)
+
+		for (j = shiftUp; j <= shiftDown; j++) //first we move the icons
 			for (i = shiftLeft; i <= shiftRight; i++)
 			{
 				k = i + x;
@@ -2079,9 +2080,47 @@ void shiftTheMap(HWND hwnd, short x, short y)
 					k -= shiftRight - shiftLeft + 1;
 				tempArray[k][j] = SquareIconArray[i][j];
 			}
+
+		for (i = shiftUp; i <= shiftDown; i++)
+			tempArray[i][shiftRight+1] = tempArray[i][shiftLeft];
+
 		for (j = shiftUp; j <= shiftDown; j++)
 			for (i = shiftLeft; i <= shiftRight; i++)
 				SquareIconArray[i][j] = tempArray[i][j];
+
+		for (j = shiftUp; j <= shiftDown; j++) //then we move the LR walls
+			for (i = shiftLeft; i <= shiftRight; i++)
+			{
+				k = i + x;
+				if (k < shiftLeft)
+					k += shiftRight - shiftLeft + 1;
+				if (k > shiftRight)
+					k -= shiftRight - shiftLeft + 1;
+				tempArray[k][j] = LRWallArray[i][j];
+			}
+		for (i = shiftUp; i <= shiftDown; i++) //edge cases
+			tempArray[shiftRight+1][i] = tempArray[shiftLeft][i];
+
+		for (j = shiftUp; j <= shiftDown; j++) //copy over
+			for (i = shiftLeft; i <= shiftRight+1; i++)
+				LRWallArray[i][j] = tempArray[i][j];
+
+		for (j = shiftUp; j <= shiftDown; j++) //then we move the UD walls
+			for (i = shiftLeft; i <= shiftRight; i++)
+			{
+				k = i + x;
+				if (k < shiftUp)
+					k += shiftDown - shiftUp + 1;
+				if (k > shiftDown)
+					k -= shiftDown - shiftUp + 1;
+				tempArray[k][j] = UDWallArray[i][j];
+			}
+		for (i = shiftLeft; i <= shiftRight; i++) //edge cases
+			tempArray[i][shiftDown+1] = tempArray[i][shiftUp];
+
+		for (j = shiftUp; j <= shiftDown+1; j++) //copy over
+			for (i = shiftLeft; i <= shiftRight; i++)
+				UDWallArray[i][j] = tempArray[i][j];
 	}
 
 	if (y)
@@ -2096,7 +2135,8 @@ void shiftTheMap(HWND hwnd, short x, short y)
 				return;
 			}
 		}
-		for (j = shiftUp; j <= shiftDown; j++)
+
+		for (j = shiftUp; j <= shiftDown; j++) //first we move the icons
 			for (i = shiftLeft; i <= shiftRight; i++)
 			{
 				k = j + y;
@@ -2109,6 +2149,40 @@ void shiftTheMap(HWND hwnd, short x, short y)
 		for (j = shiftUp; j <= shiftDown; j++)
 			for (i = shiftLeft; i <= shiftRight; i++)
 				SquareIconArray[i][j] = tempArray[i][j];
+
+		for (j = shiftUp; j <= shiftDown; j++) //then we move the LR walls
+			for (i = shiftLeft; i <= shiftRight; i++)
+			{
+				k = j + y;
+				if (k < shiftUp)
+					k += shiftDown - shiftUp + 1;
+				if (k > shiftDown)
+					k -= shiftDown - shiftUp + 1;
+				tempArray[i][k] = LRWallArray[i][j];
+			}
+		for (i = shiftUp; i <= shiftDown; i++) //edge cases
+			tempArray[shiftRight+1][i] = tempArray[shiftLeft][i];
+
+		for (j = shiftUp; j <= shiftDown; j++) //copy over
+			for (i = shiftLeft; i <= shiftRight+1; i++)
+				LRWallArray[i][j] = tempArray[i][j];
+
+		for (j = shiftUp; j <= shiftDown; j++) //then we move the UD walls
+			for (i = shiftLeft; i <= shiftRight; i++)
+			{
+				k = j + y;
+				if (k < shiftUp)
+					k += shiftDown - shiftUp + 1;
+				if (k > shiftDown)
+					k -= shiftDown - shiftUp + 1;
+				tempArray[i][k] = UDWallArray[i][j];
+			}
+		for (i = shiftLeft; i <= shiftRight; i++) //edge cases
+			tempArray[i][shiftDown+1] = tempArray[i][shiftUp];
+
+		for (j = shiftUp; j <= shiftDown+1; j++) //copy over
+			for (i = shiftLeft; i <= shiftRight; i++)
+				UDWallArray[i][j] = tempArray[i][j];
 	}
 	ReloadTheMap(hwnd);
 }
