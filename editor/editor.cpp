@@ -50,6 +50,7 @@ void DrawPointers(HWND hwnd, COLORREF myColor);
 void DrawPointerRectangle(HWND hwnd, long xOffset, long yOffset, COLORREF myColor);
 void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME]);
 void ReloadTheMap(HWND hwnd);
+void showClipContents(HWND hwnd);
 void drawMyIcons(HWND hwnd);
 void changeBarText(HWND hwnd);
 void regularTextOut(char x[100], HWND hwnd);
@@ -295,6 +296,10 @@ switch(msg)
 						UDWallArray[i][j] = LRWallArray[i][j] = SquareIconArray[i][j] = 0;
 				workNotSaved = 1;
 			}
+			break;
+
+		case ID_EDIT_SEECLIP:
+			showClipContents(hwnd);
 			break;
 
 		case ID_EDIT_TRANSPARENCY:
@@ -743,7 +748,7 @@ switch(msg)
 			bufferU--;
 			bufferD--;
 
-			sprintf(buffer, "%02x,%02x to %02x,%02x.", bufferL, bufferU, bufferR+1, bufferD+1);
+			sprintf(buffer, "Cut/paste data:\r\n%02x,%02x to %02x,%02x.", bufferL, bufferU, bufferR+1, bufferD+1);
 			hdc = GetDC(hwnd);
     
 			// set the colors 
@@ -752,7 +757,15 @@ switch(msg)
 			SetBkMode(hdc,OPAQUE);
 
 			// output the message
-			TextOut(hdc,608,480,buffer,strlen(buffer));
+			{
+				RECT rect;
+				rect.top=480;
+				rect.bottom=560;
+				rect.left=800;
+				rect.right=896;
+
+				DrawText(hdc,buffer,strlen(buffer),&rect,DT_TOP|DT_LEFT);
+			}
 
 			// release dc
 			ReleaseDC(hwnd,hdc);
@@ -1755,6 +1768,56 @@ void ReloadTheMap(HWND hwnd)
 	DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
 
 	ReleaseDC(hwnd, hdc);
+}
+
+void showClipContents(HWND hwnd)
+{
+	long i, j;
+	HDC hdc = GetDC(hwnd);
+	HBRUSH hbrush=CreateSolidBrush(RGB(255,255,255));
+	RECT rect;
+
+	rect.top=0;
+	rect.bottom=ICONHEIGHT*(MAXICONSHIGH+1);
+	rect.left=0;
+	rect.right=ICONWIDTH*(MAXICONSWIDE+1);
+
+	FillRect(hdc, &rect, hbrush);
+
+	DeleteObject(hbrush);
+
+	for (j=0; j <= MAXICONSHIGH-1; j++)
+	{
+		for (i=0; i <= MAXICONSWIDE-1; i++)
+			BitBlt(hdc, i*16+16, j*16+16, 16, 16, icondc,
+				(CutSquareIconArray[i][j]%16)*16, (CutSquareIconArray[i][j]/16)*16, SRCCOPY);
+	}
+
+	if (showPointerRectangle)
+	{
+		DrawPointers(hwnd, RGB(255,0,0));
+	}
+	for (j=0; j < MAXICONSHIGH+1; j++)
+		for (i=0; i < MAXICONSWIDE+1; i++)
+		{
+			TransparentBlt(hdc, 8+i*16, 16+j*16, 16, 16, walldc,
+				CutLRWallArray[i][j]*16, 16, 16, 16, RGB(255,255,255));
+			TransparentBlt(hdc, 24+i*16, 16+j*16, 16, 16, walldc,
+				CutLRWallArray[i+1][j]*16, 16, 16, 16, RGB(255,255,255));
+			TransparentBlt(hdc, 16+i*16, 8+j*16, 16, 16, walldc,
+				CutUDWallArray[i][j]*16, 0, 16, 16, RGB(255,255,255));
+			TransparentBlt(hdc, 16+i*16, 24+j*16, 16, 16, walldc,
+				CutUDWallArray[i][j+1]*16, 0, 16, 16, RGB(255,255,255));
+		}
+
+	DrawPointerRectangle(hwnd, MAXICONSWIDE + 3 + WallIconNumber, 1, RGB(255,0,0));
+
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+2, 10+(iconNumber/16), RGB(255,0,0));
+	DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
+
+	ReleaseDC(hwnd, hdc);
+
+	MessageBox(hwnd, "Push OK to see the map again.", "Push OK", MB_OK);
 }
 
 void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf)
