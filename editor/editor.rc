@@ -62,6 +62,10 @@ BEGIN
     VK_NUMPAD4,     ID_EDIT_SHIFT_LEFT,     VIRTKEY 
     VK_NUMPAD6,     ID_EDIT_SHIFT_RIGHT,    VIRTKEY 
     VK_NUMPAD5,     ID_EDIT_SHIFT_DIALOG,   VIRTKEY 
+    VK_NUMPAD7,     ID_EDIT_SHIFT_CHOOSE_UL,VIRTKEY 
+    VK_NUMPAD9,     ID_EDIT_SHIFT_CHOOSE_UR,VIRTKEY 
+    VK_NUMPAD1,     ID_EDIT_SHIFT_CHOOSE_DL,VIRTKEY 
+    VK_NUMPAD3,     ID_EDIT_SHIFT_CHOOSE_DR,VIRTKEY 
     "^X",           ID_EDIT_CUT,            ASCII   
     "^C",           ID_EDIT_COPY,           ASCII   
     "C",            ID_EDIT_CLEARALL,       VIRTKEY, SHIFT, CONTROL
@@ -121,12 +125,6 @@ BEGIN
         MENUITEM "Empty gridlines\tctrl-\\",    ID_EDIT_EMPTY_GRIDLINES
         MENUITEM SEPARATOR
         MENUITEM "Move to icon dialog",         ID_EDIT_MOVE_TO_ICON
-        MENUITEM SEPARATOR
-        MENUITEM "Shift left\tnumpad 4",        ID_EDIT_SHIFT_LEFT
-        MENUITEM "Shift right\tnumpad 6",       ID_EDIT_SHIFT_RIGHT
-        MENUITEM "Shift up\tnumpad 8",          ID_EDIT_SHIFT_UP
-        MENUITEM "Shift down\tnumpad 2",        ID_EDIT_SHIFT_DOWN
-		MENUITEM "Shift dialog\tnumpad 5"       ID_EDIT_SHIFT_DIALOG
     END
     POPUP "&Other"
     BEGIN
@@ -163,7 +161,19 @@ BEGIN
         MENUITEM "&Next 16x16\ttab",            ID_MOVE_NEXT16
         MENUITEM "&Prev 16x16\tctrl-tab",       ID_MOVE_PREV16
     END
-    POPUP "&Switch"
+	POPUP "&Shift"
+	BEGIN
+        MENUITEM "Shift left\tnumpad 4",        ID_EDIT_SHIFT_LEFT
+        MENUITEM "Shift right\tnumpad 6",       ID_EDIT_SHIFT_RIGHT
+        MENUITEM "Shift up\tnumpad 8",          ID_EDIT_SHIFT_UP
+        MENUITEM "Shift down\tnumpad 2",        ID_EDIT_SHIFT_DOWN
+		MENUITEM "Shift dialog\tnumpad 5"       ID_EDIT_SHIFT_DIALOG
+		MENUITEM "Shift boundary UL\tnumpad 7", ID_EDIT_SHIFT_CHOOSE_UL
+		MENUITEM "Shift boundary UR\tnumpad 9", ID_EDIT_SHIFT_CHOOSE_UR
+		MENUITEM "Shift boundary DL\tnumpad 1", ID_EDIT_SHIFT_CHOOSE_DL
+		MENUITEM "Shift boundary DR\tnumpad 3", ID_EDIT_SHIFT_CHOOSE_DR
+	END
+    POPUP "S&witch"
     BEGIN
         MENUITEM "&1=flip top 2",               ID_FLIP_12
         MENUITEM "&2=flip left 2",              ID_FLIP_13

@@ -385,6 +385,16 @@ switch(msg)
 		case ID_EDIT_SHIFT_DIALOG:
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_SHIFTDIALOG), hwnd, reinterpret_cast<DLGPROC>(ShiftDlgProc));
 			break;
+
+		case ID_EDIT_SHIFT_CHOOSE_UL:
+		case ID_EDIT_SHIFT_CHOOSE_UR:
+		case ID_EDIT_SHIFT_CHOOSE_DL:
+		case ID_EDIT_SHIFT_CHOOSE_DR:
+			shiftLeft = 17 * ((wparam - ID_EDIT_SHIFT_CHOOSE_UL) & 1);
+			shiftUp = 17 * (((wparam - ID_EDIT_SHIFT_CHOOSE_UL) & 2) >> 1);
+			shiftRight = shiftLeft + 15;
+			shiftDown = shiftUp + 15;
+			break;
 		
 		case ID_OTHER_NOWRAP:
 		case ID_OTHER_16WRAP:
