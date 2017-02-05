@@ -306,7 +306,6 @@ main(int argc, char * argv[])
 				printf("Couldn't read %s.\n", buffer+1+launch);
 				break;
 			}
-			printf("%c\n", buffer[1]);
 			printf("Writing %s\n", buffer+1+launch);
 			H = fopen("256.bmp", "rb");
 			if (H == NULL)
@@ -422,7 +421,27 @@ main(int argc, char * argv[])
 				sectorTemp = strtol(buffer+2, NULL, 16);
 				break;
 			}
+			if (buffer[1] == 'r')
+			{
+				if (curX)
+				{
+					curX = 0;
+					myY++;
+				}
+				break;
+			}
+			{
+				char buf2[100];
+				char * token;
+				char seps[] = ",";
+				strcpy(buf2, buffer);
+				token = strtok(buf2, seps);
+				token = strtok(NULL, seps);
+ 				if (token)
+					sscanf(token, "%x", &sectorTemp);
+			}
 			myOffset = strtol(buffer+1, NULL, 16);
+			fseek(G, myOffset, SEEK_SET);
 			{
 				long thisSector = sectorSize;
 				if (sectorTemp)
@@ -430,7 +449,7 @@ main(int argc, char * argv[])
 					thisSector = sectorTemp;
 					sectorTemp = 0;
 				}
-				for (i=0; i < sectorSize; i++)
+				for (i=0; i < thisSector; i++)
 				{
 					myary[myX + curX][myY] = fgetc(G) & 0xff;
 					curX++;
