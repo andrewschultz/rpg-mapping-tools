@@ -480,7 +480,7 @@ switch(msg)
 			break;
 
 		case ID_SHIFT_CUT_DOWN:
-			checkShiftExpand(hwnd,0,0,0,1);
+			checkShiftExpand(hwnd,0,0,0,-1);
 			break;
 
 		case ID_SHIFT_CUT_DOWNRIGHT:

@@ -75,14 +75,14 @@ BEGIN
 	VK_NUMPAD7,     ID_SHIFT_EXPAND_UPLEFT,VIRTKEY, CONTROL
 	VK_NUMPAD8,     ID_SHIFT_EXPAND_UP,VIRTKEY, CONTROL
 	VK_NUMPAD9,     ID_SHIFT_EXPAND_UPRIGHT,VIRTKEY, CONTROL
-	VK_NUMPAD1,     ID_SHIFT_CUT_DOWNLEFT,VIRTKEY, SHIFT
-	VK_NUMPAD2,     ID_SHIFT_CUT_DOWN,VIRTKEY, SHIFT
-	VK_NUMPAD3,     ID_SHIFT_CUT_LEFT,VIRTKEY, SHIFT
-	VK_NUMPAD4,     ID_SHIFT_CUT_LEFT,VIRTKEY, SHIFT
-	VK_NUMPAD6,     ID_SHIFT_CUT_RIGHT,VIRTKEY, SHIFT
-	VK_NUMPAD7,     ID_SHIFT_CUT_UPLEFT,VIRTKEY, SHIFT
-	VK_NUMPAD8,     ID_SHIFT_CUT_UP,VIRTKEY, SHIFT
-	VK_NUMPAD9,     ID_SHIFT_CUT_UPRIGHT,VIRTKEY, SHIFT
+	VK_NUMPAD1,     ID_SHIFT_CUT_UPRIGHT,VIRTKEY, ALT
+	VK_NUMPAD2,     ID_SHIFT_CUT_UP,VIRTKEY, ALT
+	VK_NUMPAD3,     ID_SHIFT_CUT_UPLEFT,VIRTKEY, ALT
+	VK_NUMPAD4,     ID_SHIFT_CUT_RIGHT,VIRTKEY, ALT
+	VK_NUMPAD6,     ID_SHIFT_CUT_LEFT,VIRTKEY, ALT
+	VK_NUMPAD7,     ID_SHIFT_CUT_DOWNRIGHT,VIRTKEY, ALT
+	VK_NUMPAD8,     ID_SHIFT_CUT_DOWN,VIRTKEY, ALT
+	VK_NUMPAD9,     ID_SHIFT_CUT_DOWNLEFT,VIRTKEY, ALT
      "^X",          ID_EDIT_CUT,            ASCII   
     "^C",           ID_EDIT_COPY,           ASCII   
 	"^e",           ID_EDIT_CUT_PASTE_EDGES,ASCII
@@ -197,23 +197,23 @@ BEGIN
 		MENUITEM "Shift boundary: DR 16x16\tnumpad 3", ID_SHIFT_CHOOSE_DR
 		POPUP "&Detailed movement"
 		BEGIN
-			MENUITEM "Shift box expand DL\tnumpad 1",	ID_SHIFT_EXPAND_DOWNLEFT
-			MENUITEM "Shift box expand Down\tnumpad 2",	ID_SHIFT_EXPAND_DOWN
-			MENUITEM "Shift box expand DR\tnumpad 3",	ID_SHIFT_EXPAND_DOWNRIGHT
-			MENUITEM "Shift box expand Left\tnumpad 4",	ID_SHIFT_EXPAND_LEFT
-			MENUITEM "Shift box expand Right\tnumpad 6",	ID_SHIFT_EXPAND_RIGHT
-			MENUITEM "Shift box expand UL\tnumpad 7",	ID_SHIFT_EXPAND_UPLEFT
-			MENUITEM "Shift box expand Up\tnumpad 8",	ID_SHIFT_EXPAND_UP
-			MENUITEM "Shift box expand UR\tnumpad 9",	ID_SHIFT_EXPAND_UPRIGHT
+			MENUITEM "Shift box expand DL\tctrl-numpad 1",	ID_SHIFT_EXPAND_DOWNLEFT
+			MENUITEM "Shift box expand Down\tctrl-numpad 2",	ID_SHIFT_EXPAND_DOWN
+			MENUITEM "Shift box expand DR\tctrl-numpad 3",	ID_SHIFT_EXPAND_DOWNRIGHT
+			MENUITEM "Shift box expand Left\tctrl-numpad 4",	ID_SHIFT_EXPAND_LEFT
+			MENUITEM "Shift box expand Right\tctrl-numpad 6",	ID_SHIFT_EXPAND_RIGHT
+			MENUITEM "Shift box expand UL\tctrl-numpad 7",	ID_SHIFT_EXPAND_UPLEFT
+			MENUITEM "Shift box expand Up\tctrl-numpad 8",	ID_SHIFT_EXPAND_UP
+			MENUITEM "Shift box expand UR\tctrl-numpad 9",	ID_SHIFT_EXPAND_UPRIGHT
 			MENUITEM SEPARATOR
-			MENUITEM "Shift box cut DL\tnumpad 1",	ID_SHIFT_CUT_DOWNLEFT
-			MENUITEM "Shift box cut Down\tnumpad 2",	ID_SHIFT_CUT_DOWN
-			MENUITEM "Shift box cut DR\tnumpad 3",	ID_SHIFT_CUT_DOWNRIGHT
-			MENUITEM "Shift box cut Left\tnumpad 4",	ID_SHIFT_CUT_LEFT
-			MENUITEM "Shift box cut Right\tnumpad 6",	ID_SHIFT_CUT_RIGHT
-			MENUITEM "Shift box cut UL\tnumpad 7",	ID_SHIFT_CUT_UPLEFT
-			MENUITEM "Shift box cut Up\tnumpad 8",	ID_SHIFT_CUT_UP
-			MENUITEM "Shift box cut UR\tnumpad 9",	ID_SHIFT_CUT_UPRIGHT
+			MENUITEM "Shift box cut DL\talt-numpad 1",	ID_SHIFT_CUT_DOWNLEFT
+			MENUITEM "Shift box cut Down\talt-numpad 2",	ID_SHIFT_CUT_DOWN
+			MENUITEM "Shift box cut DR\talt-numpad 3",	ID_SHIFT_CUT_DOWNRIGHT
+			MENUITEM "Shift box cut Left\talt-numpad 4",	ID_SHIFT_CUT_LEFT
+			MENUITEM "Shift box cut Right\talt-numpad 6",	ID_SHIFT_CUT_RIGHT
+			MENUITEM "Shift box cut UL\talt-numpad 7",	ID_SHIFT_CUT_UPLEFT
+			MENUITEM "Shift box cut Up\talt-numpad 8",	ID_SHIFT_CUT_UP
+			MENUITEM "Shift box cut UR\talt-numpad 9",	ID_SHIFT_CUT_UPRIGHT
 		END
 	END
     POPUP "S&witch"
