@@ -105,6 +105,7 @@ long zeroBottom = 1;
 short myEmpty = 0, myTransparency = 0, showPointerRectangle = 1;
 long showDebug = 1;
 
+short cutPasteEdges = 1;
 short shiftLeft = 0, shiftRight = 31, shiftUp = 0, shiftDown = 31;
 
 long bufferL=0,bufferR=0,bufferU=0,bufferD=0;
@@ -247,16 +248,17 @@ switch(msg)
 
 				if (LOWORD(wparam) == ID_EDIT_CUT)
 				{
+					short edgeTrim = 1 - cutPasteEdges;
 					for (j=bufferU; j <= bufferD; j++)
 						for (i=bufferL; i <= bufferR; i++)
 							SquareIconArray[i][j] = 0;
 
-					for (j=bufferU; j <= bufferD+1; j++)
-						for (i=bufferL; i <= bufferR; i++)
+					for (j=bufferU + edgeTrim; j <= bufferD + 1 - edgeTrim; j++)
+						for (i=bufferL + edgeTrim; i <= bufferR - edgeTrim; i++)
 							UDWallArray[i][j] = 0;
 
-					for (j=bufferU; j <= bufferD; j++)
-						for (i=bufferL; i <= bufferR+1; i++)
+					for (j=bufferU + edgeTrim; j <= bufferD - edgeTrim; j++)
+						for (i=bufferL + edgeTrim; i <= bufferR + 1 - edgeTrim; i++)
 							LRWallArray[i][j] = 0;
 
 					workNotSaved = 1;
@@ -269,6 +271,7 @@ switch(msg)
 			if (bufferL == -1)
 				break;
 			{
+				short edgeTrim = 1 - cutPasteEdges;
 				long i, j;
 
 				for (j=bufferU; j <= bufferD; j++)
@@ -276,18 +279,26 @@ switch(msg)
 						if ((!myTransparency) || (CutSquareIconArray[i+xCurrent-bufferL][j+yCurrent-bufferU]))
 							SquareIconArray[i+xCurrent-bufferL][j+yCurrent-bufferU] = CutSquareIconArray[i-bufferL][j-bufferU];
 
-				for (j=bufferU; j <= bufferD+1; j++)
-					for (i=bufferL; i <= bufferR; i++)
+				for (j=bufferU + edgeTrim; j <= bufferD+1 - edgeTrim; j++)
+					for (i=bufferL + edgeTrim; i <= bufferR - edgeTrim; i++)
 						if ((!myTransparency) || (CutUDWallArray[i+xCurrent-bufferL][j+yCurrent-bufferU]))
 							UDWallArray[i+xCurrent-bufferL][j+yCurrent-bufferU] = CutUDWallArray[i-bufferL][j-bufferU];
 
-				for (j=bufferU; j <= bufferD; j++)
-					for (i=bufferL; i <= bufferR+1; i++)
+				for (j=bufferU + edgeTrim; j <= bufferD - edgeTrim; j++)
+					for (i=bufferL + edgeTrim; i <= bufferR + 1 - edgeTrim; i++)
 						if ((!myTransparency) || (CutLRWallArray[i+xCurrent-bufferL][j+yCurrent-bufferU]))
 							LRWallArray[i+xCurrent-bufferL][j+yCurrent-bufferU] = CutLRWallArray[i-bufferL][j-bufferU];
 			}
 			workNotSaved = 1;
 			ReloadTheMap(hwnd);
+			break;
+
+		case ID_EDIT_CUT_PASTE_EDGES:
+			cutPasteEdges = !cutPasteEdges;
+			if (cutPasteEdges)
+				CheckMenuItem( GetMenu(hwnd), ID_EDIT_CUT_PASTE_EDGES, MF_CHECKED);
+			else
+				CheckMenuItem( GetMenu(hwnd), ID_EDIT_CUT_PASTE_EDGES, MF_UNCHECKED);
 			break;
 
 		case ID_EDIT_CLEARALL:
@@ -2254,6 +2265,12 @@ void setInitialChecks(HWND hwnd)
 		CheckMenuItem( GetMenu(hwnd), ID_OTHER_SHOW_POINTER_RECTANGLE, MF_CHECKED);
 	else
 		CheckMenuItem( GetMenu(hwnd), ID_OTHER_SHOW_POINTER_RECTANGLE, MF_UNCHECKED);
+
+	if (cutPasteEdges)
+		CheckMenuItem( GetMenu(hwnd), ID_EDIT_CUT_PASTE_EDGES, MF_CHECKED);
+	else
+		CheckMenuItem( GetMenu(hwnd), ID_EDIT_CUT_PASTE_EDGES, MF_UNCHECKED);
+
 }
 
 void switchIconPointer(HWND hwnd, short q)

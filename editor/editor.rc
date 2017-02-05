@@ -85,6 +85,7 @@ BEGIN
 	VK_NUMPAD9,     ID_SHIFT_CUT_UPRIGHT,VIRTKEY, SHIFT
      "^X",          ID_EDIT_CUT,            ASCII   
     "^C",           ID_EDIT_COPY,           ASCII   
+	"^e",           ID_EDIT_CUT_PASTE_EDGES,ASCII
     "C",            ID_EDIT_CLEARALL,       VIRTKEY, SHIFT, CONTROL
 	VK_F12,         ID_EDIT_SEECLIP,        VIRTKEY
     VK_TAB,         ID_MOVE_NEXT16,         VIRTKEY 
@@ -133,6 +134,7 @@ BEGIN
         MENUITEM "Copy\tctrl-c",                ID_EDIT_COPY
         MENUITEM "Cut\tctrl-x",                 ID_EDIT_CUT
         MENUITEM "Paste\tctrl-v",               ID_EDIT_PASTE
+		MENUITEM "Cut/paste edges\tctrl-e",     ID_EDIT_CUT_PASTE_EDGES
         MENUITEM "See clipboard contents\tF12", ID_EDIT_SEECLIP
         MENUITEM "Clear all\tctrl-shift-c",     ID_EDIT_CLEARALL
         MENUITEM "Transparency\tctrl-t",        ID_EDIT_TRANSPARENCY
