@@ -1,3 +1,5 @@
+//mapcpy.c
+//copies binary information to the actual map
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +27,11 @@ main(int argc, char * argv[])
 		myYModOffset=0, myXModOffset=0, outH=256, outW=256, doFringe = 0, gegege=0;
 	long i, j, i2, j2;
 	short qflags = 15, quartering = 0;
+
+	long sectorSize = 256;
+	long sectorTemp = 0;
+	long curX = 0;
+	short launch = 1;
 
 	short myary[MAXW][MAXW], ch;
 
@@ -285,9 +292,22 @@ main(int argc, char * argv[])
 			break;
 
 		case '>': // this outputs to a file
+			launch = 0;
 			buffer[strlen(buffer)-1] = 0;
-			printf("Writing %s\n", buffer+1);
-			I = fopen(buffer+1, "wb");
+			if (buffer[1] == 'L')
+			{
+				launch = 1;
+				I = fopen(buffer+2, "wb");
+			}
+			else
+				I = fopen(buffer+1, "wb");
+			if (I == NULL)
+			{
+				printf("Couldn't read %s.\n", buffer+1+launch);
+				break;
+			}
+			printf("%c\n", buffer[1]);
+			printf("Writing %s\n", buffer+1+launch);
 			H = fopen("256.bmp", "rb");
 			if (H == NULL)
 			{
@@ -347,6 +367,12 @@ main(int argc, char * argv[])
 					fputc(myary[i][outH-1-j], I);
 			fclose(I);
 			printf("outH outW %d %d\n", outH, outW);
+			if (launch)
+			{
+				char cmdbuf[100] = "mspaint ";
+				strcat(cmdbuf, buffer+2);
+				system(cmdbuf);
+			}
 			break;
 
 		case 'O':	//default offset, for later. Break 'o' into a function
@@ -388,6 +414,33 @@ main(int argc, char * argv[])
 			myXMax = myW;
 			if (addSpace == 1)
 				myY++;
+			break;
+
+		case 's': //Sector read
+			if (buffer[1] == 't')
+			{
+				sectorTemp = strtol(buffer+2, NULL, 16);
+				break;
+			}
+			myOffset = strtol(buffer+1, NULL, 16);
+			{
+				long thisSector = sectorSize;
+				if (sectorTemp)
+				{
+					thisSector = sectorTemp;
+					sectorTemp = 0;
+				}
+				for (i=0; i < sectorSize; i++)
+				{
+					myary[myX + curX][myY] = fgetc(G) & 0xff;
+					curX++;
+					if (curX == myW)
+					{
+						curX = 0;
+						myY++;
+					}
+				}
+			}
 			break;
 
 		default:
