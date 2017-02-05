@@ -88,6 +88,7 @@ HDC icondc, walldc;
 short UDWallArray[MAXICONSWIDE+1][MAXICONSHIGH+1];
 short LRWallArray[MAXICONSWIDE+1][MAXICONSHIGH+1];
 short SquareIconArray[MAXICONSWIDE][MAXICONSHIGH];
+short TranspIconArray[MAXICONSWIDE][MAXICONSHIGH];
 short CutUDWallArray[MAXICONSWIDE+1][MAXICONSHIGH+1];
 short CutLRWallArray[MAXICONSWIDE+1][MAXICONSHIGH+1];
 short CutSquareIconArray[MAXICONSWIDE][MAXICONSHIGH];
@@ -833,6 +834,9 @@ switch(msg)
 			bufferU--;
 			bufferD--;
 
+			if ((bufferL < 0) || (bufferU < 0))
+				break;
+
 			sprintf(buffer, "Cut/paste data:\r\n%02x,%02x to %02x,%02x.", bufferL, bufferU, bufferR+1, bufferD+1);
 			hdc = GetDC(hwnd);
     
@@ -960,17 +964,22 @@ switch(msg)
 
 			case VK_DELETE:
 				workNotSaved = 1;
-				if (KEY_DOWN(VK_SHIFT))
+				if (KEY_DOWN(VK_CONTROL) && KEY_DOWN(VK_SHIFT))
+					break;
+				if (KEY_DOWN(VK_CONTROL))
+				{
+					TranspIconArray[xCurrent][yCurrent] = 0;
+				}
+				else if (KEY_DOWN(VK_SHIFT))
 				{
 					UDWallArray[xCurrent][yCurrent] = 
 					LRWallArray[xCurrent][yCurrent] = 
 					UDWallArray[xCurrent][(yCurrent+1) % MAXICONSHIGH] = 
 					LRWallArray[(xCurrent+1) % MAXICONSWIDE][yCurrent] = 0;
-					ReloadTheMap(hwnd);
 				}
 				else
 					SquareIconArray[xCurrent][yCurrent] = 0;
-					ReloadTheMap(hwnd);
+				ReloadTheMap(hwnd);
 				break;
 
 
@@ -1296,7 +1305,7 @@ switch(msg)
 				break;
 
 			case VK_BACK:
-				if (VK_CONTROL)
+				if (KEY_DOWN(VK_CONTROL))
 				{
 					//Clear all walls
 					//Redraw center icon
@@ -1312,7 +1321,10 @@ switch(msg)
 
 					sprintf(buffer, "Icon %d at %d %d        ", iconNumber, xCurrent, yCurrent);
 					workNotSaved = 1;
-					SquareIconArray[xCurrent][yCurrent] = (short)iconNumber;
+ 					if (KEY_DOWN(VK_CONTROL))
+						TranspIconArray[xCurrent][yCurrent] = (short)iconNumber;
+					else
+						SquareIconArray[xCurrent][yCurrent] = (short)iconNumber;
 
 					//Write over original icon, draw out walls
 					//regularTextOut(buffer, hwnd);
@@ -1626,6 +1638,7 @@ if (workNotSaved)
 void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME])
 {
 	long j, i;
+	short haveTransp;
 
 	FILE * F = fopen(x, "rb");
 	if (F == NULL)
@@ -1638,6 +1651,10 @@ void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME])
 	for (j=0; j < MAXICONSHIGH; j++)
 		for (i=0; i < MAXICONSWIDE; i++)
 			SquareIconArray[i][j] = 0;
+
+	for (j=0; j < MAXICONSHIGH; j++)
+		for (i=0; i < MAXICONSWIDE; i++)
+			TranspIconArray[i][j] = 0;
 
 	for (j=0; j < MAXICONSHIGH+1; j++)
 		for (i=0; i < MAXICONSWIDE+1; i++)
@@ -1669,6 +1686,14 @@ void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME])
 		fgetc(F);
 	}
 	fclose(F);
+
+	haveTransp = fgetc(F);
+	if ((haveTransp == EOF) || (!haveTransp))
+		return;
+
+	for (j=0; j < myH; j++)
+		for (i=0; i < myW; i++)
+			TranspIconArray[i][j] = fgetc(F);
 
 	myW = 35;
 	myH = 35;
@@ -1827,7 +1852,15 @@ void ReloadTheMap(HWND hwnd)
 	for (j=0; j <= MAXICONSHIGH-1; j++)
 	{
 		for (i=0; i <= MAXICONSWIDE-1; i++)
-			BitBlt(hdc, i*16+16, j*16+16, 16, 16, icondc, XVAL(i,j), YVAL(i,j), SRCCOPY);
+		{
+			if (SquareIconArray[i][j])
+				BitBlt(hdc, i*16+16, j*16+16, 16, 16, icondc, XVAL(i,j), YVAL(i,j), SRCCOPY);
+			if (TranspIconArray[i][j])
+				TransparentBlt(hdc, i*16+16, j*16+16, 16, 16, icondc,
+					(TranspIconArray[i][j]%16)*16,
+					(TranspIconArray[i][j]/16)*16,
+					16, 16, RGB(255,255,255));
+		}
 	}
 
 	if (showPointerRectangle)

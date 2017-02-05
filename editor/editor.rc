@@ -44,7 +44,7 @@ BEGIN
     "^O",           ID_FILE_OPEN,           ASCII   
     "^N",           ID_FILE_CREATE_NEW,     ASCII   
     "r",            ID_OTHER_SHOW_POINTER_RECTANGLE, ASCII 
-    VK_DELETE,      ID_EDIT_WIPE,           VIRTKEY, CONTROL
+    VK_DELETE,      ID_EDIT_WIPE,           VIRTKEY, CONTROL, SHIFT
     VK_PRIOR,       ID_MOVE_ALLUP,          VIRTKEY, CONTROL
     VK_NEXT,        ID_MOVE_ALLDOWN,        VIRTKEY, CONTROL
     VK_HOME,        ID_MOVE_UL,             VIRTKEY, CONTROL
