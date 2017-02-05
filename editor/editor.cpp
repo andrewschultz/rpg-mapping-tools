@@ -1726,6 +1726,7 @@ void SaveMapfile()
 {
 	FILE * F;
 	long i, j;
+	long gotTrans = 0;
 	long q;
 	char MsgBoxMsg[200] = "Blank file, save to blank.map?\n\nCurrent directory is ";
 	char buffer2[200];
@@ -1774,12 +1775,25 @@ void SaveMapfile()
 		}
 		fputc(LRWallArray[i][j], F);
 	}
-	for (i=0; i < myW; i++)
+	for (i=0; i < myW; i++) // final row
 	{
 		fputc(0, F);
 		fputc(UDWallArray[i][j], F);
 	}
 	fputc(0, F);
+
+	for (j=0; j < myH; j++)
+		for (i=0; i < myW; i++)
+			if (TranspIconArray[i][j])
+				gotTrans = 1;
+
+	if (gotTrans)
+	{
+		fputc(1, F);
+		for (j=0; j < myH; j++)
+			for (i=0; i < myW; i++)
+				fputc(TranspIconArray[i][j], F);
+	}
 
 	fclose(F);
 	workNotSaved = 0;
@@ -2000,7 +2014,7 @@ void SaveBitmapFile(HWND hwnd, short trim)
 		for (j=0; j < MAXICONSHIGH - 1; j++)
 ;			for (i=0; i < MAXICONSWIDE - 1; i++)
 			{
-				t = SquareIconArray[i][j];
+				t = SquareIconArray[i][j] | TranspIconArray[i][j];
 				if (t)
 				{
 					if (i < xmin)
