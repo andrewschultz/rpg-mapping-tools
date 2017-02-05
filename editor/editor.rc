@@ -66,6 +66,7 @@ BEGIN
     VK_NUMPAD9,     ID_SHIFT_CHOOSE_UR,VIRTKEY 
     VK_NUMPAD1,     ID_SHIFT_CHOOSE_DL,VIRTKEY 
     VK_NUMPAD3,     ID_SHIFT_CHOOSE_DR,VIRTKEY 
+	VK_NUMPAD0,   ID_SHIFT_CHOOSE_3232,VIRTKEY
 	VK_NUMPAD1,     ID_SHIFT_EXPAND_DOWNLEFT,VIRTKEY, CONTROL
 	VK_NUMPAD2,     ID_SHIFT_EXPAND_DOWN,VIRTKEY, CONTROL
 	VK_NUMPAD3,     ID_SHIFT_EXPAND_DOWNRIGHT,VIRTKEY, CONTROL
@@ -186,10 +187,32 @@ BEGIN
         MENUITEM "Shift up\tnumpad 8",          ID_SHIFT_UP
         MENUITEM "Shift down\tnumpad 2",        ID_SHIFT_DOWN
 		MENUITEM "Shift dialog\tnumpad 5"       ID_SHIFT_DIALOG
-		MENUITEM "Shift boundary UL\tnumpad 7", ID_SHIFT_CHOOSE_UL
-		MENUITEM "Shift boundary UR\tnumpad 9", ID_SHIFT_CHOOSE_UR
-		MENUITEM "Shift boundary DL\tnumpad 1", ID_SHIFT_CHOOSE_DL
-		MENUITEM "Shift boundary DR\tnumpad 3", ID_SHIFT_CHOOSE_DR
+		MENUITEM SEPARATOR
+		MENUITEM "Shift boundary: 32x32, default",     ID_SHIFT_CHOOSE_3232
+		MENUITEM "Shift boundary: UL 16x16\tnumpad 7", ID_SHIFT_CHOOSE_UL
+		MENUITEM "Shift boundary: UR 16x16\tnumpad 9", ID_SHIFT_CHOOSE_UR
+		MENUITEM "Shift boundary: DL 16x16\tnumpad 1", ID_SHIFT_CHOOSE_DL
+		MENUITEM "Shift boundary: DR 16x16\tnumpad 3", ID_SHIFT_CHOOSE_DR
+		POPUP "&Detailed movement"
+		BEGIN
+			MENUITEM "Shift box expand DL\tnumpad 1",	ID_SHIFT_EXPAND_DOWNLEFT
+			MENUITEM "Shift box expand Down\tnumpad 2",	ID_SHIFT_EXPAND_DOWN
+			MENUITEM "Shift box expand DR\tnumpad 3",	ID_SHIFT_EXPAND_DOWNRIGHT
+			MENUITEM "Shift box expand Left\tnumpad 4",	ID_SHIFT_EXPAND_LEFT
+			MENUITEM "Shift box expand Right\tnumpad 6",	ID_SHIFT_EXPAND_RIGHT
+			MENUITEM "Shift box expand UL\tnumpad 7",	ID_SHIFT_EXPAND_UPLEFT
+			MENUITEM "Shift box expand Up\tnumpad 8",	ID_SHIFT_EXPAND_UP
+			MENUITEM "Shift box expand UR\tnumpad 9",	ID_SHIFT_EXPAND_UPRIGHT
+			MENUITEM SEPARATOR
+			MENUITEM "Shift box cut DL\tnumpad 1",	ID_SHIFT_CUT_DOWNLEFT
+			MENUITEM "Shift box cut Down\tnumpad 2",	ID_SHIFT_CUT_DOWN
+			MENUITEM "Shift box cut DR\tnumpad 3",	ID_SHIFT_CUT_DOWNRIGHT
+			MENUITEM "Shift box cut Left\tnumpad 4",	ID_SHIFT_CUT_LEFT
+			MENUITEM "Shift box cut Right\tnumpad 6",	ID_SHIFT_CUT_RIGHT
+			MENUITEM "Shift box cut UL\tnumpad 7",	ID_SHIFT_CUT_UPLEFT
+			MENUITEM "Shift box cut Up\tnumpad 8",	ID_SHIFT_CUT_UP
+			MENUITEM "Shift box cut UR\tnumpad 9",	ID_SHIFT_CUT_UPRIGHT
+		END
 	END
     POPUP "S&witch"
     BEGIN

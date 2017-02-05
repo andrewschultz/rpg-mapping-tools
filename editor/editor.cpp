@@ -54,6 +54,7 @@ void showClipContents(HWND hwnd);
 void drawMyIcons(HWND hwnd);
 void changeBarText(HWND hwnd);
 void regularTextOut(char x[100], HWND hwnd);
+void noteNewShiftBox(HWND hwnd);
 
 void CreateNewMapfile(long, long);
 void SaveMapfile();
@@ -390,6 +391,13 @@ switch(msg)
 
 		case ID_SHIFT_DIALOG:
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_SHIFTDIALOG), hwnd, reinterpret_cast<DLGPROC>(ShiftDlgProc));
+			noteNewShiftBox(hwnd);
+			break;
+
+		case ID_SHIFT_CHOOSE_3232:
+			shiftLeft = shiftUp = 0;
+			shiftRight = shiftDown = 31;
+			noteNewShiftBox(hwnd);
 			break;
 
 		case ID_SHIFT_CHOOSE_UL:
@@ -400,6 +408,7 @@ switch(msg)
 			shiftUp = 17 * (((wparam - ID_SHIFT_CHOOSE_UL) & 2) >> 1);
 			shiftRight = shiftLeft + 15;
 			shiftDown = shiftUp + 15;
+			noteNewShiftBox(hwnd);
 			break;
 
 		case ID_SHIFT_EXPAND_UPLEFT:
@@ -1072,10 +1081,10 @@ switch(msg)
 						SetBkMode(hdc,OPAQUE);
 
 						// output the message
-						rect.top=432;
-						rect.bottom=520;
-						rect.left=576;
-						rect.right=800;
+						rect.top=32;
+						rect.bottom=72;
+						rect.left=800;
+						rect.right=900;
 
 						DrawText(hdc,buffer,strlen(buffer),&rect,DT_TOP|DT_LEFT);
 
@@ -1833,6 +1842,7 @@ void ReloadTheMap(HWND hwnd)
 	DrawPointerRectangle(hwnd, MAXICONSWIDE+3+(iconNumber%16), 9, RGB(255,0,0));
 
 	ReleaseDC(hwnd, hdc);
+	noteNewShiftBox(hwnd);
 }
 
 void showClipContents(HWND hwnd)
@@ -2447,4 +2457,24 @@ void checkShiftExpand(HWND hwnd, short dl, short dr, short du, short dd)
 	shiftRight += dr;
 	shiftUp += du;
 	shiftDown += dd;
+	noteNewShiftBox(hwnd);
+}
+
+void noteNewShiftBox(HWND hwnd)
+{
+	char buffer[200];
+	HDC hdc = GetDC(hwnd);
+
+	sprintf(buffer, "Shift area: %d,%d to %d,%d      ", shiftLeft, shiftUp, shiftRight, shiftDown);
+
+	// set the colors 
+	SetTextColor(hdc, RGB(0,255,0));
+	SetBkColor(hdc,RGB(0,0,0));
+	SetBkMode(hdc,OPAQUE);
+
+	// output the message
+	TextOut(hdc,640,520,buffer,strlen(buffer));
+
+	// release dc
+	ReleaseDC(hwnd,hdc);
 }
