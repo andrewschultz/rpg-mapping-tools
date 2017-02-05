@@ -65,6 +65,7 @@ char textToShift[200]; // receives name of item to delete.
 void setInitialChecks(HWND hwnd);
 void switchIconPointer(HWND hwnd, short q);
 void shiftTheMap(HWND hwnd, short x, short y);
+void checkShiftExpand(HWND hwnd, short dl, short dr, short du, short dd);
 
 BOOL CALLBACK ShiftDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK HexDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -371,36 +372,100 @@ switch(msg)
 			}
 			break;
 
-		case ID_EDIT_SHIFT_LEFT:
+		case ID_SHIFT_LEFT:
 			shiftTheMap(hwnd,-1,0);
 			break;
 
-		case ID_EDIT_SHIFT_RIGHT:
+		case ID_SHIFT_RIGHT:
 			shiftTheMap(hwnd,1,0);
 			break;
 
-		case ID_EDIT_SHIFT_UP:
+		case ID_SHIFT_UP:
 			shiftTheMap(hwnd,0,-1);
 			break;
 
-		case ID_EDIT_SHIFT_DOWN:
+		case ID_SHIFT_DOWN:
 			shiftTheMap(hwnd,0,1);
 			break;
 
-		case ID_EDIT_SHIFT_DIALOG:
+		case ID_SHIFT_DIALOG:
 			DialogBox(NULL, MAKEINTRESOURCE(IDD_SHIFTDIALOG), hwnd, reinterpret_cast<DLGPROC>(ShiftDlgProc));
 			break;
 
-		case ID_EDIT_SHIFT_CHOOSE_UL:
-		case ID_EDIT_SHIFT_CHOOSE_UR:
-		case ID_EDIT_SHIFT_CHOOSE_DL:
-		case ID_EDIT_SHIFT_CHOOSE_DR:
-			shiftLeft = 17 * ((wparam - ID_EDIT_SHIFT_CHOOSE_UL) & 1);
-			shiftUp = 17 * (((wparam - ID_EDIT_SHIFT_CHOOSE_UL) & 2) >> 1);
+		case ID_SHIFT_CHOOSE_UL:
+		case ID_SHIFT_CHOOSE_UR:
+		case ID_SHIFT_CHOOSE_DL:
+		case ID_SHIFT_CHOOSE_DR:
+			shiftLeft = 17 * ((wparam - ID_SHIFT_CHOOSE_UL) & 1);
+			shiftUp = 17 * (((wparam - ID_SHIFT_CHOOSE_UL) & 2) >> 1);
 			shiftRight = shiftLeft + 15;
 			shiftDown = shiftUp + 15;
 			break;
-		
+
+		case ID_SHIFT_EXPAND_UPLEFT:
+			checkShiftExpand(hwnd,-1,0,-1,0);
+			break;
+
+		case ID_SHIFT_EXPAND_UP:
+			checkShiftExpand(hwnd,0,0,-1,0);
+			break;
+
+		case ID_SHIFT_EXPAND_UPRIGHT:
+			checkShiftExpand(hwnd,0,1,-1,0);
+			break;
+
+		case ID_SHIFT_EXPAND_LEFT:
+			checkShiftExpand(hwnd,-1,0,0,0);
+			break;
+
+		case ID_SHIFT_EXPAND_RIGHT:
+			checkShiftExpand(hwnd,0,1,0,0);
+			break;
+
+		case ID_SHIFT_EXPAND_DOWNLEFT:
+			checkShiftExpand(hwnd,-1,0,0,1);
+			break;
+
+		case ID_SHIFT_EXPAND_DOWN:
+			checkShiftExpand(hwnd,0,0,0,1);
+			break;
+
+		case ID_SHIFT_EXPAND_DOWNRIGHT:
+			checkShiftExpand(hwnd,0,1,0,1);
+			break;
+
+		case ID_SHIFT_CUT_UPLEFT:
+			checkShiftExpand(hwnd,1,0,1,0);
+			break;
+
+		case ID_SHIFT_CUT_UP:
+			checkShiftExpand(hwnd,0,0,1,0);
+			break;
+
+		case ID_SHIFT_CUT_UPRIGHT:
+			checkShiftExpand(hwnd,0,-1,1,0);
+			break;
+
+		case ID_SHIFT_CUT_LEFT:
+			checkShiftExpand(hwnd,1,0,0,0);
+			break;
+
+		case ID_SHIFT_CUT_RIGHT:
+			checkShiftExpand(hwnd,0,-1,0,0);
+			break;
+
+		case ID_SHIFT_CUT_DOWNLEFT:
+			checkShiftExpand(hwnd,1,0,0,-1);
+			break;
+
+		case ID_SHIFT_CUT_DOWN:
+			checkShiftExpand(hwnd,0,0,0,1);
+			break;
+
+		case ID_SHIFT_CUT_DOWNRIGHT:
+			checkShiftExpand(hwnd,0,-1,0,-1);
+			break;
+
 		case ID_OTHER_NOWRAP:
 		case ID_OTHER_16WRAP:
 		case ID_OTHER_32WRAP:
@@ -2334,4 +2399,52 @@ void shiftTheMap(HWND hwnd, short x, short y)
 				UDWallArray[i][j] = tempArray[i][j];
 	}
 	ReloadTheMap(hwnd);
+}
+
+void checkShiftExpand(HWND hwnd, short dl, short dr, short du, short dd)
+{
+	if (shiftLeft + dl < 0)
+	{ 
+		MessageBox(hwnd, "Too far left!", "Can't shift", MB_OK);
+		return;
+	}
+	if (shiftLeft + dl >= shiftRight)
+	{
+		MessageBox(hwnd, "Can't collapse that far!", "Can't shift", MB_OK);
+		return;
+	}
+	if (shiftRight + dr >= MAXICONSWIDE-1 )
+	{
+		MessageBox(hwnd, "Too far right!", "Can't shift", MB_OK);
+		return;
+	}
+	if (shiftLeft >= shiftRight + dr)
+	{
+		MessageBox(hwnd, "Can't collapse that far!", "Can't shift", MB_OK);
+		return;
+	}
+	if (shiftUp + du < 0)
+	{
+		MessageBox(hwnd, "Too far up!", "Can't shift", MB_OK);
+		return;
+	}
+	if (shiftUp + du >= shiftDown)
+	{
+		MessageBox(hwnd, "Can't collapse that far!", "Can't shift", MB_OK);
+		return;
+	}
+	if (shiftDown + dd >= MAXICONSWIDE-1)
+	{
+		MessageBox(hwnd, "Too far down!", "Can't shift", MB_OK);
+		return;
+	}
+	if (shiftUp >=  shiftDown + dd)
+	{
+		MessageBox(hwnd, "Can't collapse that far!", "Can't shift", MB_OK);
+		return;
+	}
+	shiftLeft += dl;
+	shiftRight += dr;
+	shiftUp += du;
+	shiftDown += dd;
 }
