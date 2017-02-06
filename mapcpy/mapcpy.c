@@ -41,6 +41,7 @@ main(int argc, char * argv[])
 	long curX = 0;
 	short launch = 1;
 	short overlapOK = 1;
+	short vertical = 1;
 
 	short myary[MAXW][MAXW], ch;
 	char myExt[10] = "";
@@ -300,9 +301,15 @@ main(int argc, char * argv[])
 			{
 				if (myExt[0])
 				{
-					strcat(buffer, ".");
 					strcat(buffer, myExt);
 					G = fopen(buffer+1, "rb");
+					if (G == NULL)
+					{
+						buffer[strlen(buffer)-strlen(myExt)] = 0;
+						strcat(buffer, ".");
+						strcat(buffer, myExt);
+						G = fopen(buffer+1, "rb");
+					}
 				}
 				if (G == NULL)
 				{
@@ -310,6 +317,15 @@ main(int argc, char * argv[])
 					return 0;
 				}
 			}
+			break;
+
+		case 'V':
+			if (buffer[1] == '+')
+				vertical = 1;
+			else if (buffer[1] == '-')
+				vertical = 0;
+			else
+				printf("V needs to have + or -.");
 			break;
 
 		case 'e':
@@ -330,7 +346,10 @@ main(int argc, char * argv[])
 			break;
 
 		case 'u': // "up and over"
-			myLastX = myLastX + strtol(buffer+1, NULL, 10);
+			if (vertical)
+				myLastX = myLastX + strtol(buffer+1, NULL, 10);
+			else
+				myLastY = myLastY + strtol(buffer+1, NULL, 10);
 			myY = myLastY;
 			myX = myLastX;
 			break;
@@ -469,7 +488,10 @@ main(int argc, char * argv[])
 				for (i=0; i < myW+1; i++)
 					if (overlapOK || (myary[myX+i][myY+myH] == 0))
 						myary[myX+i][myY+myH] = myary[myX+i][myY];
-			myY += myH;
+			if (vertical)
+				myY += myH;
+			else
+				myX += myW;
 			myXModOffset = 0;
 			myYModOffset = 0;
 			myXMin = 0;
