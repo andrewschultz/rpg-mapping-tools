@@ -26,6 +26,7 @@ main(int argc, char * argv[])
 {
 	short replace[256] = { -1 };
 	short addSpace = 0;
+	short needToProc = 0;
 	FILE * F, * G = NULL, * H, * I;
 	long keepGoing = 1;
 	unsigned int count = 1;
@@ -341,6 +342,10 @@ main(int argc, char * argv[])
 			if (G)
 				fclose(G);
 			buffer[strlen(buffer)-1] = 0;
+			if (needToProc)
+			{
+				printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
+			}
 			//debug below
 			//printf("Reading %s\n", buffer+1);
 			G = fopen(buffer+1, "rb");
@@ -364,6 +369,7 @@ main(int argc, char * argv[])
 					return 0;
 				}
 			}
+			needToProc = 1;
 			break;
 
 		case 'V':
@@ -404,6 +410,10 @@ main(int argc, char * argv[])
 		case '>': // this outputs to a file
 			launch = 0;
 			buffer[strlen(buffer)-1] = 0;
+			if (needToProc)
+			{
+				printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
+			}
 			if (buffer[1] == 'L')
 			{
 				launch = 1;
@@ -507,6 +517,8 @@ main(int argc, char * argv[])
 				break;
 			}
 
+			needToProc = 0;
+
 			myOffset = strtol(buffer+1, NULL, 16);
 			if ((buffer[0] == 'o') && (myOffset < 0x230))
 				myOffset *= 0x100;
@@ -568,6 +580,7 @@ main(int argc, char * argv[])
 				}
 				break;
 			}
+			needToProc = 0;
 			{
 				char buf2[100];
 				char * token;
