@@ -52,7 +52,9 @@ main(int argc, char * argv[])
 	char myExt[10] = "";
 
 	char myFile[200];
-	char buffer[200];
+	char myLine[200];
+	char * buffer;
+
 	short gotFile = 0;
 	short debug = 0;
 
@@ -119,9 +121,12 @@ main(int argc, char * argv[])
 	for (i=0; i < 256; i++)
 		replace[i] = -1;
 
-	while ((fgets(buffer, 200, F) != NULL) && (keepGoing))
+	while ((fgets(myLine, 200, F) != NULL) && (keepGoing))
 	{
 		curLine++;
+		buffer = strtok(myLine, "\t");
+		do
+		{
 		switch(buffer[0])
 		{
 		case '=':
@@ -302,6 +307,7 @@ main(int argc, char * argv[])
 
 		case 'w':
 			myW = strtol(buffer+1, NULL, 10);
+			myXMax = myW;
 			break;
 
 		case 'm':
@@ -348,7 +354,8 @@ main(int argc, char * argv[])
 		case 'r':
 			if (G)
 				fclose(G);
-			buffer[strlen(buffer)-1] = 0;
+			if (buffer[strlen(buffer)-1] == '\n')
+				 buffer[strlen(buffer)-1] = 0;
 			if (needToProc)
 			{
 				printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
@@ -358,16 +365,18 @@ main(int argc, char * argv[])
 			G = fopen(buffer+1, "rb");
 			if (G == NULL)
 			{
+				char altFile[200];
 				if (myExt[0])
 				{
-					strcat(buffer, myExt);
-					G = fopen(buffer+1, "rb");
+					strcpy(altFile, buffer+1);
+					strcat(altFile, myExt);
+					G = fopen(altFile, "rb");
 					if (G == NULL)
 					{
-						buffer[strlen(buffer)-strlen(myExt)] = 0;
-						strcat(buffer, ".");
-						strcat(buffer, myExt);
-						G = fopen(buffer+1, "rb");
+						altFile[strlen(altFile)-strlen(myExt)] = 0;
+						strcat(altFile, ".");
+						strcat(altFile, myExt);
+						G = fopen(altFile, "rb");
 					}
 				}
 				if (G == NULL)
@@ -640,6 +649,7 @@ main(int argc, char * argv[])
 			break;
 
 		}
+		} while (buffer=strtok(NULL, "\t"));
 	}
 	if (needToBMP)
 	{
