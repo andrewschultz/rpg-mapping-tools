@@ -98,8 +98,10 @@ main(int argc, char * argv[])
 					myary[i][j] = (short) temp;
 			break;
 
-		case '\n':
 		case '#':
+			if (buffer[1] == '!')
+				printf("%s", buffer);
+		case '\n':
 			break;
 
 		//absolute offsets
@@ -187,7 +189,7 @@ main(int argc, char * argv[])
 				{
 					if (myX < strtol(buffer+3, NULL, 10))
 					{
-						printf("WARNING dx command went to -x, %d back %s at line %d\n", myX, strtol(buffer+3, NULL, 10), curLine);
+						printf("WARNING dx command went to -x, %d back %d at line %d\n", myX, strtol(buffer+3, NULL, 10), curLine);
 						break;
 					}
 					myX -= strtol(buffer+3, NULL, 10);
@@ -203,7 +205,7 @@ main(int argc, char * argv[])
 				{
 					if (myY < strtol(buffer+3, NULL, 10))
 					{
-						printf("WARNING dy command went to -y, %d back %s at line %d\n", myY, strtol(buffer+3, NULL, 10), curLine);
+						printf("WARNING dy command went to -y, %d back %d at line %d\n", myY, strtol(buffer+3, NULL, 10), curLine);
 						break;
 					}
 					myY -= strtol(buffer+3, NULL, 10);
@@ -412,7 +414,7 @@ main(int argc, char * argv[])
 			}
 			fclose(H);
 
-			printf("outH outW %d %d\n", outH, outW);
+			//printf("outH outW %d %d\n", outH, outW);
 			if (gegege == 1) //VERY VERY BAD HACK.
 			{
 			for (j=1; j < outH-1; j++)
@@ -423,12 +425,17 @@ main(int argc, char * argv[])
 							myary[i][j] = 0x4e;
 			}
 
-			printf("outH outW %d %d\n", outH, outW);
+			temp = ((outW+3)>>2)<<2;
 			for (j=0; j < outH; j++)
+			{
 				for (i=0; i < outW; i++)
 					fputc(myary[i][outH-1-j], I);
+				if (outW % 4)
+					for (i=outW; i < temp; i++)
+						fputc(0, I);
+			}
+
 			fclose(I);
-			printf("outH outW %d %d\n", outH, outW);
 			if (launch)
 			{
 				char cmdbuf[100] = "mspaint ";
