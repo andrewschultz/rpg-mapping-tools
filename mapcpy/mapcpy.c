@@ -27,8 +27,11 @@ main(int argc, char * argv[])
 {
 	short replace[256] = { -1 };
 	short addSpace = 0;
+
 	short needToProc = 0;
 	short needToBMP = 0;
+	short commentBlock = 0;
+
 	FILE * F, * G = NULL, * H, * I;
 	long keepGoing = 1;
 	unsigned int count = 1;
@@ -72,7 +75,7 @@ main(int argc, char * argv[])
 			case 'D':
 				debug = 1;
 				count++;
-				return 0;
+				break;
 
 			case 'u':
 			case 'U':
@@ -124,6 +127,13 @@ main(int argc, char * argv[])
 	while ((fgets(myLine, 200, F) != NULL) && (keepGoing))
 	{
 		curLine++;
+		if (commentBlock)
+		{
+			if ((myLine[1] == '-') && (myLine[0] == '#'))
+				commentBlock = 0;
+			else
+				continue;
+		}
 		buffer = strtok(myLine, "\t");
 		do
 		{
@@ -157,6 +167,12 @@ main(int argc, char * argv[])
 			break;
 
 		case '#':
+			if (buffer[1] == '+')
+			{
+				commentBlock = (short)curLine;
+				break;
+			}
+
 			if (buffer[1] == '!')
 				printf("%s", buffer);
 		case '\n':
@@ -539,6 +555,10 @@ main(int argc, char * argv[])
 				myDefaultOffset = strtol(buffer+2, NULL, 16);
 				break;
 			}
+			if (debug)
+			{
+				printf("Rect from %d %d to %d %d\n", myX, myY, myX + myH, myY + myW);
+			}
 
 			needToProc = 0;
 			if (!needToBMP)
@@ -654,6 +674,10 @@ main(int argc, char * argv[])
 	if (needToBMP)
 	{
 		printf("You didn't flush some data to a BMP, starting at line %d.\n", needToBMP);
+	}
+	if (commentBlock)
+	{
+		printf("Runaway comment block at line %d.\n", commentBlock);
 	}
 	if (G) fclose(G);
 	return 0;
