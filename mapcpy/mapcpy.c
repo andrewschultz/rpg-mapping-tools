@@ -28,6 +28,7 @@ main(int argc, char * argv[])
 	short replace[256] = { -1 };
 	short addSpace = 0;
 	short needToProc = 0;
+	short needToBMP = 0;
 	FILE * F, * G = NULL, * H, * I;
 	long keepGoing = 1;
 	unsigned int count = 1;
@@ -437,6 +438,8 @@ main(int argc, char * argv[])
 				printf("Couldn't read %s.\n", buffer+1+launch);
 				break;
 			}
+
+			needToBMP = 0;
 			printf("Writing %s\n", buffer+1+launch);
 			H = fopen("256.bmp", "rb");
 			if (H == NULL)
@@ -529,6 +532,8 @@ main(int argc, char * argv[])
 			}
 
 			needToProc = 0;
+			if (!needToBMP)
+				needToBMP = (short)curLine;
 
 			myOffset = strtol(buffer+1, NULL, 16);
 			if ((buffer[0] == 'o') && (myOffset < 0x230))
@@ -591,7 +596,11 @@ main(int argc, char * argv[])
 				}
 				break;
 			}
+
 			needToProc = 0;
+			if (!needToBMP)
+				needToBMP = (short)curLine;
+
 			{
 				char buf2[100];
 				char * token;
@@ -631,6 +640,10 @@ main(int argc, char * argv[])
 			break;
 
 		}
+	}
+	if (needToBMP)
+	{
+		printf("You didn't flush some data to a BMP, starting at line %d.\n", needToBMP);
 	}
 	if (G) fclose(G);
 	return 0;
