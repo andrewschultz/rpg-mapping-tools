@@ -1,5 +1,13 @@
+////////////////////////////////////////////////////////////
 //mapcpy.c
+//
+//copyright 2008(?)-2017 Andrew Schultz, well okay take what you want
+//but I'm still happy I made this
+//
 //copies binary information to the actual map
+//this is used for nintendo save states where the map is cut up, or just for regular Apple disk images or PC binary files
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -283,12 +291,20 @@ main(int argc, char * argv[])
 			}
 			break;
 		
-		case 'f':
+		case 'f': // switches which direction a partial-save will go
 			goDirection = 0 - goDirection;
 			break;
 
 		case 'g': // this is specific to Gegege No Kitaro
-			gegege=1;
+			if (buffer[1] == 'e')
+				gegege=1;
+			break;
+
+		case 'u': // "up and over"
+			myLastX = myLastX + strtol(buffer+1, NULL, 10);
+			myY = myLastY;
+			myX = myLastX;
+			printf("New start-loc %d, %d\n", myLastX, myLastY);
 			break;
 
 		case '>': // this outputs to a file
@@ -374,8 +390,8 @@ main(int argc, char * argv[])
 			}
 			break;
 
-		case 'O':	//default offset, for later. Break 'o' into a function
-		case 'o':
+		case 'O':	//capital o = force the offset if it's under 0x230
+		case 'o':   //otherwise just offset in file
 			if (buffer[1] == 'd')
 			{
 				myDefaultOffset = strtol(buffer+2, NULL, 16);
@@ -421,8 +437,8 @@ main(int argc, char * argv[])
 				myY++;
 			break;
 
-		case 'S':
-		case 's': //Sector read
+		case 'S': //sector read, usually for Apple and 256. Capital = force no 00's if <x230
+		case 's': // ",(#)" means only read that many(hex) bytes
 			if (buffer[1] == 't')
 			{
 				sectorTemp = strtol(buffer+2, NULL, 16);
