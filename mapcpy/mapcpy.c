@@ -43,6 +43,7 @@ main(int argc, char * argv[])
 	short overlapOK = 1;
 
 	short myary[MAXW][MAXW], ch;
+	char myExt[10] = "";
 
 	char buffer[200];
 
@@ -297,8 +298,25 @@ main(int argc, char * argv[])
 			G = fopen(buffer+1, "rb");
 			if (G == NULL)
 			{
-				printf("oops file %s does not exist bailing at line %d\n", buffer+1, curLine);
-				return 0;
+				if (myExt[0])
+				{
+					strcat(buffer, ".");
+					strcat(buffer, myExt);
+					G = fopen(buffer+1, "rb");
+				}
+				if (G == NULL)
+				{
+					printf("oops file %s does not exist bailing at line %d\n", buffer+1, curLine);
+					return 0;
+				}
+			}
+			break;
+
+		case 'e':
+			if (buffer[1] == '=')
+			{
+				buffer[strlen(buffer)-1] = 0;
+				strcpy(myExt, buffer+2);
 			}
 			break;
 		
