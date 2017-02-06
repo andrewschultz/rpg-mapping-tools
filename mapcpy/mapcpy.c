@@ -40,6 +40,7 @@ main(int argc, char * argv[])
 	long sectorTemp = 0;
 	long curX = 0;
 	short launch = 1;
+	short overlapOK = 1;
 
 	short myary[MAXW][MAXW], ch;
 
@@ -182,6 +183,11 @@ main(int argc, char * argv[])
 			{
 				if (buffer[2] == '-')
 				{
+					if (myX < strtol(buffer+3, NULL, 10))
+					{
+						printf("WARNING dx command went to -x, %d back %s at line %d\n", myX, strtol(buffer+3, NULL, 10), curLine);
+						break;
+					}
 					myX -= strtol(buffer+3, NULL, 10);
 				}
 				else
@@ -193,6 +199,11 @@ main(int argc, char * argv[])
 			{
 				if (buffer[2] == '-')
 				{
+					if (myY < strtol(buffer+3, NULL, 10))
+					{
+						printf("WARNING dy command went to -y, %d back %s at line %d\n", myY, strtol(buffer+3, NULL, 10), curLine);
+						break;
+					}
 					myY -= strtol(buffer+3, NULL, 10);
 				}
 				else
@@ -304,7 +315,6 @@ main(int argc, char * argv[])
 			myLastX = myLastX + strtol(buffer+1, NULL, 10);
 			myY = myLastY;
 			myX = myLastX;
-			printf("New start-loc %d, %d\n", myLastX, myLastY);
 			break;
 
 		case '>': // this outputs to a file
@@ -392,6 +402,16 @@ main(int argc, char * argv[])
 
 		case 'O':	//capital o = force the offset if it's under 0x230
 		case 'o':   //otherwise just offset in file
+			if (buffer[1] == '-')
+			{
+				overlapOK = 0;
+				break;
+			}
+			if (buffer[1] == '+')
+			{
+				overlapOK = 1;
+				break;
+			}
 			if (buffer[1] == 'd')
 			{
 				myDefaultOffset = strtol(buffer+2, NULL, 16);
@@ -418,16 +438,19 @@ main(int argc, char * argv[])
 					{
 						if (viable(i, j, qflags))
 						{
-							myary[myX+i2][myY+j2] = ch;
+							if (overlapOK || (myary[myX+i2][myY+j2] == 0))
+								myary[myX+i2][myY+j2] = ch;
 						}
 					}
 					//not perfect. What if we have fringe AND shift-offset? Oh well.
 					if ((i == 0) && (doFringe))
-						myary[myX+myW][myY+j2] = myary[myX][myY+j2];
+						if (overlapOK || (myary[myX+myW][myY+j2] == 0))
+							myary[myX+myW][myY+j2] = myary[myX][myY+j2];
 				}
 			if (doFringe)
 				for (i=0; i < myW+1; i++)
-					myary[myX+i][myY+myH] = myary[myX+i][myY];
+					if (overlapOK || (myary[myX+i][myY+myH] == 0))
+						myary[myX+i][myY+myH] = myary[myX+i][myY];
 			myY += myH;
 			myXModOffset = 0;
 			myYModOffset = 0;
