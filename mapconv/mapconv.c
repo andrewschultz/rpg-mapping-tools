@@ -156,6 +156,7 @@ typedef struct
 	short Yf;
 	
 	short ary[640][640];
+	short checkAry[640][640];
 	short transpary[640][640];
 
 	short Icons[257][16][16]; // the extra icon space is for rotating an icon about itself
@@ -1370,7 +1371,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 		case 'c':
 		case 'd':
 		case 'e':
-		case 'f':
+		case 'f': //read one xtr value
 			xc = strtol(buffer, &SecondString, BmpHandler.mainXtrBase);
 			count = 0;
 			while (buffer[count] && (buffer[count] != ','))
@@ -1406,9 +1407,18 @@ void ModifyArray(char XtrStr[MAXSTRING])
 
 //			BmpHandler.ary[xc][255-yc] = nv;
 			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
+			{
+				if (BmpHandler.transpary[xc+xi][yc+yi])
+					printf("Warning: possible redefined xtr/transp %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
 				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
+			}
 			else
+			{
+				if (BmpHandler.checkAry[xc+xi][yc+yi])
+					printf("Warning: possible redefined xtr %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
 				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
+				BmpHandler.checkAry[xc+xi][yc+yi] = 1;
+			}
 			if (debug)
 				printf("%2x %2x = %2x %2x + %2x %2x\n", xc+xi, yc+yi, xc, yc, xi, yi);
 			break;
