@@ -375,11 +375,17 @@ main(int argc, char * argv[])
 			break;
 
 		case 'O':	//default offset, for later. Break 'o' into a function
-			myDefaultOffset = strtol(buffer+1, NULL, 16);
-			break;
-
 		case 'o':
+			if (buffer[1] == 'd')
+			{
+				myDefaultOffset = strtol(buffer+2, NULL, 16);
+				break;
+			}
+
 			myOffset = strtol(buffer+1, NULL, 16);
+			if ((buffer[0] == 'o') && (myOffset < 0x230))
+				myOffset *= 0x100;
+
 			fseek(G, myOffset, SEEK_SET);
 
 			for (j=0; j < myH; j++)
@@ -415,6 +421,7 @@ main(int argc, char * argv[])
 				myY++;
 			break;
 
+		case 'S':
 		case 's': //Sector read
 			if (buffer[1] == 't')
 			{
@@ -441,6 +448,8 @@ main(int argc, char * argv[])
 					sscanf(token, "%x", &sectorTemp);
 			}
 			myOffset = strtol(buffer+1, NULL, 16);
+			if ((buffer[0] == 's') && ( myOffset < 0x230))
+				myOffset *= 0x100;
 			fseek(G, myOffset, SEEK_SET);
 			{
 				long thisSector = sectorSize;
