@@ -21,6 +21,7 @@ short isYellow(short x); // very limited function
 bool viable (int a1, int a2, int a3); //very limited function
 
 void usage();
+void mapCpyFmt();
 
 main(int argc, char * argv[])
 {
@@ -68,6 +69,11 @@ main(int argc, char * argv[])
 			case 'D':
 				debug = 1;
 				count++;
+				return 0;
+
+			case 'u':
+			case 'U':
+				mapCpyFmt();
 				return 0;
 
 			default:
@@ -398,6 +404,11 @@ main(int argc, char * argv[])
 				gegege=1;
 			break;
 
+		case 'L':
+			myLastY = myY;
+			myLastX = myX;
+			break;
+
 		case 'u': // "up and over"
 			if (vertical)
 				myLastX = myLastX + strtol(buffer+1, NULL, 10);
@@ -660,5 +671,17 @@ bool viable (int a1, int a2, int a3)
 void usage()
 {
 	printf("Flag -? for this help command.\n\
-Flag -d prints out debug text.\n");
+Flag -d prints out debug text.\n\
+Flag -u prints out how to write a file for mapcpy to read.\n");
+}
+
+void mapCpyFmt()
+{
+	printf("The basics You need W#, H# and w (for width of input) and x#/y# tells where to start\n\
+O/o goes to an offset (O doesn't auto multiply small #s by 0x100 hex)\n\
+S/s reads a sector (256 bytes unless a comma separated value after)\n\
+Semicolon ends it\n\
+dy/dx adjusts where you are\n\
+Flag -d prints out debug text.\n\
+Flag -u prints out how to write a file for mapcpy to read.\n");
 }
