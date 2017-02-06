@@ -17,8 +17,10 @@
 
 typedef enum { false, true } bool;
 
-short isYellow(short x);
-bool viable (int a1, int a2, int a3);
+short isYellow(short x); // very limited function
+bool viable (int a1, int a2, int a3); //very limited function
+
+void usage();
 
 main(int argc, char * argv[])
 {
@@ -26,7 +28,7 @@ main(int argc, char * argv[])
 	short addSpace = 0;
 	FILE * F, * G = NULL, * H, * I;
 	long keepGoing = 1;
-	unsigned int count = 0;
+	unsigned int count = 1;
 	short goDirection = 1;
 	long toSet = 0, temp = 0, curLine = 0;
 	long myDefaultOffset = 0;
@@ -46,18 +48,61 @@ main(int argc, char * argv[])
 	short myary[MAXW][MAXW], ch;
 	char myExt[10] = "";
 
+	char myFile[200];
 	char buffer[200];
+	short gotFile = 0;
+	short debug = 0;
 
-	if (argc == 1)
-		F = fopen("mapcpy.txt", "r");
-	else
-		F = fopen(argv[1], "r");
+	while ((short)count < argc)
+	{
+		if (argv[count][0] == '-')
+		{
+			switch(argv[count][1])
+			{
+			case '?':
+				usage();
+				return 0;
+
+			case 'd':
+			case 'D':
+				debug = 1;
+				count++;
+				return 0;
+
+			default:
+				printf("Unknown flag %s.\n\n");
+				usage();
+				return 0;
+			}
+
+		}
+		else
+		{
+			if (gotFile)
+			{
+				printf("Already specified a file on the command line. Bailing.\n");
+				return 0;
+			}
+			strcpy(myFile, argv[count]);
+			count++;
+		}
+	}
+
+	if (myFile[0] == 0)
+	{
+		printf("You must specify a file on the command line. There is no default.\n");
+		return 0;
+	}
+
+	F = fopen(myFile, "r");
 
 	if (F == NULL)
 	{
 		printf("no such file\n");
 		return 0;
 	}
+
+	count = 0;
 
 	for (j=0; j < MAXH; j++)
 		for (i=0; i < MAXW; i++)
@@ -588,6 +633,7 @@ short isYellow(short x)
 	return 0;
 }
 
+//I'm  not sure what this does since everything returns true. It is probably a hack.
 bool viable (int a1, int a2, int a3)
 {
 	if (a3 == 15) { return true; }
@@ -596,4 +642,10 @@ bool viable (int a1, int a2, int a3)
 	if ((a3 == 6) && (a1 % 2 == 1) && (a2 % 2 == 1)) { return true; }
 	if ((a3 == 3) && (a1 % 2 == 0) && (a2 % 2 == 1)) { return true; }
 	return 1;
+}
+
+void usage()
+{
+	printf("Flag -? for this help command.\n\
+Flag -d prints out debug text.\n");
 }
