@@ -11,115 +11,31 @@
 #
 #note this will differ from my GAMEFAQS maps as Commodore's world is rotated from the Apple
 #
-H256
-W256
-w20
-h13
-rphantasie_1a.dsk
-###########################################below is the weird land outside phantasie
-x0
-y102
-s19a
-s192,f4
-u20
-s1a7
-s1ae,f4
+H256	W256	w20	h13
+rphantasie1a.dsk
+###########################################below is Olympus
+x0	y102
+s19a	s192,f4
+u20	s1a7	s1ae,f4
 #####################################below is the mainland, 80x100
-x0
-y0
-s153
-s15a,f4
-s169
-s170,f4
-s179
-s180,f4
-s182
-s189,f4
-u20
-s160
-s167,f4
-s176
-s17d,f4
-s18e
-s186,f4
-s197
-s19e,f4
-u20
-s16d
-s165,f4
-s17c
-s174,f4
-s185
-s18c,f4
-s19d 
-s195,f4
-u20
-s16b
-s163,f4
-s173
-s17a,f4
-s18b
-s183,f4
-s194
-s19b,f4
-#######################################dungeon stuff here at 33x38
+x0	y0
+s153	s15a,f4	s169	s170,f4	s179	s180,f4	s182	s189,f4
+u20	s160	s167,f4	s176	s17d,f4	s18e	s186,f4	s197	s19e,f4
+u20	s16d	s165,f4	s17c	s174,f4	s185	s18c,f4	s19d 	s195,f4
+u20	s16b	s163,f4	s173	s17a,f4	s18b	s183,f4	s194	s19b,f4
+#######################################dungeon stuff here. Each is 33x38.
+# they are organized in-file 1, 4, 7 2, 5, 8 3, 6, 9 but they are 1-3, 4-6, 7-9 in the graphic output
 rphantasie_1b.dsk
 w33
-x100
-y0
-s1e7
-s1ee
-s1e6
-s1ed
-s1e5,e6
-dy1
-s1c6
-s1cd
-s1c5
-s1cc
-s1c4,e6
-dy1
-s1a5
-s1ac
-s1a4
-s1ab
-s1a3,e6
-dy1
-u34
-s184
-s18b
-s183
-s18a
-s182,e6
-dy1
-s163
-s16a
-s162
-s169
-s170,e6
-dy1
-s142
-s149
-s150
-s157
-s15e,e6
-u68
-s13d
-s135
-s13c
-s134
-s13b,e6
-dy1
-s11c
-s114
-s11b
-s113
-s11a,e6
-dy1
-sfb
-sf3
-sfa
-sf2
-sf9,e6
+x100	y0
+s1e7	s1ee	s1e6	s1ed	s1e5,e6
+dy1	s1c6	s1cd	s1c5	s1cc	s1c4,e6
+dy1	s1a5	s1ac	s1a4	s1ab	s1a3,e6
+u34	s184	s18b	s183	s18a	s182,e6
+dy1	s163	s16a	s162	s169	s170,e6
+dy1	s142	s149	s150	s157	s15e,e6
+u34	s13d	s135	s13c	s134	s13b,e6
+dy1	s11c	s114	s11b	s113	s11a,e6
+dy1	sfb	sf3	sfa	sf2	sf9,e6
 >p1.bmp
 ;

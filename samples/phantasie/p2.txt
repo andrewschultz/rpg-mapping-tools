@@ -11,117 +11,36 @@
 #
 #note this will differ from my GAMEFAQS maps as Commodore's world is rotated from the Apple
 #
-H256
-W256
-w20
-h13
+H256	W256	w20	h13
 rphantasie2a.dsk
 ###########################################overworld here
-x0
-y0
-s196
-s19d,f4
-s199
-s1a0,f4
-u20
-s19c
-s194,f4
-s1ae
-s1a6,f4
-u20
-s193
-s19a,f4
-s1a5
-s1ac,f4
-s1a2
-s1a9,f4
-u20
-dy25
-s1ab
-s1a3,f4
-s1b7
-s1be,f4
+################it is divided into 20x25 chunks which span 2 sectors and we want to ignore the final 12 bytes. There are 9 such chunks
+x0	y0
+s196	s19d,f4	s199	s1a0,f4
+u20	s19c	s194,f4	s1ae	s1a6,f4
+u20	s193	s19a,f4	s1a5	s1ac,f4	s1a2	s1a9,f4
+u20	dy25	s1ab	s1a3,f4	s1b7	s1be,f4
 ###########################################below is the underworld
-x84
-y0
-s1bd
-s1b5,f4
-u20
-s1b4
-s1bb,f4
-s1ba
-s1b2,f4
-s1c0
-s1c7,f4
-s1c3
-s1ca,f4
-u20
+x84	y0
+s1bd	s1b5,f4
+u20	s1b4	s1bb,f4	s1ba	s1b2,f4	s1c0	s1c7,f4	s1c3	s1ca,f4
 #################this sets the new "last y" to 50 and not to 0 where it would be otherwise or with dy/y
-yd50
-s1c6
-s1cd,f4
-s1c9
-s1d0,f4
-u20
-s1cc
-s1c4,f4
-##############################################dungeons
+u20	yd50	s1c6	s1cd,f4	s1c9	s1d0,f4
+u20	s1cc	s1c4,f4
+##############################################dungeons. They are 38x33 as in Phantasie
+# there are only 8 of them, though. So they are in a 4x2 rectangle.
 rphantasie2b.dsk
 w33
-x0
-y100
-#not sure why JRR Trolkin appears here
-#sc2
-#sc9
-#sd0
-#sd7
-#sde,e6
-s13a
-s132
-s139
-s140
-s147,e6
-dy1
-s1be
-s1b6
-s1bd
-s1b5
-s1bc,e6
-u34
-s15b
-s153
-s15a
-s152
-s159,e6
-dy1
-s1d0
-s1d7
-s1de
-s1d6
-s1dd,e6
-u34
-s17c
-s174
-s17b 
-s173
-s17a,e6
-dy1
-s1e2
-s1e9
-s1f0
-s1f7
-s1fe,e6
-u34
-s19d
-s195
-s19c
-s194
-s19b,e6
-dy1
-s203
-s20a
-s202
-s209
-s210,e6
->Lp2.bmp
+x0	y100
+#not sure why JRR Trolkin appears here, perhaps they forgot to wipe from the Phantasie 1 image, but it's amusing so I'll keep it in the comments
+#sc2	sc9	sd0	sd7	sde,e6
+s13a	s132	s139	s140	s147,e6
+dy1	s1be	s1b6	s1bd	s1b5	s1bc,e6
+u34	s15b	s153	s15a	s152	s159,e6
+dy1	s1d0	s1d7	s1de	s1d6	s1dd,e6
+u34	s17c	s174	s17b 	s173	s17a,e6
+dy1	s1e2	s1e9	s1f0	s1f7	s1fe,e6
+u34	s19d	s195	s19c	s194	s19b,e6
+dy1	s203	s20a	s202	s209	s210,e6
+>p2.bmp
 ;

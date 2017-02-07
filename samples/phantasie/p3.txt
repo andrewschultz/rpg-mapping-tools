@@ -7,118 +7,41 @@
 # phantasie_1.dsk renamed to phantasie3a.dsk
 # phantasie_2.dsk renamed to phantasie3b.dsk
 #
-H256
-W256
-w10
-h15
+H256	W256	w10	h15
 rphantasie3a.dsk
 ###########################################below is the outside world
+#it's slightly different dimensions than P1 and P2. You have 25 10x15's, vs 16 15x20's
 ##############col 1
-x110
-y0
-o1ea
-o1e5
-o1ef
-o1fb
-o1fe
-#################col 2
-u10
-o1e9
-o1e4
-o1f0
-o1fa
-o1f5
-######################col 3
-u10
-o1e8
-o1e3
-o18b
-o1f9
-o1f4
-######################col 4
-u10
-o1e7
-o1e2
-o1fd
-o1f8
-o1f3
-###########################col 5
-u10
-o1e6
-o1e1
-o1fc
-o1f7
-o1f2
-##########################good/evil
-x50
-y62
-o1ff
-u15
-o1f1
-#######weird wide plain
-x50
-y79
-o200
-u10
-o20e
-u10
-o20d
+x110	y0
+o1ea	o1e5	o1ef	o1fb	o1fe
+u10	o1e9	o1e4	o1f0	o1fa	o1f5
+u10	o1e8	o1e3	o18b	o1f9	o1f4
+u10	o1e7	o1e2	o1fd	o1f8	o1f3
+u10	o1e6	o1e1	o1fc	o1f7	o1f2
+##########################plane of good/evil
+x50	y62
+o1ff	u15	o1f1
+#######plane of death
+x50	y79
+o200	u10	o20e	u10	o20d
 ########################dungeons
+#################the planes above are contained in the dungeon map.
+#################And there are 10 dungeons (well, 11 but the straw hut and dragon cave share the same 24x30 map) so I made 4 columns, 3 dungeons on the right 2
 rphantasie3b.dsk
-w24
-x0
-y0
-#####pendragon town archives
-se0
-see
-sed,d0
-dy1
-#####chronos
-s12b
-s12a
-s129,d0
-#####nikademus??
-dy1
-s2d
-s2c
-s2b,d0
-##############column 2
-u25
-#####gnome caves
-s11c
-s11b
-s11a,d0
-###########castle of light
-dy1
-s13a
-s139
-s138,d0
-#####straw hut/dragon caves
-dy1
-s176
-s175
-s174,d0
-###############column 3
-u25
-#####dwarf burial grounds
-s10d
-s10c
-s10b,d0
-######castle of dark
-dy1
-s149
-s148
-s147,d0
-###############column 4
-u25
-#####giant caves
-sfe
-sfd
-sfc,d0
-#####lord wood
-dy1
-s158
-s157
-s156,d0
->Lp3.bmp
+w24	x0	y0
+#####column 1 pendragon town archives, chronos, nikademus's
+se0	see	sed,d0
+dy1	s12b	s12a	s129,d0
+dy1	s2d	s2c	s2b,d0
+##############column 2 gnome caves, castle of light, straw hut/dragon caves
+u25	s11c	s11b	s11a,d0
+dy1	s13a	s139	s138,d0
+dy1	s176	s175	s174,d0
+###############column 3 dwarf burial grounds, castle of dark
+u25	s10d	s10c	s10b,d0
+dy1	s149	s148	s147,d0
+###############column 4 giant caves, lord wood
+u25	sfe	sfd	sfc,d0
+dy1	s158	s157	s156,d0
+>p3.bmp
 ;
