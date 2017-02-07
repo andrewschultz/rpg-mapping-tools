@@ -52,6 +52,9 @@ main(int argc, char * argv[])
 	short overlapOK = 1;
 	short vertical = 1;
 
+	short forceH = 0;
+	short forceV = 0;
+
 	short myary[MAXW][MAXW], ch;
 	char myExt[10] = "";
 
@@ -391,6 +394,36 @@ main(int argc, char * argv[])
 			keepGoing = 0;
 			break;
 
+		case 'R':	//force vertical or horizontal
+			if ((buffer[1] == 'v') || (buffer[1] == 'V'))
+			{
+				if (forceH)
+				{
+					printf("Already forcing horizontal line %d.\n", curLine);
+					break;
+				}
+				if (forceV)
+				{
+					printf("Already forcing vertical line %d.\n", curLine);
+					break;
+				}
+				forceV = 1;
+			}
+			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
+			{
+				if (forceH)
+				{
+					printf("Already forcing horizontal line %d.\n", curLine);
+					break;
+				}
+				if (forceV)
+				{
+					printf("Already forcing vertical line %d.\n", curLine);
+					break;
+				}
+			}
+			break;
+
 		case 'r':
 			if (G)
 				fclose(G);
@@ -639,7 +672,17 @@ main(int argc, char * argv[])
 				for (i=0; i < myW+1; i++)
 					if (overlapOK || (myary[myX+i][myY+myH] == 0))
 						myary[myX+i][myY+myH] = myary[myX+i][myY];
-			if (vertical)
+			if (forceV)
+			{
+				myY += myH;
+				forceV = 0;
+			}
+			else if (forceH)
+			{
+				myX += myW;
+				forceH = 0;
+			}
+			else if (vertical)
 				myY += myH;
 			else
 				myX += myW;
