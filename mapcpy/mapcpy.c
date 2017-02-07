@@ -48,7 +48,7 @@ main(int argc, char * argv[])
 	long sectorSize = 256;
 	long sectorTemp = 0;
 	long curX = 0;
-	short launch = 1;
+	short launch = 0, localLaunch = 0;
 	short overlapOK = 1;
 	short vertical = 1;
 
@@ -78,6 +78,12 @@ main(int argc, char * argv[])
 			case 'd':
 			case 'D':
 				debug = 1;
+				count++;
+				break;
+
+			case 'l':
+			case 'L':
+				launch = 1;
 				count++;
 				break;
 
@@ -510,15 +516,20 @@ main(int argc, char * argv[])
 			break;
 
 		case '>': // this outputs to a file
-			launch = 0;
+			localLaunch = launch;
 			buffer[strlen(buffer)-1] = 0;
 			if (needToProc)
 			{
 				printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
 			}
-			if (buffer[1] == 'L')
+			if (buffer[1] == '+')
 			{
-				launch = 1;
+				localLaunch = 1;
+				I = fopen(buffer+2, "wb");
+			}
+			else if (buffer[1] == '-')
+			{
+				localLaunch = 0;
 				I = fopen(buffer+2, "wb");
 			}
 			else
@@ -595,7 +606,7 @@ main(int argc, char * argv[])
 			}
 
 			fclose(I);
-			if (launch)
+			if (localLaunch)
 			{
 				char cmdbuf[100] = "mspaint ";
 				strcat(cmdbuf, buffer+2);
@@ -804,6 +815,7 @@ void usage()
 {
 	printf("Flag -? for this help command.\n\
 Flag -d prints out debug text.\n\
+Flag -l forces launch of generated BMP unless locally specified with >- or >+.\n\
 Flag -u prints out how to write a file for mapcpy to read.\n");
 }
 
@@ -815,5 +827,7 @@ S/s reads a sector (256 bytes unless a comma separated value after)\n\
 Semicolon ends it\n\
 dy/dx adjusts where you are\n\
 Flag -d prints out debug text.\n\
-Flag -u prints out how to write a file for mapcpy to read.\n");
+Flag -u prints out how to write a file for mapcpy to read.\n\
+https://github.com/andrewschultz/rpg-mapping-tools/tree/master/samples contains examples\n\
+    especially magic-candle, phantasie and 2400\n");
 }
