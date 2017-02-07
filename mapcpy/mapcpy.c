@@ -41,6 +41,7 @@ main(int argc, char * argv[])
 	long myAbsX = 0, myAbsY = 0;
 	long myLastX = 0, myLastY = 0, myX = 0, myY = 0, myH = 0, myW = 0, myOffset = 0, myXMin = 0, myXMax = 32, setTransparent = 0, transpColor = 0,
 		myYModOffset=0, myXModOffset=0, outH=256, outW=256, doFringe = 0, gegege=0;
+	long myAnchorX = 0, myAnchorY = 0;
 	long i, j, i2, j2;
 	short qflags = 15, quartering = 0;
 
@@ -186,7 +187,30 @@ main(int argc, char * argv[])
 				myAbsY = strtol(buffer+2, NULL, 10);
 			break;
 
-		case 'F':
+		case 'A': //anchor
+			if (buffer[1] == 'x')
+			{
+				myX = myLastX = myAnchorX = strtol(buffer+2, NULL, 10);
+				break;
+			}
+			if (buffer[1] == 'y')
+			{
+				myY = myLastY = myAnchorY = strtol(buffer+2, NULL, 10);
+				break;
+			}
+			break;
+
+		case 'F': // FROM anchor
+			if (buffer[1] == 'x')
+			{
+				myLastX = myX = myAnchorX + strtol(buffer+2, NULL, 10);
+				break;
+			}
+			if (buffer[1] == 'y')
+			{
+				myLastY = myY = myAnchorY + strtol(buffer+2, NULL, 10);
+				break;
+			}
 			doFringe = 1;
 			break;
 
@@ -405,12 +429,20 @@ main(int argc, char * argv[])
 			break;
 
 		case 'V':
-			if (buffer[1] == '+')
-				vertical = 1;
-			else if (buffer[1] == '-')
-				vertical = 0;
-			else
-				printf("V needs to have + or -.");
+			{
+				short wasVert = vertical;
+				if (buffer[1] == '+')
+					vertical = 1;
+				else if (buffer[1] == '-')
+					vertical = 0;
+				else
+				{
+					printf("V needs to have + or -.");
+					break;
+				}
+				if (vertical == wasVert)
+					printf("Warning line %d doesn't really change as vertical was already %c.\n", curLine, buffer[1]);
+			}
 			break;
 
 		case 'e':
@@ -557,7 +589,17 @@ main(int argc, char * argv[])
 			}
 			if (debug)
 			{
-				printf("Rect from %d %d to %d %d\n", myX, myY, myX + myH, myY + myW);
+				printf("Rect from %d %d to %d %d\n", myX, myY, myX + myW, myY + myH);
+			}
+			if (myX + myXMax > MAXW)
+			{
+				printf("Oops line %d went too far right.\n", curLine);
+				return 0;
+			}
+			if (myY + myH > MAXH)
+			{
+				printf("Oops line %d went too far down.\n", curLine);
+				return 0;
 			}
 
 			needToProc = 0;
