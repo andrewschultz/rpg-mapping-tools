@@ -64,6 +64,8 @@ main(int argc, char * argv[])
 
 	short gotFile = 0;
 	short debug = 0;
+	short trackOverlap = 0;
+	short blockOverlap = 0;
 
 	while ((short)count < argc)
 	{
@@ -84,6 +86,14 @@ main(int argc, char * argv[])
 			case 'l':
 			case 'L':
 				launch = 1;
+				count++;
+				break;
+
+			case 'o':
+			case 'O':
+				trackOverlap = 1;
+				if (argv[count][2] | 0x20 == 'b')
+					blockOverlap = 1;
 				count++;
 				break;
 
@@ -688,8 +698,14 @@ fromr:
 					{
 						if (viable(i, j, qflags))
 						{
-							if (overlapOK || (myary[myX+i2][myY+j2] == 0))
-								myary[myX+i2][myY+j2] = ch;
+							if (trackOverlap && !overlapOK)
+								if (ch != myary[myX+i2][myY+j2])
+								{
+									printf("Overlap at %s, (%d, %d) %02x vs %02x.\n", buffer, myX+i2, myY+j2);
+									if (blockOverlap)
+										continue;
+								}
+							myary[myX+i2][myY+j2] = ch;
 						}
 					}
 					//not perfect. What if we have fringe AND shift-offset? Oh well.
@@ -700,7 +716,17 @@ fromr:
 			if (doFringe)
 				for (i=0; i < myW+1; i++)
 					if (overlapOK || (myary[myX+i][myY+myH] == 0))
-						myary[myX+i][myY+myH] = myary[myX+i][myY];
+					{
+						if (trackOverlap && !overlapOK)
+							if (ch != myary[myX+i][myY+myH])
+							{
+								printf("Overlap at %s, (%d, %d) %02x vs %02x.\n", buffer, myX+i, myY+myH);
+								if (blockOverlap)
+									continue;
+							}
+							myary[myX+i][myY+myH] = ch;
+					}
+
 			if (forceV)
 			{
 				myY += myH;
@@ -834,6 +860,7 @@ void usage()
 	printf("Flag -? for this help command.\n\
 Flag -d prints out debug text.\n\
 Flag -l forces launch of generated BMP unless locally specified with >- or >+.\n\
+Flag -o flags overlap, -ob blocks it\n\
 Flag -u prints out how to write a file for mapcpy to read.\n");
 }
 
