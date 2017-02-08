@@ -1,603 +1,231 @@
 #############################bloodstone mapper
 # note MCM extension is a bit annoying to type in all the time
-e=MCM
-W600
-H600
+e=MCM	O=2
+W600	H600	w42	h42
 #############################big outside map
-x10
-y0
-w42
-h42
-rM00E01
-O2
-x0
-dy-8
-rM08E01
-O2
-dy-8
-rM16E01
-O2
-dy-8
-rM24E01
-O2
-dy-8
-rM32E01
-O2
-dy-8
-rM40E01
-O2
-dy-8
-rM48E01
-O2
-dy-8
-rM56E01
-O2
-u32
-rM01E01
-O2
-dy-8
-rM09E01
-O2
-dy-8
-rM17E01
-O2
-dy-8
-rM25E01
-O2
-dy-8
-rM33E01
-O2
-dy-8
-rM41E01
-O2
-dy-8
-rM49E01
-O2
-dy-8
-rM57E01
-O2
-u32
-rM02E01
-O2
-dy-8
-rM10E01
-O2
-dy-8
-rM18E01
-O2
-dy-8
-rM26E01
-O2
-dy-8
-rM34E01
-O2
-dy-8
-rM42E01
-O2
-dy-8
-rM50E01
-O2
-dy-8
-rM58E01
-O2
-u32
-rM03E01
-O2
-dy-8
-rM11E01
-O2
-dy-8
-rM19E01
-O2
-dy-8
-rM27E01
-O2
-dy-8
-rM35E01
-O2
-dy-8
-rM43E01
-O2
-dy-8
-rM51E01
-O2
-dy-8
-rM59E01
-O2
-u32
-rM04E01
-O2
-dy-8
-rM12E01
-O2
-dy-8
-rM20E01
-O2
-dy-8
-rM28E01
-O2
-dy-8
-rM36E01
-O2
-dy-8
-rM44E01
-O2
-dy-8
-rM52E01
-O2
-dy-8
-rM60E01
-O2
-u32
-rM05E01
-O2
-dy-8
-rM13E01
-O2
-dy-8
-rM21E01
-O2
-dy-8
-rM29E01
-O2
-dy-8
-rM37E01
-O2
-dy-8
-rM45E01
-O2
-dy-8
-rM53E01
-O2
-dy-8
-rM61E01
-O2
-u32
-rM06E01
-O2
-dy-8
-rM14E01
-O2
-dy-8
-rM22E01
-O2
-dy-8
-rM30E01
-O2
-dy-8
-rM38E01
-O2
-dy-8
-rM46E01
-O2
-dy-8
-rM54E01
-O2
-dy-8
-rM62E01
-O2
-u32
-rM07E01
-O2
-dy-8
-rM15E01
-O2
-dy-8
-rM23E01
-O2
-dy-8
-rM31E01
-O2
-dy-8
-rM39E01
-O2
-dy-8
-rM47E01
-O2
-dy-8
-rM55E01
-O2
-dy-8
-rM63E01
-O2
-##################################
-x270
-y0
-rM00E02
-O4
-dy1
-rM10E02
-O4
-u32
-rM01E02
-O4
-dy1
-rM11E02
-O4
-u43
-rM02E02
-O4
-dy1
-rM12E02
-O4
-u32
-rM03E02
-O4
-dy1
-rM13E02
-O4
-##############################################
-x270
-y86
-rM00E03
-O4
-dy-8
-rM02E03
-O4
-u32
-rM01E03
-O4
-dy-8
-rM03E03
-O4
-u43
-rM10E03
-O4
-dy-8
-rM12E03
-O4
-u32
-rM11E03
-O4
-dy-8
-rM13E03
-O4
-#########################################
-x420
-y0
-rM00E04
-O4
-dy-8
-rM01E04
-O4
-u43
-rM10E04
-O4
-dy-8
-rM11E04
-O4
-############################################
-x270
-y166
-rM00E05
-O4
-dy1
-rM10E05
-O4
-dy-8
-rM12E05
-O4
-u32
-rM01E05
-O4
-dy1
-rM11E05
-O4
-dy-8
-rM13E05
-O4
-############################################
-x420
-y86
-rM00E06
-O4
-u32
-rM01E06
-O4
-dy1
-rM10E06
-O4
-dy-8
-rM11E06
-O4
-################################################
-x0
-y284
-rM10E20
-O4
-dy-8
-rM12E20
-O4
-u32
-rM11E20
-O4
-dy-8
-rM13E20
-O4
-u43
-rM00E20
-O4
-dy1
-rM20E20
-O4
-u32
-rM01E20
-O4
-dy1
-rM21E20
-O4
-######################################################
-x356
-y210
-rM00E21
-O4
-dy-8
-rM02E21
-O4
-dy1
-rM10E21
-O4
-dy-8
-rM12E21
-O4
-u32
-rM01E21
-O4
-dy-8
-rM03E21
-O4
-dy1
-rM11E21
-O4
-dy-8
-rM13E21
-O4
-u43
-rM20E21
-O4
-dy-8
-rM22E21
-O4
-dy1
-rM30E21
-O4
-dy-8
-rM32E21
-O4
-u32
-rM21E21
-O4
-dy-8
-rM23E21
-O4
-dy1
-rM31E21
-O4
-dy-8
-rM33E21
-O4
-#############################temples e22
-x152
-y290
-rM00E22
-O4
-dy-8
-rM01E22
-O4
-u43
-rM10E22
-O4
-dy1
-rM11E22
-O4
-dy1
-rM12E22
-O4
-u43
-rM20E22
-O4
-dy-8
-rM22E22
-O4
-dy1
-rM30E22
-O4
-dy-8
-rM32E22
-O4
-u32
-rM21E22
-O4
-dy-8
-rM23E22
-O4
-dy1
-rM31E22
-O4
-dy-8
-rM33E22
-O4
-u43
-rM40E22
-O4
-dy1
-rM41E22
-O4
-dy1
-rM42E22
-O4
+x0	y0
+rM00E01/
+dy-8	rM08E01/
+dy-8	rM16E01/
+dy-8	rM24E01/
+dy-8	rM32E01/
+dy-8	rM40E01/
+dy-8	rM48E01/
+dy-8	rM56E01/
+u32	rM01E01/
+dy-8	rM09E01/
+dy-8	rM17E01/
+dy-8	rM25E01/
+dy-8	rM33E01/
+dy-8	rM41E01/
+dy-8	rM49E01/
+dy-8	rM57E01/
+u32	rM02E01/
+dy-8	rM10E01/
+dy-8	rM18E01/
+dy-8	rM26E01/
+dy-8	rM34E01/
+dy-8	rM42E01/
+dy-8	rM50E01/
+dy-8	rM58E01/
+u32	rM03E01/
+dy-8	rM11E01/
+dy-8	rM19E01/
+dy-8	rM27E01/
+dy-8	rM35E01/
+dy-8	rM43E01/
+dy-8	rM51E01/
+dy-8	rM59E01/
+u32	rM04E01/
+dy-8	rM12E01/
+dy-8	rM20E01/
+dy-8	rM28E01/
+dy-8	rM36E01/
+dy-8	rM44E01/
+dy-8	rM52E01/
+dy-8	rM60E01/
+u32	rM05E01/
+dy-8	rM13E01/
+dy-8	rM21E01/
+dy-8	rM29E01/
+dy-8	rM37E01/
+dy-8	rM45E01/
+dy-8	rM53E01/
+dy-8	rM61E01/
+u32	rM06E01/
+dy-8	rM14E01/
+dy-8	rM22E01/
+dy-8	rM30E01/
+dy-8	rM38E01/
+dy-8	rM46E01/
+dy-8	rM54E01/
+dy-8	rM62E01/
+u32	rM07E01/
+dy-8	rM15E01/
+dy-8	rM23E01/
+dy-8	rM31E01/
+dy-8	rM39E01/
+dy-8	rM47E01/
+dy-8	rM55E01/
+dy-8	rM63E01/
+O=4
+#####################Phoroshe Tulara
+x270	y0
+rM00E02/
+dy-8	rM02E02/
+u32	rM01E02/
+dy-8	rM03E02/
+u43	rM10E02/
+dy-8	rM12E02/
+u32	rM11E02/
+dy-8	rM13E02/
+#####################Haraza Kafari
+x270	y78
+rM00E03/
+dy-8	rM02E03/
+u32	rM01E03/
+dy-8	rM03E03/
+u43	rM10E03/
+dy-8	rM12E03/
+u32	rM11E03/
+dy-8	rM13E03/
+#########################################Marat Noriin
+x420	y0
+rM00E04/
+dy-8	rM01E04/
+u43	rM10E04/
+dy-8	rM11E04/
+############################################Galaq (2x1) Rulaan (2x2)
+x270	y166
+rM00E05/
+dy1	rM10E05/
+dy-8	rM12E05/
+u32	rM01E05/
+dy1	rM11E05/
+dy-8	rM13E05/
+############################################Sartuma/Hikar
+x420	y86
+rM00E06/
+u32	rM01E06/
+dy1	rM10E06/
+dy-8	rM11E06/
+################################################Delqafi
+x0	y284
+rM10E20/
+dy-8	rM12E20/
+u32	rM11E20/
+dy-8	rM13E20/
+u43	rM00E20/
+dy1	rM20E20/
+u32	rM01E20/
+dy1	rM21E20/
+######################################################Entemar
+x356	y210
+rM00E21/
+dy-8	rM02E21/
+dy1	rM10E21/
+dy-8	rM12E21/
+u32	rM01E21/
+dy-8	rM03E21/
+dy1	rM11E21/
+dy-8	rM13E21/
+u43	rM20E21/
+dy-8	rM22E21/
+dy1	rM30E21/
+dy-8	rM32E21/
+u32	rM21E21/
+dy-8	rM23E21/
+dy1	rM31E21/
+dy-8	rM33E21/
+#############################temples: Unknown col0, Air col1, High/Dark col2/3, Sea col4
+x152	y290
+rM00E22/	dy-8
+rM01E22/	u43
+rM10E22/	dy1
+rM11E22/	dy1
+rM12E22/	u43
+rM20E22/	dy-8
+rM22E22/	dy1
+rM30E22/	dy-8
+rM32E22/	u32
+rM21E22/	dy-8
+rM23E22/	dy1
+rM31E22/	dy-8
+rM33E22/	u43
+rM40E22/	dy1
+rM41E22/	dy1
+rM42E22/
 #########################################Anforn
-x0
-y372
 ######M00E23 is blank
-rM11E23
-O4
-dy-8
-rM13E23
-O4
-u32
-rM12E23
-O4
-u43
-rM01E23
-O4
-u32
-rM02E23
-O4
-dy-8
-rM03E23
-O4
-u43
-rM21E23
-O4
-dy-8
-rM22E23
-O4
+x0	y372
+rM11E23/
+dy-8	rM13E23/
+u32	rM12E23/
+u43	rM01E23/
+u32	rM02E23/
+dy-8	rM03E23/
+u43	rM21E23/
+dy-8	rM22E23/
 #######################################Towers
-x0
-y452
+x0	y452
 #####00-06 =kireini
-rM00E24
-O4
-dy1
-rM04E24
-O4
-u43
-rM01E24
-O4
-dy1
-rM05E24
-O4
-u43
-rM02E24
-O4
-dy1
-rM06E24
-O4
-u43
-rM03E24
-O4
+rM00E24/	dy1
+rM04E24/	u43
+rM01E24/	dy1
+rM05E24/	u43
+rM02E24/	dy1
+rM06E24/	u43
+rM03E24/
 #####10-15 = naluun
-u43
-rM10E24
-O4
-dy1
-rM13E24
-O4
-u43
-rM11E24
-O4
-dy1
-rM14E24
-O4
-u43
-rM12E24
-O4
-dy1
-rM15E24
-O4
+u43	rM10E24/
+dy1	rM13E24/
+u43	rM11E24/
+dy1	rM14E24/
+u43	rM12E24/
+dy1	rM15E24/
 #####20-26= pradaqa
-u43
-rM20E24
-O4
-dy1
-rM24E24
-O4
-u43
-rM21E24
-O4
-dy1
-rM25E24
-O4
-u43
-rM22E24
-O4
-dy1
-rM26E24
-O4
-u43
-rM23E24
-O4
-#################
-x508
-y0
-rM00E25
-O4
-dy-8
-rM02E25
-O4
-u32
-rM01E25
-O4
-dy-8
-rM03E25
-O4
-x508
-y80
-rM10E25
-O4
-dy-8
-rM12E25
-O4
-dy-8
-rM14E25
-O4
-dy-8
-u32
-rM11E25
-O4
-dy-8
-rM13E25
-O4
-dy-8
-rM15E25
-O4
-x508
-y200
-rM20E25
-O4
-dy-8
-rM22E25
-O4
-u32
-rM21E25
-O4
-dy-8
-rM23E25
-O4
-x508
-y280
-rM30E25
-O4
-dy-8
-rM32E25
-O4
-dy-8
-rM34E25
-O4
-dy-8
-u32
-rM31E25
-O4
-dy-8
-rM33E25
-O4
-dy-8
-rM35E25
-O4
-x508
-y400
-rM20E25
-O4
-dy-8
-rM22E25
-O4
-u32
-rM21E25
-O4
-dy-8
-rM23E25
-O4
->Lblo.bmp
+u43	rM20E24/
+dy1	rM24E24/
+u43	rM21E24/
+dy1	rM25E24/
+u43	rM22E24/
+dy1	rM26E24/
+u43	rM23E24/
+#########################E25 = final caverns
+#################Caverns L1
+x508	y0
+rM00E25/
+dy-8	rM02E25/
+u32	rM01E25/
+dy-8	rM03E25/
+#####################Caverns L2
+x508	y76
+rM10E25/
+dy-8	rM12E25/
+dy-8	rM14E25/
+u32	rM11E25/
+dy-8	rM13E25/
+dy-8	rM15E25/
+######################Caverns L3
+x508	y200
+rM20E25/	dy-8
+rM22E25/	u32
+rM21E25/	dy-8
+rM23E25/	x508
+#####################Caverns L4
+x508	y280
+rM30E25/	dy-8
+rM32E25/	dy-8
+rM34E25/	dy-8
+u32	rM31E25/
+dy-8	rM33E25/	
+dy-8	rM35E25/
+######################Caverns L5
+x508	y400
+rM40E25/	dy-8
+rM42E25/	u32
+rM41E25/	dy-8
+rM43E25/
+>blo.bmp
 ;
 

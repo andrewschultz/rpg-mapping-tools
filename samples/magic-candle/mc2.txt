@@ -7,86 +7,85 @@
 #mc2.txt
 #
 #magic candle 2 mapper
-V+	e=MCM
+V+	e=MCM O=2
 ##############
-H620	W620
-h42	w42
+H620	W620	h42	w42
 #!#########################outside
 x00	y50
-rM01E01	O2
-u32	dy-18	rM02E01	O2
-dy-8	rM03E01	O2	u32
-dy-30	rM04E01	O2
-dy-8	rM05E01	O2
-u32	dy-7	rM06E01	O2
-u32	dy-24	rM07E01	O2
-dy-8	rM08E01	O2
-u32	dy-24	rM09E01	O2
-dy-8	rM10E01	O2
-dx-15	dy-8	rM16E01	O2
-dx+7	dy-8	rM17E01	O2
-dx+32	dy-47	rM18E01	O2
-dx+32	dy-42	rM19E01	O2
-u32	dy-27	rM11E01	O2
-dy-8	rM12E01	O2
-u32	dy-29	rM13E01	O2
-dy-8	rM14E01	O2
-dx-6	dy-8	rM15E01	O2
+rM01E01/
+u32	dy-18	rM02E01/
+dy-8	rM03E01/	u32
+dy-30	rM04E01/
+dy-8	rM05E01/
+u32	dy-7	rM06E01/
+u32	dy-24	rM07E01/
+dy-8	rM08E01/
+u32	dy-24	rM09E01/
+dy-8	rM10E01/
+dx-15	dy-8	rM16E01/
+dx+7	dy-8	rM17E01/
+dx+32	dy-47	rM18E01/
+dx+32	dy-42	rM19E01/
+u32	dy-27	rM11E01/
+dy-8	rM12E01/
+u32	dy-29	rM13E01/
+dy-8	rM14E01/
+dx-6	dy-8	rM15E01/
 #!#########################telermain
 V-
 x00	y170
-rM01E02	O2
-dx-10	rM03E02	O2
-dx-10	rM05E02	O2
-u34	rM02E02	O2
-dx-10	rM04E02	O2
-dx-10	rM06E02	O2
+rM01E02/
+dx-10	rM03E02/
+dx-10	rM05E02/
+u34	rM02E02/
+dx-10	rM04E02/
+dx-10	rM06E02/
 u54
 ##########################here is Katarra along with 2 of 5 dreax/dragos
 V+
 x00	y302
-rM01E80	O2
-dy-8	rM02E80	O2
-u32	rM03E80	O2
-dy-8	rM04E80	O2
-u43	rM05E80	O2
-dy+1	rM06E80	O2
+rM01E80/
+dy-8	rM02E80/
+u32	rM03E80/
+dy-8	rM04E80/
+u43	rM05E80/
+dy+1	rM06E80/
 V-
 x00
 y400
-rM05E92	O2
-dx+2	rM06E92	O2
-dx+2	rM07E92	O2
-u44	rM08E92	O2
-dx+2	rM09E92	O2
+rM05E92/
+dx+2	rM06E92/
+dx+2	rM07E92/
+u44	rM08E92/
+dx+2	rM09E92/
 ##################villages
 x266	y0
-rM01E92	O2
-dx-10	rM03E92	O2
-u34	rM02E92	O2
-dx-10	rM04E92	O2
+rM01E92/
+dx-10	rM03E92/
+u34	rM02E92/
+dx-10	rM04E92/
 ########################6 small ones
 x266	y78
-rM17e66	O2
-dx+2	rM18e66	O2
-dx+2	rM19e66	O2
+rM17e66/
+dx+2	rM18e66/
+dx+2	rM19e66/
 u44
-rM20E03	O2
+rM20E03/
 dx+2
 w84
-rM07E65	O2
+rM07E65/
 w42
 #####################castle oshcrun
 x266	y166
 V+
-rM07E93	O2
-dy-8	rM08E93	O2
-u32	rM09E93	O2
-dy-8	rM10E93	O2
-u44	rM11E93	O2
-dy+1	rM13E93	O2
-u34	rM12E93	O2
-dy+1	rM14E93	O2
+rM07E93/
+dy-8	rM08E93/
+u32	rM09E93/
+dy-8	rM10E93/
+u44	rM11E93/
+dy+1	rM13E93/
+u34	rM12E93/
+dy+1	rM14E93/
 ############virtual duplicates
 #m01e93
 #m02e93
@@ -95,18 +94,18 @@ dy+1	rM14E93	O2
 ##########################e62 = DRAKHELM
 x120	y258
 V+
-rM23E62	O2
-dy-8	rM24E62	O2
-u43	rM25E62	O2
-dy-8	rM26E62	O2
-u32	rM27E62	O2
-dy-8	rM28E62	O2
-u43	rM29E62	O2
-dy-8	rM30E62	O2
-u32	rM31E62	O2
-dy-8	rM32E62	O2
-u43	rM33E62	O2
-dy-8	rM34E62	O2
+rM23E62/
+dy-8	rM24E62/
+u43	rM25E62/
+dy-8	rM26E62/
+u32	rM27E62/
+dy-8	rM28E62/
+u43	rM29E62/
+dy-8	rM30E62/
+u32	rM31E62/
+dy-8	rM32E62/
+u43	rM33E62/
+dy-8	rM34E62/
 ##########################e65/e64 = 2 wide villages
 x108
 y170
@@ -114,118 +113,118 @@ V-
 #garbage
 #rM07E65
 #O2
-rM15E65	O2
-dx-10	rM16E65	O2
-dx+2	rM21E64	O2
-dx-10	rM22E64	O2
-u43	rM54E65	O2
-dx-10	rM55E65	O2
-dx+1	rM72E65	O2
-dx-10	rM73E65	O2
+rM15E65/
+dx-10	rM16E65/
+dx+2	rM21E64/
+dx-10	rM22E64/
+u43	rM54E65/
+dx-10	rM55E65/
+dx+1	rM72E65/
+dx-10	rM73E65/
 ###########################################61's
 V+
 ##############Shann COMPLETE
 x398	y78
-rM56E61	O2
-dy+2	rM59E61	O2
-u44	rM57E61	O2
-dy+2	rM60E61	O2
-u44	rM58E61	O2
-dy+2	rM61E61	O2
+rM56E61/
+dy+2	rM59E61/
+u44	rM57E61/
+dy+2	rM60E61/
+u44	rM58E61/
+dy+2	rM61E61/
 ##############Namaz COMPLETE
 x360	y258
-rM84E61	O2
-dy+2	rM87E61	O2
-u44	rM85E61	O2
-dy+2	rM86E61	O2
-u44	rM88E61	O2
-dy+2	rM89E61	O2
+rM84E61/
+dy+2	rM87E61/
+u44	rM85E61/
+dy+2	rM86E61/
+u44	rM88E61/
+dy+2	rM89E61/
 #############Mandarg COMPLETE
 x338	y350
-rM62E61	O2
-dy-8	rM63E61	O2
-dy+1	rM71E61	O2
-u32	rM64E61	O2
-dy-8	rM65E61	O2
-dy+1	rM72E61	O2
+rM62E61/
+dy-8	rM63E61/
+dy+1	rM71E61/
+u32	rM64E61/
+dy-8	rM65E61/
+dy+1	rM72E61/
 ######L1 on top of L4 above
-u44	rM66E61	O2
-dy-8	rM67E61	O2
-dy-8	rM68E61	O2
-u44	rM69E61	O2
-dy-8	rM70E61	O2
+u44	rM66E61/
+dy-8	rM67E61/
+dy-8	rM68E61/
+u44	rM69E61/
+dy-8	rM70E61/
 #!################Maratul COMPLETE
 x338	y470
-rM48E61	O2
-dy+2	rM51E61	O2
-dy+2	rM54E61	O2
-u44	rM49E61	O2
-dy+2	rM52E61	O2
-dy+2	rM55E61	O2
-u44	rM50E61	O2
-dy+2	rM53E61	O2
+rM48E61/
+dy+2	rM51E61/
+dy+2	rM54E61/
+u44	rM49E61/
+dy+2	rM52E61/
+dy+2	rM55E61/
+u44	rM50E61/
+dy+2	rM53E61/
 ########################Ruz
 x342	y0
-rM05E60	O2
-dy-8	rM06E60	O2
-u32	rM07E60	O2
-dy-8	rM08E60	O2
-u44	rM09E60	O2
-u32	rM10E60	O2
-dy-8	rM11E60	O2
+rM05E60/
+dy-8	rM06E60/
+u32	rM07E60/
+dy-8	rM08E60/
+u44	rM09E60/
+u32	rM10E60/
+dy-8	rM11E60/
 ######################below castle
 x494
 y0
-rM01E60	O2
-dy-8	rM02E60	O2
-u44	rM03E60	O2
-dy+2	rM12E60	O2
-dy-8	rM13E60	O2
-u32	rM04E60	O2
-dy+2	rM14E60	O2
-dy-8	rM15E60	O2
+rM01E60/
+dy-8	rM02E60/
+u44	rM03E60/
+dy+2	rM12E60/
+dy-8	rM13E60/
+u32	rM04E60/
+dy+2	rM14E60/
+dy-8	rM15E60/
 ######################Dorak
 x130
 y360
 ######part 1/4 of Dorak
-rM16E60	O2
-dy+2	rM25E60	O2
-dy-8	rM27E60	O2
-dy-8	rM28E60	O2
-u32	rM17E60	O2
-dy+2	rM26E60	O2
-dy+26	rM29E60	O2
+rM16E60/
+dy+2	rM25E60/
+dy-8	rM27E60/
+dy-8	rM28E60/
+u32	rM17E60/
+dy+2	rM26E60/
+dy+26	rM29E60/
 ######part 2 of Dorak with 5 below and some 6
-u44	rM18E60	O2
-dy-8	rM19E60	O2
-dy-8	rM21E60	O2
-dy+2	rM30E60	O2
-dy-8	rM31E60	O2
-u32	dy+34	rM20E60	O2
-dy+70	rM32E60	O2
+u44	rM18E60/
+dy-8	rM19E60/
+dy-8	rM21E60/
+dy+2	rM30E60/
+dy-8	rM31E60/
+u32	dy+34	rM20E60/
+dy+70	rM32E60/
 u44
-rM22E60	O2
-dy-8	rM23E60	O2
-u32	dy+34	rM24E60	O2
+rM22E60/
+dy-8	rM23E60/
+u32	dy+34	rM24E60/
 x247	y435
-rM33E60	O2
-dy-8	rM34E60	O2
-u32	rM35E60	O2
-dy-8	rM36E60	O2
+rM33E60/
+dy-8	rM34E60/
+u32	rM35E60/
+dy-8	rM36E60/
 u44
-rM37E60	O2
-dy-8	rM38E60	O2
+rM37E60/
+dy-8	rM38E60/
 #########################remaining
 ##############Catacombs
 x422	y166
-rM56E60	O2
-dy-8	rM57E60	O2
-u32	rM58E60	O2
-dy-8	rM59E60	O2
-u32	rM60E60	O2
-u32	rM61E60	O2
+rM56E60/
+dy-8	rM57E60/
+u32	rM58E60/
+dy-8	rM59E60/
+u32	rM60E60/
+u32	rM61E60/
 >Lmc2.bmp
 ;
 #################garbage outside maps
-rM10E23	O2
-rM11E23	O2
+rM10E23/
+rM11E23/

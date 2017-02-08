@@ -431,40 +431,54 @@ main(int argc, char * argv[])
 			break;
 
 		case 'r':
-			if (G)
-				fclose(G);
-			if (buffer[strlen(buffer)-1] == '\n')
-				 buffer[strlen(buffer)-1] = 0;
-			if (needToProc)
 			{
-				printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
-			}
-			//debug below
-			//printf("Reading %s\n", buffer+1);
-			G = fopen(buffer+1, "rb");
-			if (G == NULL)
-			{
-				char altFile[200];
-				if (myExt[0])
+				short gotoJump = 0;
+				if (G)
+					fclose(G);
+				if (buffer[strlen(buffer)-1] == '\n')
+					 buffer[strlen(buffer)-1] = 0;
+				if (buffer[strlen(buffer)-1] == '/')
 				{
-					strcpy(altFile, buffer+1);
-					strcat(altFile, myExt);
-					G = fopen(altFile, "rb");
-					if (G == NULL)
-					{
-						altFile[strlen(altFile)-strlen(myExt)] = 0;
-						strcat(altFile, ".");
-						strcat(altFile, myExt);
-						G = fopen(altFile, "rb");
-					}
+					buffer[strlen(buffer)-1] = 0;
+					myOffset = myDefaultOffset;
+					gotoJump = 1;
 				}
+
+				if (needToProc)
+				{
+					printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
+					needToProc = 0;
+				}
+				//debug below
+				//printf("Reading %s\n", buffer+1);
+				G = fopen(buffer+1, "rb");
 				if (G == NULL)
 				{
-					printf("oops file %s does not exist bailing at line %d\n", buffer+1, curLine);
-					return 0;
+					char altFile[200];
+					if (myExt[0])
+					{
+						strcpy(altFile, buffer+1);
+						strcat(altFile, myExt);
+						G = fopen(altFile, "rb");
+						if (G == NULL)
+						{
+							altFile[strlen(altFile)-strlen(myExt)] = 0;
+							strcat(altFile, ".");
+							strcat(altFile, myExt);
+							G = fopen(altFile, "rb");
+						}
+					}
+					if (G == NULL)
+					{
+						printf("oops file %s does not exist bailing at line %d\n", buffer+1, curLine);
+						return 0;
+					}
 				}
+				if (gotoJump)
+					 goto fromr;
+				else
+					needToProc = 1;
 			}
-			needToProc = 1;
 			break;
 
 		case 'V':
@@ -487,7 +501,8 @@ main(int argc, char * argv[])
 		case 'e':
 			if (buffer[1] == '=')
 			{
-				buffer[strlen(buffer)-1] = 0;
+				if (buffer[strlen(buffer)-1] == '\n')
+					buffer[strlen(buffer)-1] = 0;
 				strcpy(myExt, buffer+2);
 			}
 			break;
@@ -521,6 +536,7 @@ main(int argc, char * argv[])
 			if (needToProc)
 			{
 				printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
+				needToProc = 0;
 			}
 			if (buffer[1] == '+')
 			{
@@ -536,12 +552,12 @@ main(int argc, char * argv[])
 				I = fopen(buffer+1, "wb");
 			if (I == NULL)
 			{
-				printf("Couldn't read %s.\n", buffer+1+launch);
+				printf("Couldn't read %s.\n", buffer+1);
 				break;
 			}
 
 			needToBMP = 0;
-			printf("Writing %s\n", buffer+1+launch);
+			printf("Writing %s\n", buffer+1);
 			H = fopen("256.bmp", "rb");
 			if (H == NULL)
 			{
@@ -609,7 +625,7 @@ main(int argc, char * argv[])
 			if (localLaunch)
 			{
 				char cmdbuf[100] = "mspaint ";
-				strcat(cmdbuf, buffer+2);
+				strcat(cmdbuf, buffer+1);
 				system(cmdbuf);
 			}
 			break;
@@ -626,11 +642,21 @@ main(int argc, char * argv[])
 				overlapOK = 1;
 				break;
 			}
-			if (buffer[1] == 'd')
+			if (buffer[1] == '=') //used to use d but that conflicts with hex
 			{
 				myDefaultOffset = strtol(buffer+2, NULL, 16);
 				break;
 			}
+
+			needToProc = 0;
+			if (!needToBMP)
+				needToBMP = (short)curLine;
+
+			myOffset = strtol(buffer+1, NULL, 16);
+			if ((buffer[0] == 'o') && (myOffset < 0x230))
+				myOffset *= 0x100;
+
+fromr:
 			if (debug)
 			{
 				printf("Rect from %d %d to %d %d\n", myX, myY, myX + myW, myY + myH);
@@ -645,14 +671,6 @@ main(int argc, char * argv[])
 				printf("Oops line %d went too far down.\n", curLine);
 				return 0;
 			}
-
-			needToProc = 0;
-			if (!needToBMP)
-				needToBMP = (short)curLine;
-
-			myOffset = strtol(buffer+1, NULL, 16);
-			if ((buffer[0] == 'o') && (myOffset < 0x230))
-				myOffset *= 0x100;
 
 			fseek(G, myOffset, SEEK_SET);
 
