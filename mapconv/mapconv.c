@@ -172,6 +172,13 @@ typedef struct
 	long iconNumBase;
 	long mainXtrBase;
 
+	long cutUp;
+	long cutDown;
+	long cutLeft;
+	long cutRight;
+	char cutColor;
+	short cutNext;
+
 }
 DomesdayBook;
 
@@ -224,6 +231,8 @@ main(int argc, char * argv[])
 	BmpHandler.BlankIcon = BLANKICON;
 	BmpHandler.TransparencyColor = TRANSPARENCYCOLOR;
 	BmpHandler.LastIconViewed = -1;
+
+	BmpHandler.cutNext = 0;
 
 	BmpHandler.printHTMLFile = 0;
 
@@ -570,10 +579,10 @@ short NMRRead(char FileStr[MAXSTRING])
 		}
 
 		snip(BufStr);
-		switch(BufStr[0])
+		switch(BufStr[0] | 0x20)
 		{
 
-		case 'A':
+		case 'a':
 			if (BufStr[1] == '=')
 				BufStr2 = BufStr + 2;
 			else
@@ -608,6 +617,47 @@ short NMRRead(char FileStr[MAXSTRING])
 
 			if (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS)
 				ModifyArray(BmpHandler.XtrStr);
+
+		case 'b':
+			{
+				long temp;
+				char * token;
+				char seps[] = ",";
+				token = strtok(BufStr+2, seps);
+
+				sscanf(token, "%d", &BmpHandler.cutLeft);
+				token = strtok(NULL, seps);
+
+				sscanf(token, "%d", &BmpHandler.cutUp);
+				token = strtok(NULL, seps);
+
+				sscanf(token, "%d", &BmpHandler.cutRight);
+				token = strtok(NULL, seps);
+
+				sscanf(token, "%d", &BmpHandler.cutDown);
+				token = strtok(NULL, seps);
+
+				sscanf(token, "%d", &temp);
+				BmpHandler.cutColor = (char)temp;
+
+				if (token == NULL)
+				{
+					printf("You need five arguments to block out a rectangle.\n");
+					break;
+				}
+				if (BmpHandler.cutDown - BmpHandler.cutUp > 0x80)
+				{
+					printf("Cut area too high.\n");
+					break;
+				}
+				if (BmpHandler.cutRight - BmpHandler.cutLeft > 0x80)
+				{
+					printf("Cut area too wide.\n");
+					break;
+				}
+				BmpHandler.cutNext = 1;
+			}
+			break;
 
 		case 'c': //run a command
 			if (MAPCONV_REGENERATE_BASE_FILE)
@@ -1023,6 +1073,13 @@ void WriteToBmp()
 				for (i2 = 0;  i2 < BmpHandler.TheWidth;  i2++)
 				{
 					short xyz=BmpHandler.Icons[BmpHandler.transpary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.TheHeight-j2-1];
+					if (BmpHandler.cutNext)
+						if ((i < BmpHandler.cutRight) && (i >= BmpHandler.cutLeft)
+							&& (j >= BmpHandler.cutUp) && (j < BmpHandler.cutDown))
+						{
+							fputc((char)BmpHandler.cutColor, F3);
+							continue;
+						}
 					if ((BmpHandler.transpary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]) && (xyz != BmpHandler.TransparencyColor))
 						fputc((char)xyz, F3);
 					else
@@ -1034,6 +1091,8 @@ void WriteToBmp()
 		}
 	fclose(F1);
 	fclose(F3);
+
+	BmpHandler.cutNext = 0;
 
 	if (MAPCONV_STATUS & MAPCONV_PNG_POST)
 	{
