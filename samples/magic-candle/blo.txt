@@ -218,7 +218,7 @@ rM30E25/	dy-8
 rM32E25/	dy-8
 rM34E25/	dy-8
 u32	rM31E25/
-dy-8	rM33E25/	
+dy-8	rM33E25/
 dy-8	rM35E25/
 ######################Caverns L5
 x508	y400

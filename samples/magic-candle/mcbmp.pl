@@ -17,7 +17,7 @@ my $temp;
 my @readdir = readdir(DIR);
 
 closedir(DIR);
- 
+
 for $mcm (@readdir)
 {
   if ($mcm =~ /M.*\.MCM/i)
