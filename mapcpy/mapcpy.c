@@ -152,7 +152,6 @@ main(int argc, char * argv[])
 
 	while ((fgets(myLine, 200, F) != NULL) && (keepGoing))
 	{
-		keepGoing = 1;
 		curLine++;
 		if (commentBlock)
 		{
@@ -558,6 +557,10 @@ main(int argc, char * argv[])
 				myLastY = myLastY + strtol(buffer+1, NULL, 10);
 			myY = myLastY;
 			myX = myLastX;
+			break;
+
+		case '<': //reset current-x if we are reading sectors that don't match up with rows
+			curX = 0;
 			break;
 
 		case '>': // this outputs to a file
