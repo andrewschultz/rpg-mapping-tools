@@ -61,6 +61,8 @@ main(int argc, char * argv[])
 	short forceH = 0;
 	short forceV = 0;
 
+	short bailOnWarn = 0;
+
 	short readType = STRAIGHT_BYTES;
 
 	short myary[MAXW][MAXW], ch;
@@ -84,6 +86,12 @@ main(int argc, char * argv[])
 			case '?':
 				usage();
 				return 0;
+
+			case 'b':
+			case 'B':
+				bailOnWarn = 1;
+				count++;
+				break;
 
 			case 'd':
 			case 'D':
@@ -543,6 +551,7 @@ main(int argc, char * argv[])
 			break;
 
 		case 'e':
+		case 'E':
 			if (buffer[1] == '=')
 			{
 				if (buffer[strlen(buffer)-1] == '\n')
@@ -891,7 +900,9 @@ fromr:
 			break;
 
 		default:
-			printf("Unknown line: %s", buffer);
+			printf("Unknown command for line %d: %s\n", curLine, buffer);
+			if (bailOnWarn)
+				return 0;
 			break;
 
 		}
@@ -945,6 +956,7 @@ bool viable (int a1, int a2, int a3)
 void usage()
 {
 	printf("Flag -? for this help command.\n\
+Flag -b bails on any warning.\n\
 Flag -d prints out debug text.\n\
 Flag -l forces launch of generated BMP unless locally specified with >- or >+.\n\
 Flag -o flags overlap, -ob blocks it\n\
