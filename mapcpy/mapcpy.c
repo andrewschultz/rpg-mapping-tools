@@ -811,14 +811,12 @@ fromr:
 				needToBMP = (short)curLine;
 
 			{
-				char buf2[100];
-				char * token;
-				char seps[] = ",";
-				strcpy(buf2, buffer);
-				token = strtok(buf2, seps);
-				token = strtok(NULL, seps);
- 				if (token)
-					sscanf(token, "%x", &sectorTemp);
+				for (i=0; i < (short)strlen(buffer); i++) // note this is a very bad, weird bug, and it doesn't work long term as strtok itself is a bit flaky
+					if (buffer[i] == ',')
+					{
+						sectorTemp = (short)strtol(buffer+i+1, NULL, 16);
+						break;
+					}
 			}
 			myOffset = strtol(buffer+1, NULL, 16);
 			if ((buffer[0] == 's') && ( myOffset < 0x230))
