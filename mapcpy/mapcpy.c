@@ -18,6 +18,8 @@
 #define STRAIGHT_BYTES	0
 #define NIB_HIGH_FIRST	1
 #define NIB_LOW_FIRST	2
+#define BIT_HIGH_FIRST	3
+#define BIT_LOW_FIRST	4
 
 typedef enum { false, true } bool;
 
@@ -264,6 +266,19 @@ main(int argc, char * argv[])
 				break;
 				printf("Invalid command--cr is the only one.");
 			}
+			break;
+
+		case 'b':
+		case 'B':
+			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
+				readType = BIT_HIGH_FIRST;
+			else if ((buffer[1] == 'l') || (buffer[1] == 'L'))
+				readType = BIT_LOW_FIRST;
+			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
+				readType = STRAIGHT_BYTES;
+			else
+				printf("WARNING line %d: BH or BL (bit/high or low first) are the only two options for B.\
+					-/0/no byte clears it.\n", curLine);
 			break;
 
 		case 'n':
@@ -833,6 +848,20 @@ fromr:
 				{
 					switch(readType)
 					{
+					case BIT_HIGH_FIRST:
+						ch = fgetc(G) & 0xff;
+						for (i = 0; i <= 7; i++)
+							myary[myX+curX+i][myY] = (ch >> (7 - i)) & 1;
+						curX += 8;
+						break;
+
+					case BIT_LOW_FIRST:
+						ch = fgetc(G) & 0xff;
+						for (i = 0; i <= 7; i++)
+							myary[myX+curX+i][myY] = (ch >> i) & 1;
+						curX += 8;
+						break;
+
 					case NIB_HIGH_FIRST:
 						ch = fgetc(G) & 0xff;
 						myary[myX+curX][myY] = ch >> 4;
