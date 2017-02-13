@@ -1,0 +1,58 @@
+##############################
+#questron 1 map
+#
+#this has the outside world in high-nibble/low-nibble format
+#
+#It was the first such map that I added to mapconv
+#
+H256	W256	w110	NH
+rq1_2.dsk
+#########################land of questron
+sfe	sf6
+sfd
+sf5
+sfc
+sf4
+sfb
+sf3
+sfa
+sf2
+sf9
+s100
+s107
+s10e
+s106
+s10d
+s105
+s10c
+s104
+s10b
+s103
+s10a,ea
+###################################land of evil
+x120
+y0
+s110
+s117
+s11e
+s116
+s11d
+s115
+s11c
+s114
+s11b
+s113
+s11a
+s112
+s119
+s120
+s127
+s12e
+s126
+s12d
+s125
+s12c
+s124
+s12b,ea
+>q1.bmp
+;
