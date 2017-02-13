@@ -1,0 +1,58 @@
+############################questron 2 mapcpy file
+#T*.MAP are the map files
+#this is created with a PC download of everything
+#
+E=MAP	O=c
+W400	H400
+##############two outside areas first
+x0	y0	w90	h90	rT0/
+u90	x100	y0	rT1/
+O=c
+##############temples
+x0	y100	w23	h23
+rT13/
+dy+1	rT14/
+u24	rT15/
+dy+1	rT25/
+##############towns
+x50	y100	w30	h30
+rT2/
+dy+1	rT5/
+dy+1	rT6/
+u25	rT9/
+dy+1	rT10/
+dy+1	rT21/
+###############this is an odd wasteland. I'm not sure what it's for.
+x370	y0	rT4/
+###############bigger towns
+x200	y0	w40	h40
+rT3/
+dy+1	rT7/
+dy+1	rT8/
+u41
+dy+1	rT11/
+dy+1	rT12/
+dy+1	rT17/
+u41
+dy+1	rT18/
+dy+1	rT19/
+dy+1	rT20/
+u41
+dy+1	rT22/
+dy+1	rT23/
+dy+1	rT24/
+##############################castles I think
+x0	y200	w60	h50
+rT16/	u61	rT28/
+##############"only" 50x50
+w50	u61	rT31/
+>q2.bmp
+;
+###CLEAR
+W500	H500
+BH
+x0	y0	w208	h160	rT30/
+u209	rT29/
+##############T26 and T27 are dungeons. They appear copied in triplicate.
+6,144 T26.MAP
+6,144 T27.MAP
