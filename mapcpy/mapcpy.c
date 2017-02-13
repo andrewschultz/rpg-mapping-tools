@@ -15,6 +15,10 @@
 #define MAXW 640
 #define MAXH 640
 
+#define STRAIGHT_BYTES	0
+#define NIB_HIGH_FIRST	1
+#define NIB_LOW_FIRST	2
+
 typedef enum { false, true } bool;
 
 short isYellow(short x); // very limited function
@@ -54,6 +58,8 @@ main(int argc, char * argv[])
 
 	short forceH = 0;
 	short forceV = 0;
+
+	short readType = STRAIGHT_BYTES;
 
 	short myary[MAXW][MAXW], ch;
 	char myExt[10] = "";
@@ -146,6 +152,7 @@ main(int argc, char * argv[])
 
 	while ((fgets(myLine, 200, F) != NULL) && (keepGoing))
 	{
+		keepGoing = 1;
 		curLine++;
 		if (commentBlock)
 		{
@@ -258,6 +265,19 @@ main(int argc, char * argv[])
 				break;
 				printf("Invalid command--cr is the only one.");
 			}
+			break;
+
+		case 'n':
+		case 'N':
+			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
+				readType = NIB_HIGH_FIRST;
+			else if ((buffer[1] == 'l') || (buffer[1] == 'L'))
+				readType = NIB_LOW_FIRST;
+			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
+				readType = STRAIGHT_BYTES;
+			else
+				printf("WARNING line %d: NH or NL (nibble/high or low first) are the only two options for N.\
+					-/0/no byte clears it.\n", curLine);
 			break;
 
 		case 't':
@@ -516,7 +536,7 @@ main(int argc, char * argv[])
 				strcpy(myExt, buffer+2);
 			}
 			break;
-		
+
 		case 'f': // switches which direction a partial-save will go
 			goDirection = 0 - goDirection;
 			break;
@@ -705,7 +725,24 @@ fromr:
 									if (blockOverlap)
 										continue;
 								}
-							myary[myX+i2][myY+j2] = ch;
+							switch(readType)
+							{
+							case NIB_HIGH_FIRST:
+								myary[myX+i2][myY+j2] = (ch >> 4);
+								myary[myX+i2+1][myY+j2] = (ch & 0xf);
+								i++;
+								break;
+
+							case NIB_LOW_FIRST:
+								myary[myX+i2][myY+j2] = (ch & 0xf);
+								myary[myX+i2+1][myY+j2] = (ch >> 4);
+								i++;
+								break;
+
+							default:
+								myary[myX+i2][myY+j2] = ch;
+								break;
+							}
 						}
 					}
 					//not perfect. What if we have fringe AND shift-offset? Oh well.
@@ -793,9 +830,28 @@ fromr:
 				}
 				for (i=0; i < thisSector; i++)
 				{
-					myary[myX + curX][myY] = fgetc(G) & 0xff;
-					curX++;
-					if (curX == myW)
+					switch(readType)
+					{
+					case NIB_HIGH_FIRST:
+						ch = fgetc(G) & 0xff;
+						myary[myX+curX][myY] = ch >> 4;
+						myary[myX+curX+1][myY] = ch & 0xf;
+						curX += 2;
+						break;
+
+					case NIB_LOW_FIRST:
+						ch = fgetc(G) & 0xff;
+						myary[myX+curX][myY] = ch & 0xf;
+						myary[myX+curX+1][myY] = ch >> 4;
+						curX += 2;
+						break;
+
+					default:
+						myary[myX + curX][myY] = fgetc(G) & 0xff;
+						curX++;
+						break;
+					}
+					if (curX >= myW)
 					{
 						curX = 0;
 						myY++;
@@ -809,7 +865,8 @@ fromr:
 			break;
 
 		}
-		} while (buffer=strtok(NULL, "\t"));
+		}
+		while (buffer=strtok(NULL, "\t"));
 	}
 	if (needToBMP)
 	{
