@@ -1,0 +1,37 @@
+############################
+#
+#Wizard's Crown
+#
+#
+#off images from Asimov
+#
+#wcgame1.dsk to wc1.dsk
+#wcgame2.dsk to wc2.dsk
+#
+rwc1.dsk
+w30	h30	x0	y0
+################this is the outside world
+######town first, off to left even though it's technically above, to make map less lopsided
+s12c	s12b	s12a	s129,84
+u32	s128	s127	s126	s125,84	s12f	s130	s13e	s13d,84	s138	s137	s136	s135,84
+u32	s124	s123	s122	s121,84	s13c	s13b	s13a	s139,84	s134	s133	s132	s131,84
+########################these are the dungeons
+rwc2.dsk
+##################thieves hideout, then the well on Row 1
+##################gozaroth's row 2
+##################1-2 3-4 5-6 Tarmon's
+u32
+s17d	s17c	s17b 	s17a,84	#thieves
+dy+2	s171	s17f	s180	s18e,84	#gozaroth 1
+dy+2	s185	s184	s183 	s182,84	#tarmon 1
+ dy+2	s19d	s19c	s19b 	s19a,84	#tarmon 3
+dy+2	s195	s194	s193 	s192,84	#tarmon 5
+u32	s179	s178	s177 	s176,84	#well 1
+dy+2	s18d	s18c	s18b 	s18a,84	#gozaroth 2
+dy+2	s181	s18f	s190 	s19e,84	#tarmon 2
+dy+2	s199	s198	s197 	s196,84	#tarmon 4
+dy+ 2	s191	s19f	s1a0 	s1ae,84	#tarmon 6
+u32	s175	s174	s173 		s172,84	#well 2
+dy+2	s189		s188	s187 	s186,84	#gozaroth 3
+>wc.bmp
+;
