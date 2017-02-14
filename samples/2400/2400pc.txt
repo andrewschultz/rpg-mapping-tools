@@ -1,0 +1,125 @@
+########################
+#
+#2400pc.txt
+#
+#derives the 2400 AD maps from the PC files
+#
+#this is more or less the same as 2400.txt for the Apple, but easier to derive
+#
+##################################################################overworld done, on to underworld
+W256	H256
+h16	w32
+rMAP.A
+#####################################################1 under
+#################first column, entrance from university
+x0	y80
+dy+16	o34	o36
+#################second column
+u32
+dy+16	o2e	o30	o32
+#################third column
+u32	o0e	o0c	o26	o24	o22
+#################fourth column
+u32	o10	o2c	o04	o06	o20
+#################fifth column
+u32
+dy-32	o2a	o28	o12	o0a	o02	o00	o1e
+#################sixth column
+u32	o14	o16	o18	o1a	o1c
+#################beneath Novue apartments (east)
+x224
+y112
+o38
+>2400-pc-u-1.bmp
+#####################################################2 under
+*
+x0	y80
+#####################column 1
+dy+16	o66
+#####################column 2
+u32
+dy+32	o64	o62
+#####################column 3
+u32
+o3e	dy+32	o60
+#####################column 4
+u32
+o40	o50	o52	o5e	o68
+#####################column 5
+u32
+dy-32	o3a	o3c	o42	o4e	o54	o5c
+#####################column 6
+u32
+o44	o4c	o56	o5a
+#####################column 7
+u32
+o46	o4a	o58
+#####################column 8
+u32
+dy+16	o48
+>2400-pc-u-2.bmp
+#####################################################3 under
+*
+x0	y96	o6a
+>2400-pc-u-3.bmp
+*
+x0	y96	o6c
+>2400-pc-u-4.bmp
+;
+h16	w32	W256	H256
+#######################Map B is the overworld
+rMAP.B
+################################
+x0	y96
+o3c	o3a	o3e
+u32	dy+16	o38
+########################left central strip
+x64	y32
+o2e
+dy+32	o00	o0e	o10	o1e	o20
+########################main central strip
+u32
+o2c	o2a	o28	o02	o0c	o12	o1c	o22	o40	o42	o44	o46
+########### left strip with junkyard
+u32	o32	o30
+dy+16	o04	o0a	o14	o1a	o24
+###########right strip with junkyard
+u32	o36	o34
+dy+16	o06	o08	o16	o18	o26
+###########right sector, left
+u32
+dy+80	o48
+###########right sector, right
+u32	dy+64	o4c	o4a	o4e
+#######################
+>2400-pc.bmp
+*
+#######################level 2 stuff
+x0	y96	o6a	dy+16	o68
+x64	y96	o5c	dy+32	o5a
+x96	y48	o6c	o6e
+x96	y96	o5e	o54	o52
+dy+48	o70	o72
+x128	y96	o60	o56	o50
+x160	y96	o62	dy+32	o58
+x224	y112	o64	o66
+>2400-pc-2.bmp
+*
+#######################level 3 stuff
+x64	y96	o7a
+x96	y96	o7c	dy+16	o78
+u32		o7e	o76	o74	dy+48	o84
+u32	o80
+x224	y112	o82
+>2400-pc-3.bmp
+*
+#######################level 4 stuff
+x64	y96	o8a
+u96	o8c
+x96	y128	o88
+u32	o86
+>2400-pc-4.bmp
+*
+x96	y128	o8e
+>2400-pc-5.bmp
+;
