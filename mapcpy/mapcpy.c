@@ -79,6 +79,9 @@ main(int argc, char * argv[])
 
 	while ((short)count < argc)
 	{
+		if (debug)
+			printf("Argument %d: %s\n", count, argv[count]);
+
 		if (argv[count][0] == '-')
 		{
 			switch(argv[count][1])
@@ -95,7 +98,15 @@ main(int argc, char * argv[])
 
 			case 'd':
 			case 'D':
-				debug = 1;
+				if (argv[count][2])
+					debug = (short)argv[count][2] - (short)'0';
+				else
+					debug = 1;
+				if ((debug < 0) || (debug > 9))
+				{
+					printf("Unknown debug depth set (need 0-9), assuming 1\n");
+					debug  = 1;
+				}
 				count++;
 				break;
 
@@ -163,6 +174,9 @@ main(int argc, char * argv[])
 	while ((fgets(myLine, 200, F) != NULL) && (keepGoing))
 	{
 		curLine++;
+		if (debug)
+			printf("%d: %s", curLine, myLine);
+
 		if (commentBlock)
 		{
 			if ((myLine[1] == '-') && (myLine[0] == '#'))
@@ -501,8 +515,8 @@ main(int argc, char * argv[])
 					printf("WARNING: %s (line %d) occurs before processing the last 'r' line.\n", buffer, curLine);
 					needToProc = 0;
 				}
-				//debug below
-				//printf("Reading %s\n", buffer+1);
+				if (debug)
+					printf("Reading %s, also extension %s\n", buffer+1, myExt);
 				G = fopen(buffer+1, "rb");
 				if (G == NULL)
 				{
