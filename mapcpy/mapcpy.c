@@ -77,6 +77,8 @@ main(int argc, char * argv[])
 	short trackOverlap = 0;
 	short blockOverlap = 0;
 
+	short sectorStart = 0;
+
 	while ((short)count < argc)
 	{
 		if (debug)
@@ -719,6 +721,14 @@ main(int argc, char * argv[])
 				break;
 			}
 
+			if (G == NULL)
+			{
+				printf("Warning: line %d, tried to read offset without file open: %s", curLine, myLine);
+				if (bailOnWarn)
+					return 0;
+				break;
+			}
+
 			needToProc = 0;
 			if (!needToBMP)
 				needToBMP = (short)curLine;
@@ -844,6 +854,14 @@ fromr:
 				break;
 			}
 
+			if (G == NULL)
+			{
+				printf("Warning: line %d, tried to read sector without file open: %s", curLine, myLine);
+				if (bailOnWarn)
+					return 0;
+				break;
+			}
+
 			needToProc = 0;
 			if (!needToBMP)
 				needToBMP = (short)curLine;
@@ -859,6 +877,9 @@ fromr:
 			myOffset = strtol(buffer+1, NULL, 16);
 			if ((buffer[0] == 's') && ( myOffset < 0x230))
 				myOffset *= 0x100;
+
+			sectorStart = myOffset % 0x100;
+
 			fseek(G, myOffset, SEEK_SET);
 			{
 				long thisSector = sectorSize;
@@ -867,7 +888,7 @@ fromr:
 					thisSector = sectorTemp;
 					sectorTemp = 0;
 				}
-				for (i=0; i < thisSector; i++)
+				for (i=sectorStart; i < thisSector; i++)
 				{
 					switch(readType)
 					{
