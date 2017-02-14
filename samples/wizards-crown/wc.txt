@@ -17,9 +17,6 @@ u32	s128	s127	s126	s125,84	s12f	s130	s13e	s13d,84	s138	s137	s136	s135,84
 u32	s124	s123	s122	s121,84	s13c	s13b	s13a	s139,84	s134	s133	s132	s131,84
 ########################these are the dungeons
 rwc2.dsk
-##################thieves hideout, then the well on Row 1
-##################gozaroth's row 2
-##################1-2 3-4 5-6 Tarmon's
 u32
 s17d	s17c	s17b 	s17a,84	#thieves
 dy+2	s171	s17f	s180	s18e,84	#gozaroth 1
