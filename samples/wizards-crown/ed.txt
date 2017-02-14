@@ -1,0 +1,26 @@
+######################
+#Eternal Dagger mapping file
+#uses the game disks on asimov
+#
+#gdisk1 -> ed1, gdisk2 -> edisk2
+#
+W300	H300	w30	x0	y0
+##########################outside first, disk 2
+red1.dsk
+s1ae	s1ad	s1ac	s1ab,84	#wiz isle
+dy+17	s1a6	s1a5	s1a4	s1a3,84	#elves isle
+u32	s1be	s1bd	s1bc	s1ba,84	#dwarves isle
+dy+2	dx-2	s1a2	s1a1	s1af	s1b0, 84 #elves isle right
+########################dungeons, disk 2
+red2.dsk
+u32	s19e	s19d	s19c	s19b,84	#necromancer L1
+dy+2	s196	s195	s194	s193,84	#avlis L1
+dy+2	s1be	s1bd	s1bc	s1bb,84	#sri L1
+dy+2	s1a2	s1a1	s1af	s1b0,84	#koruy
+u32	s19a	s199	s198	s197,84	#necromancer L2
+dy+2	s192	s191	s19f	s1a0,84	#avlis  L2
+dy+2	s1ba	s1b9	s1b8	s1b7,84	#sri L2
+dy+2	s1b6	s1b5	s1b4	s1b3,84	#enolho
+dy+2	s1b2	s1b1	s1bf	s1c0,84	#demon world
+>ed.bmp
+;
