@@ -68,7 +68,7 @@ main(int argc, char * argv[])
 	short myary[MAXW][MAXW], ch;
 	char myExt[10] = "";
 
-	char myFile[200];
+	char myFile[200] = "";
 	char myLine[200];
 	char * buffer;
 
@@ -266,10 +266,18 @@ main(int argc, char * argv[])
 			break;
 
 		case '0':
+			if (buffer[1])
+			{
+				printf("WARNING: you may've put an 0 where you meant an o at line %d.\n", curLine);
+			}
 			addSpace = 0;
 			break;
 
 		case '1':
+			if (buffer[1])
+			{
+				printf("WARNING: you may've put a 1 where you meant something else at line %d.\n", curLine);
+			}
 			addSpace = 1;
 			break;
 
