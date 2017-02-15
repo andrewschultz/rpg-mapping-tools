@@ -1,0 +1,26 @@
+##########################
+#sos.txt
+#
+#shard of spring text map
+#
+#I actually used SHARD2.DSK for the extraction here because the PC version has an odd checkerboard effect with the map
+#
+#the apple is cleaner
+#
+#however the maps in general are messy because you don't see much of a dungeon at once and they sort of squashed all the dungeon areas together
+#I'd need a cut and paste feature to finish this all
+#
+rSHARD2.DSK
+W320	H256	w64	x0	y0
+s171	s17f	s180	s18e	s18d	s18c	s18b 	s18a	s189	s188	s187	s186	s185	s184	s183	#Ymros left side
+dy+1	s182	s181 	s18f	s190	s19e	s19d	s19c 	s19b 	s19a 	s199 	s198	#islanda
+u56	s161	s16f	s170	s17e	s17d	s17c	s17b 	s17a	s179	s178	s177	s176	s175	s174	s173	#Ymros right side overlaps left by 8
+##################dungeons dungeons dungeons
+u65	s121	s12f	s130	s13e	s13d	s13c	s13b	s13a	s139	s138	s137	s136	s135
+u33	s131	s13f	s140	s14e	s14d	s14c	s14b 	s14a	s149	s148	s147	s146	s145
+u33	s141	s14f	s150	s15e	s15d	s15c	s15b 	s15a	s159	s158	s157	s156	s155
+u33	s151	s15f	s160	s16e	s16d	s16c	s16b 	s16a	s169	s168	s167	s166	s165
+####################I don't think anything is here
+dy+8	s197	s196	s195
+>sos.bmp
+;
