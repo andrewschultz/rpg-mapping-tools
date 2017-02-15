@@ -1,0 +1,90 @@
+##########################
+#u5.txt
+#
+#Ultima V map copy file
+#
+#
+H520	W520
+e=DAT
+x0	y0
+##############################outside
+w16	h16
+V-
+##############################when we have 16x16 squares of water the game jumps over them. I put them in as 0xff. Maybe we can write in 16 lines instead.
+rBRIT
+off	off	o0	o1	o2	o3	o4	o5	o6	o7	o8	o9	oa	ob	off	oc
+u16	off	od	oe	of	o10	o11	o12	o13	o14	o15	o16	o17	o18	o19	o1a	off
+u16	o1b	o1c	o1d	o1e	o1f	o20	o21	o22	o23	o24	o25	o26	o27	o28	o29	off
+u16	o2a	o2b	o2c	o2d	o2e	o2f	o30	o31	o32	o33	o34	o35	o36	o37	o38	o39
+u16	o3a	o3b	o3c	o3d	o3e	o3f	o40	o41	o42	o43	o44	o45	o46	o47	o48	o49
+u16	o4a	o4b	o4c	o4d	o4e	o4f	o50	o51	o52	o53	o54	o55	o56	o57	o58	o59
+u16	o5a	o5b	o5c	o5d	o5e	o5f	o60	o61	o62	o63	o64	off	o65	o66	o67	o68
+u16	o69	o6a	o6b	o6c	o6d	o6e	o6f	off	off	off	off	o70	o71	o72	o73	o74
+u16	off	o75	o76	o77	o78	o79	o7a	off	off	off	off	o7b	o7c	o7d	o7e	o7f
+u16	o80	o81	o82	o83	o84	o85	o86	o87	off	off	off	off	off	o88	o89	off
+u16	o8a	o8b	o8c	o8d	o8e	o8f	o90	o91	o92	o93	off	off	off	off	off	off
+u16	off	off	o94	o95	o96	o97	o98	o99	off	off	off	off	off	off	o9a	o9b
+u16	off	o9c	o9d	off	o9e	o9f	oa0	oa1	off	off	oa2	oa3	off	oa4	oa5	oa6
+u16	off	oa7	oa8	off	oa9	oaa	oab	oac	off	off	oad	oae	off	oaf	ob0	ob1
+u16	off	ob2	ob3	ob4	ob5	ob6	ob7	ob8	ob9	oba	obb	obc	obd	obe	obf	oc0
+u16	off	off	off	oc1	oc2	off	oc3	oc4	oc5	oc6	oc7	oc8	oc9	oca	ocb	occ
+rUNDER
+u17	o0	o1	o2	o3	o4	o5	o6	o7	o8	o9	oa	ob	oc	od	oe	of
+u16	o10	o11	o12	o13	o14	o15	o16	o17	o18	o19	o1a	o1b	o1c	o1d	o1e	o1f
+u16	o20	o21	o22	o23	o24	o25	o26	o27	o28	o29	o2a	o2b	o2c	o2d	o2e	o2f
+u16	o30	o31	o32	o33	o34	o35	o36	o37	o38	o39	o3a	o3b	o3c	o3d	o3e	o3f
+u16	o40	o41	o42	o43	o44	o45	o46	o47	o48	o49	o4a	o4b	o4c	o4d	o4e	o4f
+u16	o50	o51	o52	o53	o54	o55	o56	o57	o58	o59	o5a	o5b	o5c	o5d	o5e	o5f
+u16	o60	o61	o62	o63	o64	o65	o66	o67	o68	o69	o6a	o6b	o6c	o6d	o6e	o6f
+u16	o70	o71	o72	o73	o74	o75	o76	o77	o78	o79	o7a	o7b	o7c	o7d	o7e	o7f
+u16	o80	o81	o82	o83	o84	o85	o86	o87	o88	o89	o8a	o8b	o8c	o8d	o8e	o8f
+u16	o90	o91	o92	o93	o94	o95	o96	o97	o98	o99	o9a	o9b	o9c	o9d	o9e	o9f
+u16	oa0	oa1	oa2	oa3	oa4	oa5	oa6	oa7	oa8	oa9	oaa	oab	oac	oad	oae	oaf
+u16	ob0	ob1	ob2	ob3	ob4	ob5	ob6	ob7	ob8	ob9	oba	obb	obc	obd	obe	obf
+u16	oc0	oc1	oc2	oc3	oc4	oc5	oc6	oc7	oc8	oc9	oca	ocb	occ	ocd	oce	ocf
+u16	od0	od1	od2	od3	od4	od5	od6	od7	od8	od9	oda	odb	odc	odd	ode	odf
+u16	oe0	oe1	oe2	oe3	oe4	oe5	oe6	oe7	oe8	oe9	oea	oeb	oec	oed	oee	oef
+u16	of0	of1	of2	of3	of4	of5	of6	of7	of8	of9	ofa	ofb	ofc	ofd	ofe	off
+w32	h32
+x257	y00
+rTOWNE
+o0	dx+1	o4	dx+1	o8	dx+1	oc
+u33	o10	dx+1	o14	dx+1	o18	dx+1	o1c
+u33	o20	dx+1	o24	dx+1	o28	dx+1	o2c
+u33	o30	dx+1	o34	dx+1	o2c	dx+1	o3c
+u34
+rCASTLE.DAT
+#Note o10 = 5th floor which is similar to 4th
+#Note o14 = basement of Blackthorn
+#1st 2 rows = LB, Blackthorn
+o0	dx+1	o4	dx+1	o18	dx+1	o1c
+u33	o8	dx+1	oc	dx+1	o20	dx+1	o24
+# W Brit N Brit E Brit / Paws Cove BucDen
+u33	o28	dx+1	o2c	dx+1	o30
+u33	o34	dx+1	o38	dx+1	o3c
+######################Dwellings
+u34
+rDWELLING
+o0	dx+1	o4	dx+1	o8	dx+1	o24	dx+1	o28	dx+1	o2c
+u33	o18	dx+1	o1c	dx+1	o20	dx+1	o30	dx+1	o34
+u33	oc	dx+1	o10	dx+1	o14	dx+1	o38	dx+1	o3c
+rKEEP
+u34
+o0	dx+1	o10	dx+1	o1c	dx+1	o20	dx+1	o24
+u33	o4	dx+1	o14	dx+1	dx+1	o28	dx+1	o2c	dx+1	o30
+u33	o8	dx+1	o18	dx+1	o34	dx+1	o38	dx+1	o3c
+u33	oc	dx+1
+#########################Dungeons
+x389	y0	h8	w8	rDUNGEON.DAT
+o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0	dx+1
+u9	o2	dx+1	o240	dx+1	o280	dx+1	o2c0	dx+1	o3	dx+1	o340	dx+1	o380	dx+1	O3c0	dx+1
+u9	o4	dx+1	o440	dx+1	o480	dx+1	o4c0	dx+1	o5	dx+1	o540	dx+1	o580	dx+1	O5c0	dx+1
+u9	o6	dx+1	o640	dx+1	o680	dx+1	o6c0	dx+1	o7	dx+1	o740	dx+1	o780	dx+1	O7c0	dx+1
+u9	o8	dx+1	o840	dx+1	o880	dx+1	o8c0	dx+1	o9	dx+1	o940	dx+1	o980	dx+1	O9c0	dx+1
+u9	oa	dx+1	oa40	dx+1	oa80	dx+1	oac0	dx+1	ob	dx+1	ob40	dx+1	ob80	dx+1	Obc0	dx+1
+u9	oc	dx+1	oc40	dx+1	oc80	dx+1	occ0	dx+1	od	dx+1	od40	dx+1	od80	dx+1	Odc0	dx+1
+u9	oe	dx+1	oe40	dx+1	oe80	dx+1	oec0	dx+1	of	dx+1	of40	dx+1	of80	dx+1	Ofc0	dx+1
+#??? see about going up by, say, 40
+V+
+>u5.bmp
+;
