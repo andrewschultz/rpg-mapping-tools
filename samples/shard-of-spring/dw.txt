@@ -1,0 +1,16 @@
+###########################
+#
+#dw.txt
+#
+# this file can be cleaned up a lot, but right now, it pretty much pokes at the file I used
+# by decompressing SUM.MAP. I could eventually read right from SUM.MAP, but until then, the
+# binary file keeps it simple. Well, relatively. Bytes are compressed so they're inserted
+# vertically, which goes against mapcpy reading left to right.
+#
+# dw.pl contains details on the compression, which is neat and tidy.
+E=MAP	O=1
+W500	H500	w64	h64
+#basics
+rMAP1/	u66	rMAP3/	u66	rMAP5
+>dw.bmp
+;
