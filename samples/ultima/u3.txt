@@ -1,0 +1,27 @@
+###############################
+#
+#u3.txt
+#
+#from the PC version of Ultima III
+#
+#
+E=ULT	O=0
+W320	H320	x0	y0	w64	h64
+###########################towns and outside
+###########################ambrosia/sosaria included to keep map orderly
+rBRITISH/	dy+2	rDEATH/	dy+2	rEXODUS/	dy+2	rFAWN/
+u66	rDAWN/	dy+2	rDEVIL/	dy+2	rGREY/	dy+2	rLCB/
+u66	rMONTOR_E/	dy+2	rMOON/	dy+2	rSOSARIA/
+u66	rMONTOR_W/	dy+2	rYEW/	dy+2	rAMBROSIA/
+x132	y198	w16	h16
+rPERINIAN	o0	u18	o1	u18	o7
+x132	y216
+rFIRE	o0	u18	o1	u18	o2	u18	o3	u18	o4	u18	o7
+x132	y234
+rM	o0	u18	o1	u36	o3	u36	o5	u18	o6	u18	o7	#DOOM
+x132	y252
+rP	o0	u18	o1	u18	o2	u18	o3	u18	o4	u18	o5	u18	o6	u18	o7	#SNAKE
+x132	y270
+rTIME	o0	u18	o1	u18	o2	u18	o3	u18	o7
+>u3.bmp
+;
