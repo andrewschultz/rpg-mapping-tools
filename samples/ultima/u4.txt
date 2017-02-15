@@ -1,0 +1,39 @@
+##########################
+#
+#ultima iv mapcpy file
+#
+#uses the PC data files
+#
+#u4 is freeware so you can find it pretty much anywhere
+#
+W520	H520	O=0	E=ULT
+ x0	y0
+#################outside first
+w32	h32
+rWORLD.MAP
+o0	o20	o40	o60	o80	oa0	oc0	oe0
+u32	o4	o24	o44	o64	o84	oa4	oc4	oe4
+u32	o8	o28	o48	o68	o88	oa8	oc8	oe8
+u32	oc	o2c	o4c	o6c	o8c	oac	occ	oec
+u32	o10	o30	o50	o70	o90	ob0	od0	of0
+u32	o14	o34	o54	o74	o94	ob4	od4	of4
+u32	o18	o38	o58	o78	o98	ob8	od8	of8
+u32	o1c 	o3c	o5c	o7c	o9c	obc	odc	ofc
+#################the towns next, with villages under
+u33	rMOONGLOW/	dy+1	rYEW/	dy+1	rSKARA/	dy+1	rDEN/	dy+1	rPAWS/	dy+1	rEMPATH/	dy+1	rLCB_1/
+u33	rBRITAIN/	dy+1	rMINOC/	dy+1	rMAGINCIA/	dy+1	rCOVE/	dy+1	rVESPER/	dy+1	rLYCAEUM/	dy+1	rLCB_2/
+u33	rJHELOM/	dy+1	rMAGINCIA/	dy+109	rSERPENT/
+#################dungeons
+x257	y231 	w8	h8	E=DNG
+V-
+rDECEIT	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+u9	rDESPISE	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+u9	rDESTARD	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+u9	rWRONG	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+u9	rCOVETOUS	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+u9	rSHAME	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+u9	rHYTHLOTH	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+u9	rABYSS	o0	dx+1	O40	dx+1	O80	dx+1	Oc0	dx+1	o1	dx+1	O140	dx+1	O180	dx+1	O1c0
+V+
+>u4.bmp
+;
