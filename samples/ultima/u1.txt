@@ -1,0 +1,22 @@
+##################################
+#u1.txt mapcpy file
+#
+#since dungeons are random we only have outside areas and castles etc
+#
+#and castles are done kind of weird on their side
+W400	H400
+NH
+x0	y0	h156	w168
+rMAP.BIN	o0
+N0
+rTCD.BIN
+x0	y160
+h38	w18
+o180c	dy+1	o1560
+u19	o12b4	dy+1	o1008
+u19	od5c	dy+1	oab0
+u19	o804	dy+1	o558
+u19	o2ac	dy+1	o0
+\0,160,95
+>u1.bmp
+;
