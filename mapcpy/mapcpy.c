@@ -38,7 +38,7 @@ main(int argc, char * argv[])
 	short needToBMP = 0;
 	short commentBlock = 0;
 
-	FILE * F, * G = NULL, * H, * I;
+	FILE * F = NULL, * G = NULL, * H, * I;
 	long keepGoing = 1;
 	unsigned int count = 1;
 	short goDirection = 1;
@@ -160,7 +160,7 @@ main(int argc, char * argv[])
 
 	if (F == NULL)
 	{
-		printf("no such file\n");
+		printf("No such file\n");
 		return 0;
 	}
 
@@ -711,6 +711,38 @@ main(int argc, char * argv[])
 			}
 			break;
 
+		case '\\':
+			{
+				short comcount=0;
+				short diagX = 0;
+				short diagY = 0;
+				short diagL = 0;
+				short temp;
+				diagX = (short)strtol(buffer+i+1, NULL, 10);
+
+				for (i=1; i < (short) strlen(buffer); i++)
+				{
+					if (buffer[i] == ',')
+					{
+						if (comcount == 0)
+							diagY = (short)strtol(buffer+i+1, NULL, 10);
+						if (comcount == 1)
+							diagL = (short)strtol(buffer+i+1, NULL, 10);
+						comcount++;
+					}
+				}
+				if (diagL == 0)
+					break;
+				for (j=0; j < diagL; j++)
+					for (i=j+1; i < diagL; i++)
+					{
+						temp = myary[diagX+i][diagY+j];
+						myary[diagX+i][diagY+j] = myary[diagX+j][diagY+i];
+						myary[diagX+j][diagY+i] = temp;
+					}
+			}
+			break;
+
 		case 'O':	//capital o = force the offset if it's under 0x230
 		case 'o':   //otherwise just offset in file
 			if (buffer[1] == '-')
@@ -768,6 +800,7 @@ fromr:
 				{
 					i2 = (i+myXModOffset) % myW;
 					j2 = (j*goDirection+myYModOffset) % myH;
+
 					ch = fgetc(G) & 0xff;
 					if (replace[ch] != -1)
 						ch = replace[ch];
@@ -843,6 +876,7 @@ fromr:
 			myXMax = myW;
 			if (addSpace == 1)
 				myY++;
+
 			break;
 
 		case 'S': //sector read, usually for Apple and 256. Capital = force no 00's if <x230
@@ -864,7 +898,7 @@ fromr:
 
 			if (G == NULL)
 			{
-				printf("Warning: line %d, tried to read sector without file open: %s", curLine, myLine);
+				printf("Warning: line %d, tried to read sector without file open: %s\n", curLine, buffer);
 				if (bailOnWarn)
 					return 0;
 				break;
