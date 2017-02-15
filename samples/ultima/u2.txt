@@ -1,0 +1,70 @@
+#######################
+#Ultima II mapper
+#
+#uses the PC version
+#
+x0	y0	H600	W600	w64	h64	O=0
+##################col1
+rMAPX11/
+dy+1	rMAPX22/
+dy+1	rMAPX31/
+dy+1	rMAPX32/
+##################col2
+u65
+rMAPX21/
+dy+1	rMAPX23/
+dy+1	rMAPX33/
+dy+1	rMAPX41/
+##################col3
+u65
+rMAPX50/	#Saturn
+dy+1	rMAPX60/	#Uranus
+dy+1	rMAPX61/
+dy+1	rMAPX03/
+##################col4
+u65
+rMAPX80/	#Pluto
+dy+1	rMAPX90/	#Planet X
+dy+1	rMAPX71/
+#################################unsorted
+##################col5
+u65
+rMAPX10/	#9mil bc world
+dy+1	rMAPX20/	#1423 world
+dy+1	rMAPX81/
+dy+1	rMAPX92/
+##################col6
+u65
+rMAPX30/	#1990 world
+dy+1	rMAPX40/	#2112 world
+dy+1	rMAPX82/
+dy+1	rMAPX93/
+##################col7
+u65
+dy+1	rMAPX00/	#time of legends
+#######################dungeons
+x0	y300	w16	h16
+rMAPX24	o0	dy+1	o4	dy+1	o8	dy+1	oc	#1423 south america
+dy+1	rMAPX85	o0	dy+1	o4	dy+1	o8	dy+1	oc	#pluto dungeon
+u16	rMAPX24	o1	dy+1	o5	dy+1	o9	dy+1	od
+dy+1	rMAPX85	o1	dy+1	o5	dy+1	o9	dy+1	od
+u16	rMAPX24	o2	dy+1	o6	dy+1	oa	dy+1	oe
+dy+1	rMAPX85	o2	dy+1	o6	dy+1	oa	dy+1	oe
+u16	rMAPX24	o3	dy+1	o7	dy+1	ob 	dy+1	of
+dy+1	rMAPX85	o3	dy+1	o7	dy+1	ob 	dy+1	of
+u16	rMAPX34	o0	dy+1	o4	dy+1	o8	dy+1	oc	#1990 N Africa dungeon
+dy+1	rMAPX45	o0	dy+1	o4	dy+1	o8	dy+1	oc	#1990 N Africa dungeon
+u16	rMAPX34	o1	dy+1	o5	dy+1	o9	dy+1	od
+dy+1	rMAPX45	o1	dy+1	o5	dy+1	o9	dy+1	od
+u16	rMAPX34	o2	dy+1	o6	dy+1	oa	dy+1	oe
+dy+1	rMAPX45	o2	dy+1	o6	dy+1	oa	dy+1	oe
+u16	rMAPX34	o3	dy+1	o7	dy+1	ob 	dy+1	of
+dy+1	rMAPX45	o3	dy+1	o7	dy+1	ob 	dy+1	of
+>u2.bmp
+u65
+#rMAPX15 is an unknown dungeon, bad level 16
+#rMAPX25 is similar to 45, suspect they are duplicates
+#rMAPX35 is similar to 45, suspect they are duplicates
+#rMAPX44 is an unknown dungeon
+#rMAPX70/ is Neptune, which isn't really much of a map
+;
