@@ -187,10 +187,32 @@ main(int argc, char * argv[])
 				continue;
 		}
 		buffer = strtok(myLine, "\t");
+
 		do
 		{
+
+		if (buffer[0] == ' ')
+		{
+			printf("Line %d starts with a space. Removing all leading spaces.\n", curLine);
+			while (buffer[0] == ' ')
+				buffer++;
+		}
+		if (buffer[0] && (buffer[strlen(buffer)-1] == ' '))
+		{
+			short count = strlen(buffer)-1;
+			while ((count > 0) && (buffer[count-1] == ' '))
+				count--;
+
+			printf("Line %d ends with a space. Removing all trailing spaces.\n", curLine);
+			buffer[count] = 0;
+		}
+
 		switch(buffer[0])
 		{
+		case 0:
+			printf("WARNING blank entry at line %d.\n", curLine);
+			break;
+
 		case '=':
 			count = 0;
 			if (buffer[1] == '=')
@@ -1063,3 +1085,6 @@ Flag -u prints out how to write a file for mapcpy to read.\n\
 https://github.com/andrewschultz/rpg-mapping-tools/tree/master/samples contains examples\n\
     especially magic-candle, phantasie and 2400\n");
 }
+
+//features:
+//postprocess flag (bmp2png)
