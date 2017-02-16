@@ -314,12 +314,71 @@ main(int argc, char * argv[])
 				short clearL = 0;
 				short clearU = 0;
 				short clearD = MAXH;
+				short commas = 0;
 
 				if (buffer[1] == '=')
 					defaultSquare = (short)strtol(buffer+2, NULL, 16);
 
-				for (i=clearL; i < clearR; i++)
-					for (j=clearU; j < clearD; j++)
+				for (i=0; i < (short)strlen(buffer); i++)
+					if (buffer[i] == ',')
+						commas++;
+
+				switch (commas)
+				{
+				case 0: //default, turn everything a certain color
+					break;
+				case 4:
+					commas = 0;
+					for (i=0; i < (short)strlen(buffer); i++)
+					{
+						if (buffer[i] == ',')
+						{
+							switch(commas)
+							{
+							case 0:
+								clearL = (short)strtol(buffer+i+1, NULL, 16);
+								break;
+
+							case 1:
+								clearU = (short)strtol(buffer+i+1, NULL, 16);
+								break;
+
+							case 2:
+								clearR = (short)strtol(buffer+i+1, NULL, 16);
+								break;
+
+							case 3:
+								clearD = (short)strtol(buffer+i+1, NULL, 16);
+								break;
+
+							default:
+								printf("Oops, bad error.\n");
+							}
+							commas++;
+						}
+					}
+					if ((clearL < 0) || (clearU < 0))
+					{
+						printf("Negative crop value at line %d-%d.\n", curLine, tabIndex);
+						break;
+					}
+
+					if ((clearL >= clearR) || (clearU >= clearD))
+					{
+						printf("Invalid crop region at line %d-%d.\n", curLine, tabIndex);
+						break;
+					}
+
+					break;
+
+				default:
+					printf("Line %d-%d needs either 0 or 4 commas for *-fill.\n", curLine, tabIndex);
+					clearR = -1;
+					break;
+				}
+
+				for (j=clearU; j < clearD; j++)
+					for (i=clearL; i < clearR; i++)
 						myary[i][j] = defaultSquare;
 			}
 			break;
