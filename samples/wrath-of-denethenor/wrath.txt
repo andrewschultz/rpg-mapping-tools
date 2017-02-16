@@ -1,0 +1,120 @@
+########################################
+#Wrath of Denethenor map conversion file
+#
+#uses apple disk images at asimov
+#
+#not well organized because it was a PITA just to extract all te he big maps with different widths
+#
+#NB this set of maps is the first time I had to start in the middle of a sector. Everyhing starts at be for some reason.
+#
+H640	W640	x0	y0
+*
+rwrath2.dsk
+V-
+####################################shadowmere post midnight
+dy+1	<	w90	sb6be	sb5	sb4	sb3	sb2	sb1	sb0	saf	sae	sad	sac	sab	saa	sa9	sa8	sa7	sa6	sa5	sa4	sa3	sa2	sa1	sa0	s9f	s9e	s9d	s9c	s9b	s9a	s99	s98	s97	s96
+####################################En Siev D
+dy+1	<	w54	sc4be	sc3	sc2	sc1	sc0	sbf	sbe	sbd	sbc	sbb	sba	sb9	sb9
+####################################En Siev
+dy+1	<	w60	sd4be	sd3	sd2	sd1	sd0	scf	sce	scd	scc	scb	sca	sc9	sc8	sc7	sc6
+###########################shadowmere non-midnight
+dy+1	<	w90	sf6be	sf5	sf4	sf3	sf2	sf1	sf0	sef	see	sed	sec	seb	sea	se9	se8	se7	se6	se5	se4	se3	se2	se1	se0	sdf	sde	sdd	sdc	sdb	sda	sd9	sd8	sd7	sd6
+####################################Limbar's
+dy+1	<	w60
+s106be	s105	s104	s103	s102	s101	s100	sff	sfe	sfd	sfc	sfb	sfa	sf9	sf8	sf7
+##############################ARVEDUIN outside
+dy+1	w109	<	s112be	s111	s12f	s12e	s12d	s12c	s12b	s12a	s129	s128	s127	s126	s125	s124	s123	s122	s121	s120
+s13f	s13e	s13d	s13c	s13b	s13a	s139	s138	s137	s136	s135	s134	s133	s132	s131	s130
+s14f	s14e	s14d	s14c	s14b	s14a	s149	s148	s147	s146	s145	s144	s143	s142
+##############################Mt Restorn
+x110	y00	dy+1	<	w90
+s140be	s15f	s15e	s15d	s15c	s15b	s15a	s159	s158	s157	s156	s155	s154	s153	s152	s151	s150	s16f	s16e	s16d	s16c	s16b	s16a	s169	s168	s167	s166	s165	s164	s163	s162	s161	s160
+################################Deredain Penitentiary
+dy+1	<	w80	s17ebe	s17d	s17c	s17b	s17a	s179	s178	s177	s176	s175	s174	s173	s172	s171	s170	s18f	s18e	s18d	s18c	s18b	s18a	s189	s188	s187	s186	s185
+####################################Castle Drawn
+dy+1	<	w100
+s183be	s182	s181	s180	s19f	s19e	s19d	s19c	s19b	s19a	s199	s198	s197	s196	s195	s194	s193	s192	s191	s190	s1af	s1ae	s1ad	s1ac	s1ab	s1aa	s1a9	s1a8	s1a7	s1a6	s1a5	s1a4	s1a3	s1a2	s1a1	s1a0	s1bf	s1be	s1bd	s1bc	s1bb
+####################################Lord Estrine's Castle
+w80	dy+1	<	s1babe	s1b9	s1b8	s1b7	s1b6	s1b5	s1b4	s1b3	s1b2	s1b1	s1b0	s1cf	s1ce	s1cd	s1cc	s1cb	s1ca	s1c9	s1c8	s1c7	s1c6	s1c5	s1c4	s1c3	s1c2	s1c1
+####################################Dead Forest Inn w=76
+dy+1	<	w76	s1dfbe	s1de	s1dd		s1dc	s1db	s1da	s1d9	s1d8	s1d7	s1d6	s1d5	s1d4	s1d3	s1d2	s1d1	s1d0	s1ef	s1ee	s1ed	s1ec	s1eb	s1ea	s1e9	s1e8
+####################################Lotrus Amphitheater
+w70	dy+1	<	s1e1be	s1e0	s1ff	s1fe	s1fd	s1fc	s1fb	s1fa	s1f9	s1f8	s1f7	s1f6	s1f5	s1f4	s1f3	s1f2	s1f1	s1f0	s20f
+####################################Isles of Bregalad Outside
+w109	<	s20bbe	s20a	s209	s208	s207	s206	s205	s204	s203s	s202	s201	s200
+s21f	s21e	s21d	s21c	s21b	s21a	s219	s218	s217	s216	s215	s214	s213	s212	s211	s210
+s22f	s22e	s22d	s22c	s22b	s22a	s229	s228	s227	s226	s225	s224	s223	s222	s221	s220
+s10f	s10e	s10d	s10c
+>wrath2.bmp
+ *
+###################################################################################################################################################disk 3
+rwrath3.dsk
+x0	y0
+##################################Mirrih Argoth W=78
+w78	sc8be	sc7	sc6	sc5	sc4	sc3	sc2	sc1	sc0	sbf	sbe	sbd	sbc	sbb	sba	sb9	sb8	sb7	sb6	sb5	sb4	sb3	sb2	sb1	sb0
+##################################The Hole W=72
+w72	sdebe	sdd	sdc	sdb	sda	sd9	sd8	sd7	sd6	sd5	sd4	sd3	sd2	sd1	sd0	scf	sce	scd	scc	scb	sca	<
+##################################Mount Karibae W=72
+dy+1	sf4be	sf3	sf2	sf1	sf0	sef	see	sed	sec	seb	sea	se9	se8	se7	se6	se5	se4	se3	se2	se1	se0	<
+##################################Lake Fionell W=74
+dy+1	w74	s10cbe	s10b	s10a	s109	s108	s107	s106	s105	s104	s103	s102	s101	s100	sff	sfe	sfd	sfc	sfb	sfa	sf9	sf8	sf7	sf6	<
+############################Nisondel
+w109	s12ebf	s12d	s12c	s12b	s12a	s129	s128	s127	s126	s125	s124	s123	s122	s121	s120
+s13f	s13e	s13d	s13c	s13b	s13a	s139	s138	s137	s136	s135	s134	s133	s132	s131	s130
+s14f	s14e	s14d	s14c	s14b	s14a	s149	s148	s147	s146	s145	s144	s143	s142	s141	s140	s15f	<
+##########################Firetrench
+dy+1	w40	s15dbe	s15c	s15b	s15a	s159	s158	s157	<
+##################################Pescara
+dy+1	w70	s155be	s154	s153	s152	s151	s150	s16f	s16e	s16d	s16c	s16b	s16a	s169	s168	s167	s166	s165	s164	s163	s162	<
+##################################Backwoods
+dy+1	w70	s160be	s17f	s17e	s17d	s17c	s17b	s17a	s179	s178	s177	s176	s175	s174	s173	s172	s171	s170	s18f	s18e	s18d	<
+x120	y0
+##################################Castle Solrain
+dy+1	w81	s18bbe	s18a	s189	s188	s187	s186	s185	s184	s183	s182	s181	s180	s19f	s19e	s19d	s19c	s19b	s19a	s199	s198	s197	s196	s195	s194	s193	s192	s191	<
+##################################Solrain
+dy+1	w70	s1afbe	s1ae	s1ad	s1ac	s1ab	s1aa	s1a9	s1a8	s1a7	s1a6	s1a5	s1a4	s1a3	s1a2	s1a1	s1a0	s1bf	s1be	s1bd	s1bc	<
+##################################Dry Gulch
+dy+1	w70	s1babe	s1b9	s1b8	s1b7	s1b6	s1b5	s1b4	s1b3	s1b2	s1b1	s1b0	s1cf	s1ce	s1cd	s1cc	s1cb	s1ca	s1c9	s1c8	s1cf7	<
+##################################Cestonia
+dy+1	w109	s1c3be	s1c2	s1c1	s1c0
+s1df	s1de	s1dd	s1dc	s1db	s1da	s1d9	s1d8	s1d7	s1d6	s1d5	s1d4	s1d3	s1d2	s1d1	s1d0
+s1ef	s1ee	s1ed	s1ec	s1eb	s1ea	s1e9	s1e8	s1e7	s1e6	s1e5	s1e4	s1e3	s1e2	s1e1	s1e0
+s1ff	s1fe	s1fd	s1fc	s1fb	s1fa	s1f9	s1f8	s1f7	s1f6	s1f5	s1f4	<
+###################################Bay of Mirrih
+dy+1	w80	s1f2be	s1f1	s1f0
+s20f	s20e	s20d	s20c	s20b	s20a	s209	s208	s207	s206	s205	s204	s203	s202	s201	s200
+s21f	s21e	s21d	s21c	s21b	s21a	s219	<
+###################################Castle Mirrih
+dy+1	w80	s217be	s216	s215	s214	s213	s212	s211	s210
+s22f	s22e	s22d	s22c	s22b	s22a	s229	s228	s227	s226	s225	s224	s223	s222	s221	s220
+s10f
+>wrath3.bmp
+*	x0	y0
+rwrath4.dsk
+######################################
+######################################Mystenor
+<	dy+1	w109
+s15dbe	s15c	s15b	s15a	s159	s158	s157	s156	s155	s154	s153	s152	s151	s150
+s16f	s16e	s16d	s16c	s16b	s16a	s169	s168	s167	s166	s165	s164	s163	s162	s161	s160
+s17f	s17e	s17d	s17c	s17b	s17a	s179	s178	s177	s176	s175	s174	s173	s172	s171	s170
+######################################Sorie Gulch
+<	dy+1	w90
+s18cbe	s18b	s18a	s189	s188	s187	s186	s185	s184	s183	s182	s181	s180
+s19f	s19e	s19d	s19c	s19b	s19a	s199	s198	s197	s196	s195	s194	s193	s192	s191	s190
+s1af	s1ae	s1ad	s1ac
+######################################Red Sands
+<	dy+1	w72
+s1aabe	s1a9	s1a8	s1a7	s1a6	s1a5	s1a4	s1a3	s1a2	s1a1	s1a0
+s1bf	s1be	s1bd	s1bc	s1bb	s1ba	s1b9	s1b8	s1b7	s1b6
+######################################Castle Denethena
+<	dy+1	w84
+s1b4be	s1b3	s1b2	s1b1	s1b0
+s1cf	s1ce	s1cd	s1cc	s1cb	s1ca	s1c9	s1c8	s1c7	s1c6	s1c5	s1c4	s1c3	s1c2	s1c1	s1c0
+s1df	s1de	s1dd	s1dc	s1db	s1da	s1d9	s1d8
+#################################Denethenor's Castle
+<	dy+1	w109	s1f8be	s1f7	s1f6	s1f5	s1f4	s1f3	s1f2	s1f1	s1f0
+s20f	s20e	s20d	s20c	s20b	s20a	s209	s208	s207	s206	s205	s204	s203	s202	s201	s200
+s21f	s21e	s21d	s21c	s21b	s21a	s219	s218	s217	s216	s215	s214	s213	s212	s211	s210
+s22f	s22e	s22d	s22c	s22b	s22a	s229
+>wrath4.bmp
+;
