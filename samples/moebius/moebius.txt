@@ -1,0 +1,17 @@
+############################################
+#
+# moebius.txt
+#
+# mapcpy file for Moebius (Apple) game
+#
+# I used the 4 AM crack disks to get this map
+#
+# This is not a very intricate file. The game is more fighting based.
+# You have the 4 elements corresponding to 64x64 areas.
+h64	w64
+rmoebius-2.dsk
+o13300	dy+2	o14300
+u66
+o15300	dy+2	o16300
+>moebius.bmp
+;
