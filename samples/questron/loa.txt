@@ -1,0 +1,37 @@
+####################
+#
+# loa.txt
+#
+# Legacy of the Ancients mapcpy file
+#
+# uses PC files
+E=BSV	W400	H400	O=7
+x324	y0	w16	h128
+rDUNM1/
+u17	rDUNM2/
+u17	rDUNM3/
+###################towns
+x0	y0
+w80	h40
+V-
+rTOWN0/	dx+1	rTOWN3/	dx+1	rTOWN6/	dx+1	rTOWN9/
+u41	rTOWN1/	dx+1	rTOWN4/	dx+1	rTOWN7/	dx+1	rTOWNa/
+u41	rTOWN2/	dx+1	rTOWN5/	dx+1	rTOWN8/	dx+1	rTOWNb/
+u41
+V+
+###################out
+O=127
+w95	h95
+dy+1	rOUTM0/
+w95	h41
+dy+1	rOUTM1/
+w95	h19
+dy+1	rOUTM2/
+####################museum
+O=7	u96	w24	h32	rMUSDATA/
+####################fortress
+w112	h73	dy+1	rFORT.BS1/	dy+1	rFORT.BS2/
+u113	w90	h91	rCASTLE.BS1/	dy+1	rCASTLE.BS2/
+####################castle
+>loa.bmp
+;

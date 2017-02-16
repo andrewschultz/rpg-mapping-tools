@@ -16,7 +16,11 @@ The maps have a 12 byte header with the width in byte 0 and the height in byte 2
 
 ### Legacy of the Ancients
 
-Coming later
+Taken from the PC version, because it's easier.
+
+The town maps may be scrambled from what I have on GameFAQs, because I just wanted to dump them, and I can reorganize them later.
+
+Note most files are *.BSV except for the castles/forts which are *.BS(1/2).
 
 ### Legend of Blacksilver
 
