@@ -42,7 +42,10 @@ main(int argc, char * argv[])
 	long keepGoing = 1;
 	unsigned int count = 1;
 	short goDirection = 1;
-	long toSet = 0, temp = 0, curLine = 0;
+	long toSet = 0, temp = 0;
+
+	long curLine = 0, tabIndex = 0;
+
 	long myDefaultOffset = 0;
 	long myAbsX = 0, myAbsY = 0;
 	long myLastX = 0, myLastY = 0, myX = 0, myY = 0, myH = 0, myW = 0, myOffset = 0, myXMin = 0, myXMax = 32, setTransparent = 0, transpColor = 0,
@@ -187,13 +190,14 @@ main(int argc, char * argv[])
 				continue;
 		}
 		buffer = strtok(myLine, "\t");
+		tabIndex = 1;
 
 		do
 		{
 
 		if (buffer[0] == ' ')
 		{
-			printf("Line %d starts with a space. Removing all leading spaces.\n", curLine);
+			printf("Line %d-%d starts with a space. Removing all leading spaces.\n", curLine, tabIndex);
 			while (buffer[0] == ' ')
 				buffer++;
 		}
@@ -203,14 +207,14 @@ main(int argc, char * argv[])
 			while ((count > 0) && (buffer[count-1] == ' '))
 				count--;
 
-			printf("Line %d ends with a space. Removing all trailing spaces.\n", curLine);
+			printf("Line %d-%d ends with a space. Removing all trailing spaces.\n", curLine, tabIndex);
 			buffer[count] = 0;
 		}
 
 		switch(buffer[0])
 		{
 		case 0:
-			printf("WARNING blank entry at line %d.\n", curLine);
+			printf("WARNING blank entry at line %d-%d.\n", curLine, tabIndex);
 			break;
 
 		case '=':
@@ -1010,12 +1014,13 @@ fromr:
 			break;
 
 		default:
-			printf("Unknown command for line %d: %s\n", curLine, buffer);
+			printf("Unknown command for line %d-%d: %s\n", curLine, tabIndex, buffer);
 			if (bailOnWarn)
 				return 0;
 			break;
 
 		}
+		tabIndex++;
 		}
 		while (buffer=strtok(NULL, "\t"));
 	}
