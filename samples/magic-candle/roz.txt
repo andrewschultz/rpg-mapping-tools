@@ -1,0 +1,19 @@
+##################
+#
+# roz.txt
+#
+# rings of zilfin (pc version) maps
+#
+# really only 2 dungeons since the outside world is a connected graph
+#
+# also note the dungeons don't really have a lot of clarity either from the MAZ files
+# (1-4)(2-5) only specifies which way a door faces. It doesn't tell what's behind the door.
+# however 0x80 fighting HHRRUULLs does reveal something
+#
+x0	y0	E=MAZ	h16	w16
+V-
+rL55	o0	dx+1	o1	dx+1	o2	dx+1	o3	dx+1
+u17
+rL38	o0	dx+1	o1	dx+1	o2	dx+1	o3	dx+1
+>roz.bmp
+;
