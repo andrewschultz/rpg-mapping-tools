@@ -282,9 +282,20 @@ main(int argc, char * argv[])
 			break;
 
 		case '*':
-			for (i=0; i < MAXW; i++)
-				for (j=0; j < MAXW; j++)
-					myary[i][j] = 0;
+			{
+				short defaultSquare = 0;
+				short clearR = MAXW;
+				short clearL = 0;
+				short clearU = 0;
+				short clearD = MAXH;
+
+				if (buffer[1] == '=')
+					defaultSquare = (short)strtol(buffer+2, NULL, 16);
+
+				for (i=clearL; i < clearR; i++)
+					for (j=clearU; j < clearD; j++)
+						myary[i][j] = defaultSquare;
+			}
 			break;
 
 		case 'c':
