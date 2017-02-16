@@ -1,0 +1,21 @@
+########################
+#
+# keys.txt
+#
+# mapcpy file for Keys to Maramon
+#
+# a relatively simple game with a town and 4 dungeons--1 level is before/after you kill the bad guy
+#
+# the MCM files are a sort of precursor for the later Magic Candle series
+#
+h60	w84	E=MCM	O=2
+x0	y0
+V-
+# row 1: town, bottom level before/after
+rM11E01/	dx+2	rM24E30/	dx+2	rM25E30/
+# row 2: level 1, 2
+u62	rM21E30/	dx+2	rM22E30/
+# row 3: level 3
+u62	rM23E30/
+>keys.bmp
+;
