@@ -1,0 +1,20 @@
+#######################
+#
+# xyphus-a.txt
+#
+# a file for converting xyphusb.dsk to maps
+#
+# ftp://ftp.apple.asimov.net/pub/apple_II/images/games/rpg/xyphus/ 4 AM Side B
+#
+# note this doesn't do everything, because MAPCONV still needs to offset every other row by 1/2 to make the map hexagonal
+#
+rxyphusb.dsk
+s2e04	s2d	s2c	s2b	s2a	s29	s28	s27	s26	s25	s24	s23	s22	s21	s20	s1b	s1a	s19,84	<
+u66	s3e04	s3d	s3c	s3b	s3a	s39	s38	s37	s36	s35	s34	s33	s32	s31	s4f	s11	s10,84	<
+u66	s4604	s45	s44	s43	s42	s41	s40	s5f	s5e	s5d	s5c	s5b	s5a	s59	s58	s57	s56	s55,84	<
+x0	y76
+s6c04	s6b	s6a	s69	s68	s67	s66	s65	s64	s63	s62	s61	s60	s7f	s7e	s7d	s7c	s7b,84	<
+u66	s7204	s71	s70	s8f	s8e	s8d	s8c	s8b	s8a	s89	s88	s87	s86	s85	s84	s83	s82	s81,84	<
+u66	s9804	s97	s96	s95	s94	s93	s92	s91	s90	saf	sae	sad	sac	sab	saa	sa9	sa8	sa7,84	<
+>xyphus.bmp
+;

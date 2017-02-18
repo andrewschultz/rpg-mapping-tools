@@ -1,0 +1,29 @@
+#######################
+#
+# xyphus-c.txt
+#
+# a file for converting xyphus2.d64 to maps
+#
+# note this doesn't do everything, because MAPCONV still needs to offset every other row by 1/2 to make the map hexagonal
+#
+# I wrote this because I overlooked something obvious in the Apple disk images I had
+#
+# DL'd from myabandonware.com
+#
+x0	y0	w64	h4
+rxyphus2.d64
+c64
+###scenario 1
+s15304	s15d	s154	s15e	s155	s15f	s156	s160	s157	s161	s158	s162	s159	s163	s15a	s164	s15c	s13b,e6	<
+###scenario 4
+dy+2	sfe04	s108	sff	s109	s100	s10a	s101	s10b	s102	s10c	s103	s10d	s105	s10f	s10e	sed	sf7	seb,e6	<
+###scenario 2
+u66	s19e04	s1a8	s19f	s1a9	s1a0	s1aa	s1a1	s1ab	s1a2	s1ac	s1a6	s1b0	s1a7	s1af	s1b8	s1c2	s1b9	s1c3,e6	<
+###scenario 5
+dy+2	s1da04	s1e4	s1db	s1e5	s1dc	s1e6	s1dd	s1e7	s1de	s1e8	s1df	s1e9	s1e0	s1ea	s1f4	s1eb	s1f5	s1ec,e6	<
+###scenario 3
+u66	s13c04	s146	s13e	s148	s140	s14a	s142	s14c	s144	s14e	s12d	s137	s12b	s135	s129	s133	s127	s131,e6	<
+###scenario 6
+dy+2	sbd04	sc7	sd1	sc6	sd0	sc4	sce	sc2	scc	sc0	sca	sbe	sc8	sbf	sc9	sc1	scb	sc3,e6	<
+>xyphus.bmp
+;
