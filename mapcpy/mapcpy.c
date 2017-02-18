@@ -720,6 +720,23 @@ main(int argc, char * argv[])
 			break;
 
 		case '<': //reset current-x if we are reading sectors that don't match up with rows
+			if (curX > 0)
+			{
+				short temp = 256 - (short)curX;
+				printf("Moving left by %d/%x at %s: ", curX, curX, lineTab);
+				if ((temp > 0) || (myW < 256))
+				{
+					printf("possible adjustment(s)");
+					while (temp > 0)
+					{
+						printf(" %d", temp);
+						temp -= (short)myW;
+					}
+				}
+				else
+					printf("no suggestions");
+				printf("\n");
+			}
 			curX = 0;
 			break;
 
