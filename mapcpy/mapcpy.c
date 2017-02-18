@@ -38,6 +38,8 @@ main(int argc, char * argv[])
 	short needToBMP = 0;
 	short commentBlock = 0;
 
+	short commodore = 0;
+
 	FILE * F = NULL, * G = NULL, * H, * I;
 	long keepGoing = 1;
 	unsigned int count = 1;
@@ -73,6 +75,9 @@ main(int argc, char * argv[])
 
 	char myFile[200] = "";
 	char myLine[500];
+
+	char lineTab[20];
+
 	char * buffer;
 
 	short gotFile = 0;
@@ -180,7 +185,7 @@ main(int argc, char * argv[])
 	{
 		curLine++;
 		if (debug)
-			printf("%d-%d: %s", curLine, tabIndex, myLine);
+			printf("%s: %s", lineTab, myLine);
 
 		if (commentBlock)
 		{
@@ -195,9 +200,11 @@ main(int argc, char * argv[])
 		do
 		{
 
+		sprintf(lineTab, "%d-%d", curLine, tabIndex);
+
 		if (buffer[0] == ' ')
 		{
-			printf("Line %d-%d starts with a space. Removing all leading spaces.\n", curLine, tabIndex);
+			printf("Line %s starts with a space. Removing all leading spaces.\n", lineTab);
 			while (buffer[0] == ' ')
 				buffer++;
 		}
@@ -207,14 +214,14 @@ main(int argc, char * argv[])
 			while ((count > 0) && (buffer[count-1] == ' '))
 				count--;
 
-			printf("Line %d-%d ends with a space. Removing all trailing spaces.\n", curLine, tabIndex);
+			printf("Line %s ends with a space. Removing all trailing spaces.\n", lineTab);
 			buffer[count] = 0;
 		}
 
 		switch(buffer[0])
 		{
 		case 0:
-			printf("WARNING blank entry at line %d-%d.\n", curLine, tabIndex);
+			printf("WARNING blank entry at line %s.\n", lineTab);
 			break;
 
 		case '=':
@@ -294,7 +301,7 @@ main(int argc, char * argv[])
 		case '0':
 			if (buffer[1])
 			{
-				printf("WARNING: you may've put an 0 where you meant an o at line %d-%d.\n", curLine, tabIndex);
+				printf("WARNING: you may've put an 0 where you meant an o at line %s.\n", lineTab);
 			}
 			addSpace = 0;
 			break;
@@ -302,7 +309,7 @@ main(int argc, char * argv[])
 		case '1':
 			if (buffer[1])
 			{
-				printf("WARNING: you may've put a 1 where you meant something else at line %d-%d.\n", curLine, tabIndex);
+				printf("WARNING: you may've put a 1 where you meant something else at line %s.\n", lineTab);
 			}
 			addSpace = 1;
 			break;
@@ -359,20 +366,20 @@ main(int argc, char * argv[])
 					}
 					if ((clearL < 0) || (clearU < 0))
 					{
-						printf("Negative crop value at line %d-%d.\n", curLine, tabIndex);
+						printf("Negative crop value at line %s.\n", lineTab);
 						break;
 					}
 
 					if ((clearL >= clearR) || (clearU >= clearD))
 					{
-						printf("Invalid crop region at line %d-%d.\n", curLine, tabIndex);
+						printf("Invalid crop region at line %s.\n", lineTab);
 						break;
 					}
 
 					break;
 
 				default:
-					printf("Line %d-%d needs either 0 or 4 commas for *-fill.\n", curLine, tabIndex);
+					printf("Line %s needs either 0 or 4 commas for *-fill.\n", lineTab);
 					clearR = -1;
 					break;
 				}
@@ -385,6 +392,12 @@ main(int argc, char * argv[])
 
 		case 'c':
 		case 'C':
+			if ((buffer[1] == '6') && (buffer[2] == '4'))
+			{
+				commodore = (buffer[3] != '-');
+				break;
+			}
+
 			if ((buffer[1] == 'r') || (buffer[1] == 'R'))
 			{
 				myX = myLastX + myW;
@@ -405,8 +418,8 @@ main(int argc, char * argv[])
 			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
 				readType = STRAIGHT_BYTES;
 			else
-				printf("WARNING line %d-%d: BH or BL (bit/high or low first) are the only two options for B.\
--/0/no byte clears it.\n", curLine, tabIndex);
+				printf("WARNING line %s: BH or BL (bit/high or low first) are the only two options for B.\
+-/0/no byte clears it.\n", lineTab);
 			break;
 
 		case 'n':
@@ -418,8 +431,8 @@ main(int argc, char * argv[])
 			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
 				readType = STRAIGHT_BYTES;
 			else
-				printf("WARNING line %d-%d: NH or NL (nibble/high or low first) are the only two options for N.\
--/0/no byte clears it.\n", curLine, tabIndex);
+				printf("WARNING line %s: NH or NL (nibble/high or low first) are the only two options for N.\
+-/0/no byte clears it.\n", lineTab);
 			break;
 
 		case 't':
@@ -468,8 +481,8 @@ main(int argc, char * argv[])
 				{
 					if (myX < strtol(buffer+3, NULL, 10))
 					{
-						printf("WARNING dx command went to -x, %d back %d at line %d-%d\n",
-							myX, strtol(buffer+3, NULL, 10), curLine, tabIndex);
+						printf("WARNING dx command went to -x, %d back %d at line %s\n",
+							myX, strtol(buffer+3, NULL, 10), lineTab);
 						break;
 					}
 					myX -= strtol(buffer+3, NULL, 10);
@@ -485,8 +498,8 @@ main(int argc, char * argv[])
 				{
 					if (myY < strtol(buffer+3, NULL, 10))
 					{
-						printf("WARNING dy command went to -y, %d back %d at line %d-%d\n",
-							myY, strtol(buffer+3, NULL, 10), curLine, tabIndex);
+						printf("WARNING dy command went to -y, %d back %d at line %s\n",
+							myY, strtol(buffer+3, NULL, 10), lineTab);
 						break;
 					}
 					myY -= strtol(buffer+3, NULL, 10);
@@ -496,7 +509,7 @@ main(int argc, char * argv[])
 				//printf("Adding %d to y, now %d\n", strtol(buffer+2, NULL, 10), myY);
 				break;
 			}
-			printf("Error at line %d-%d. d(xy) is proper usage for moving.\n", curLine, tabIndex);
+			printf("Error at line %s. d(xy) is proper usage for moving.\n", lineTab);
 			break;
 
 		//+/-/^/v rotate the start-x in the rectangle. For moving around, use dx/dy
@@ -566,7 +579,7 @@ main(int argc, char * argv[])
 			}
 			if ((qflags != 12) && (qflags != 9) && (qflags != 6) && (qflags != 3))
 			{
-				printf ("Bailing. Bad qflags value of %d at line %d-%d given %s\n", qflags, curLine, tabIndex, buffer);
+				printf ("Bailing. Bad qflags value of %d at line %s given %s\n", qflags, lineTab, buffer);
 			}
 			break;
 
@@ -579,12 +592,12 @@ main(int argc, char * argv[])
 			{
 				if (forceH)
 				{
-					printf("Already forcing horizontal line %d-%d.\n", curLine, tabIndex);
+					printf("Already forcing horizontal line %s.\n", lineTab);
 					break;
 				}
 				if (forceV)
 				{
-					printf("Already forcing vertical line %d-%d.\n", curLine, tabIndex);
+					printf("Already forcing vertical line %s.\n", lineTab);
 					break;
 				}
 				forceV = 1;
@@ -593,12 +606,12 @@ main(int argc, char * argv[])
 			{
 				if (forceH)
 				{
-					printf("Already forcing horizontal line %d-%d.\n", curLine, tabIndex);
+					printf("Already forcing horizontal line %s.\n", lineTab);
 					break;
 				}
 				if (forceV)
 				{
-					printf("Already forcing vertical line %d-%d.\n", curLine, tabIndex);
+					printf("Already forcing vertical line %s.\n", lineTab);
 					break;
 				}
 			}
@@ -620,7 +633,7 @@ main(int argc, char * argv[])
 
 				if (needToProc)
 				{
-					printf("WARNING: %s (line %d-%d) occurs before processing the last 'r' line.\n", buffer, curLine, tabIndex);
+					printf("WARNING: %s (line %s) occurs before processing the last 'r' line.\n", buffer, lineTab);
 					needToProc = 0;
 				}
 				if (debug)
@@ -644,7 +657,7 @@ main(int argc, char * argv[])
 					}
 					if (G == NULL)
 					{
-						printf("Oops file %s does not exist. Bailing at line %d-%d.\n", buffer+1, curLine, tabIndex);
+						printf("Oops file %s does not exist. Bailing at line %s.\n", buffer+1, lineTab);
 						return 0;
 					}
 				}
@@ -668,7 +681,7 @@ main(int argc, char * argv[])
 					break;
 				}
 				if (vertical == wasVert)
-					printf("Warning line %d-%d doesn't really change anything as vertical was already %c.\n",
+					printf("Warning line %s doesn't really change anything as vertical was already %c.\n",
 						curLine, tabIndex, buffer[1]);
 			}
 			break;
@@ -716,7 +729,7 @@ main(int argc, char * argv[])
 			buffer[strlen(buffer)-1] = 0;
 			if (needToProc)
 			{
-				printf("WARNING: %s (line %d-%d) occurs before processing the last 'r' line.\n", buffer, curLine, tabIndex);
+				printf("WARNING: %s (line %s) occurs before processing the last 'r' line.\n", buffer, lineTab);
 				needToProc = 0;
 			}
 			if (buffer[1] == '+')
@@ -865,7 +878,7 @@ main(int argc, char * argv[])
 
 			if (G == NULL)
 			{
-				printf("Warning: line %d-%d, tried to read offset without file open: %s", curLine, tabIndex, myLine);
+				printf("Warning: line %s, tried to read offset without file open: %s", lineTab, myLine);
 				if (bailOnWarn)
 					return 0;
 				break;
@@ -886,12 +899,12 @@ fromr:
 			}
 			if (myX + myXMax > MAXW)
 			{
-				printf("Oops line %d-%d went too far right.\n", curLine, tabIndex);
+				printf("Oops line %s went too far right.\n", lineTab);
 				return 0;
 			}
 			if (myY + myH > MAXH)
 			{
-				printf("Oops line %d-%d went too far down.\n", curLine, tabIndex);
+				printf("Oops line %s went too far down.\n", lineTab);
 				return 0;
 			}
 
@@ -1000,7 +1013,7 @@ fromr:
 
 			if (G == NULL)
 			{
-				printf("Warning: line %d-%d, tried to read sector without file open: %s\n", curLine, tabIndex, buffer);
+				printf("Warning: line %s, tried to read sector without file open: %s\n", lineTab, buffer);
 				if (bailOnWarn)
 					return 0;
 				break;
@@ -1008,7 +1021,7 @@ fromr:
 
 			if (myX + myW > MAXW)
 			{
-				printf("Uh oh horizontal overrun at %d-%d, bailing.", curLine, tabIndex);
+				printf("Uh oh horizontal overrun at %s, bailing.", lineTab);
 				return 0;
 			}
 
@@ -1027,6 +1040,9 @@ fromr:
 			myOffset = strtol(buffer+1, NULL, 16);
 			if ((buffer[0] == 's') && ( myOffset < 0x230))
 				myOffset *= 0x100;
+
+			if ((commodore) && !(myOffset%0x100))
+				myOffset += 2;
 
 			sectorStart = myOffset % 0x100;
 
@@ -1081,7 +1097,7 @@ fromr:
 						myY++;
 						if (myY >= MAXH)
 						{
-							printf("Uh oh vertical overrun at %d-%d, bailing.", curLine, tabIndex);
+							printf("Uh oh vertical overrun at %s, bailing.", lineTab);
 							return 0;
 						}
 					}
@@ -1090,7 +1106,7 @@ fromr:
 			break;
 
 		default:
-			printf("Unknown command for line %d-%d: %s\n", curLine, tabIndex, buffer);
+			printf("Unknown command for line %s: %s\n", lineTab, buffer);
 			if (bailOnWarn)
 				return 0;
 			break;
