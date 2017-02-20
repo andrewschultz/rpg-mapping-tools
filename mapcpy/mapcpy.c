@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <io.h>
 
 #define MAXW 640
 #define MAXH 640
@@ -37,6 +38,8 @@ main(int argc, char * argv[])
 	short needToProc = 0;
 	short needToBMP = 0;
 	short commentBlock = 0;
+
+	short cutBuffer[200][200];
 
 	short commodore = 0;
 
@@ -85,6 +88,9 @@ main(int argc, char * argv[])
 	short trackOverlap = 0;
 	short blockOverlap = 0;
 
+	short postProcess = 0;
+	short deleteBeforePostProcess = 0;
+
 	short sectorStart = 0;
 
 	while ((short)count < argc)
@@ -132,6 +138,13 @@ main(int argc, char * argv[])
 				if (argv[count][2] | 0x20 == 'b')
 					blockOverlap = 1;
 				count++;
+				break;
+
+			case 'p':
+			case 'P':
+				postProcess = 1;
+				if ((argv[count][1] == 'd') || (argv[count][1] == 'D'))
+					deleteBeforePostProcess = 1;
 				break;
 
 			case 'u':
@@ -835,10 +848,36 @@ main(int argc, char * argv[])
 			}
 
 			fclose(I);
+
+			if (postProcess)
+			{
+				char cmdbuf[100] = "bmp2png -9 ";
+				if (deleteBeforePostProcess)
+				{
+					char cmdbuf2[100] = "erase ";
+					char pngName[100] = "";
+					long bl = strlen(pngName);
+
+					strcpy(pngName, buffer+i+1);
+
+					pngName[bl-3] = 'p';
+					pngName[bl-2] = 'n';
+					pngName[bl-1] = 'g';
+
+					if (_access(pngName, 0) != 0)
+					{
+						strcat(cmdbuf2, pngName);
+						system(cmdbuf2);
+					}
+
+				}
+				strcat(cmdbuf, buffer+i+1);
+				system(cmdbuf);
+			}
 			if (localLaunch)
 			{
 				char cmdbuf[100] = "mspaint ";
-				strcat(cmdbuf, buffer+1);
+				strcat(cmdbuf, buffer+i+1);
 				system(cmdbuf);
 			}
 			break;
