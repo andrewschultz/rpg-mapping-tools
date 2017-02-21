@@ -93,6 +93,9 @@ main(int argc, char * argv[])
 
 	short sectorStart = 0;
 
+	short hJump = 0;
+	short vJump = 0;
+
 	while ((short)count < argc)
 	{
 		if (debug)
@@ -200,13 +203,24 @@ main(int argc, char * argv[])
 		if (debug)
 			printf("%s: %s", lineTab, myLine);
 
-		if (commentBlock)
+		if (myLine[1] == '#')
 		{
-			if ((myLine[1] == '-') && (myLine[0] == '#'))
+			if (commentBlock && (myLine[1] == '-'))
 				commentBlock = 0;
-			else
-				continue;
+
+			if (myLine[1] == '+')
+			{
+				commentBlock = (short)curLine;
+			}
+
+			if (myLine[1] == '!')
+			{
+				printf("%s", myLine);
+			}
+
+			continue;
 		}
+
  		buffer = strtok(myLine, "\t");
 		tabIndex = 1;
 
@@ -256,23 +270,6 @@ main(int argc, char * argv[])
 			}
 			break;
 
-		//cover everything with a certain color
-		case 'D':
-			temp = strtol(buffer+1, NULL, 16);
-			for (j=0; j < MAXH; j++)
-				for (i=0; i < MAXW; i++)
-					myary[i][j] = (short) temp;
-			break;
-
-		case '#':
-			if (buffer[1] == '+')
-			{
-				commentBlock = (short)curLine;
-				break;
-			}
-
-			if (buffer[1] == '!')
-				printf("%s", buffer);
 		case '\n':
 			break;
 
@@ -327,6 +324,15 @@ main(int argc, char * argv[])
 			addSpace = 1;
 			break;
 
+		case '&':
+			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
+				hJump = (short)strtol(buffer+i+1, NULL, 16);
+			else if ((buffer[1] == 'v') || (buffer[1] == 'V'))
+				vJump = (short)strtol(buffer+i+1, NULL, 16);
+			else
+				hJump = vJump = (short)strtol(buffer+i, NULL, 16);
+			break;
+
 		case '*':
 			{
 				short defaultSquare = 0;
@@ -337,7 +343,14 @@ main(int argc, char * argv[])
 				short commas = 0;
 
 				if (buffer[1] == '=')
+				{
 					defaultSquare = (short)strtol(buffer+2, NULL, 16);
+					if ((defaultSquare > 255) || (defaultSquare < 0))
+					{
+						printf("Invalid value for default color on line %s. Choosing 0.\n", lineTab);
+						defaultSquare = 0;
+					}
+				}
 
 				for (i=0; i < (short)strlen(buffer); i++)
 					if (buffer[i] == ',')
@@ -1038,9 +1051,9 @@ fromr:
 				forceH = 0;
 			}
 			else if (vertical)
-				myY += myH;
+				myY += myH + vJump;
 			else
-				myX += myW;
+				myX += myW + hJump;
 			myXModOffset = 0;
 			myYModOffset = 0;
 			myXMin = 0;
