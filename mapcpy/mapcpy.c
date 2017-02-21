@@ -54,7 +54,7 @@ main(int argc, char * argv[])
 	long myDefaultOffset = 0;
 	long myAbsX = 0, myAbsY = 0;
 	long myLastX = 0, myLastY = 0, myX = 0, myY = 0, myH = 0, myW = 0, myOffset = 0, myXMin = 0, myXMax = 32, setTransparent = 0, transpColor = 0,
-		myYModOffset=0, myXModOffset=0, outH=256, outW=256, doFringe = 0, gegege=0;
+		myYModOffset=0, myXModOffset=0, outHi=0, outWi=0, outH=256, outW=256, doFringe = 0, gegege=0;
 	long myAnchorX = 0, myAnchorY = 0;
 	long i, j, i2, j2;
 	short qflags = 15, quartering = 0;
@@ -556,11 +556,17 @@ main(int argc, char * argv[])
 			break;
 
 		case 'W':
-			outW = strtol(buffer+1, NULL, 10);
+			if (buffer[1] == '-')
+				outWi = strtol(buffer+2, NULL, 10);
+			else
+				outW = strtol(buffer+1, NULL, 10);
 			break;
 
 		case 'H':
-			outH = strtol(buffer+1, NULL, 10);
+			if (buffer[1] == '-')
+				outHi = strtol(buffer+2, NULL, 10);
+			else
+				outH = strtol(buffer+1, NULL, 10);
 			break;
 
 		case 'h':
@@ -850,13 +856,13 @@ main(int argc, char * argv[])
 							myary[i][j] = 0x4e;
 			}
 
-			temp = ((outW+3)>>2)<<2;
-			for (j=0; j < outH; j++)
+			temp = outW-outWi ? 4 - ((outW - outWi) % 4) : 0;
+			for (j=outHi; j < outH; j++)
 			{
-				for (i=0; i < outW; i++)
+				for (i=outWi; i < outW; i++)
 					fputc(myary[i][outH-1-j], I);
-				if (outW % 4)
-					for (i=outW; i < temp; i++)
+				if (i)
+					for (i=0; i < temp; i++)
 						fputc(0, I);
 			}
 
