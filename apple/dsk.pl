@@ -27,6 +27,7 @@ while ($count <= $#ARGV )
   for ($a)
   {
    /^-?1f$/ && do { @order = (0x1, 0xf, 0x0, 0xe, 0xd, 0xc, 0xb, 0xa, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2); $count++; next; };
+   /^-?7$/ && do { @order = (0x0, 0x7, 0xe, 0x6, 0xd, 0x5, 0xc, 0x4, 0xb, 0x3, 0xa, 0x2, 0x9, 0x1, 0x8, 0xe); $count++; next; };
    /^-?r/i && do { $reverseRead = 1; $count++; next; };
    /^(\?|-)/ && do { print "INVALID ARGUMENT $a\n"; usage(); exit; };
    if ($toRead) { die("2 files read, $toRead/$a."); }
@@ -65,5 +66,6 @@ print <<EOT;
 USAGE========================
 -r revese the order of each 0x10 block of 0x100 sectors
 -1f specifies 1 f 0 e then a descent
+-7 lets you go 0 7 e 6 d 5 c 4 b 3 a 2 9 (1 8 e) e.g. +7 or -8. This was used in Phantasie.
 EOT
 }
