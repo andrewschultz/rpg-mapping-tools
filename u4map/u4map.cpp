@@ -1,7 +1,7 @@
 // u4map.cpp : Defines the entry point for the application.
 //
 
-#define WIN32_LEAN_AND_MEAN  
+#define WIN32_LEAN_AND_MEAN
 
 #include <ddraw.h>
 #include <windowsx.h>
@@ -169,7 +169,7 @@ char dunName[8][9] = { "Deceit", "Despise", "Destard", "Wrong", "Covetous", "Sha
 char monsterName[52][13] = { "Mage", "Bard", "Fighter", "Druid", "Tinker", "Paladin", "Ranger", "Shepherd",
 	"Guard", "Merchant", "Bard(2)", "Jester", "Beggar", "Child", "Bull", "Lord British",
 	"Pirate ship", "Pirate ship", "Nixie", "Squid", "Serpent", "Seahorse", "Whirlpool", "Twister",
-	"Rat", "Bat", "Spider", "Ghost", 
+	"Rat", "Bat", "Spider", "Ghost",
 	"Slime", "Troll", "Gremlin", "Mimic",
 	"Reaper", "Insects", "Gazer", "Phantom",
 	"Orc", "Skeleton", "Rogue", "Python",
@@ -204,9 +204,9 @@ long mouseUpX, mouseUpY;
 #define PARTY_SOUTH 3
 #define PARTY_WEST 4
 
-LRESULT CALLBACK WindowProc(HWND hwnd, 
-						    UINT msg, 
-                            WPARAM wparam, 
+LRESULT CALLBACK WindowProc(HWND hwnd,
+						    UINT msg,
+                            WPARAM wparam,
                             LPARAM lparam)
 {
 	short temp, temp2, i;
@@ -386,7 +386,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			else
 				CheckMenuItem( GetMenu(hwnd), ID_OPTIONS_RESET_LEVEL_1, MF_UNCHECKED);
 			break;
-			
+
 		case ID_OPTIONS_SYNC_LEVEL_TO_ROOM:
 			syncLevelToRoom = !syncLevelToRoom;
 			if (syncLevelToRoom)
@@ -677,7 +677,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 			slotIcon[LOWORD(wparam)-ID_COSMETIC_SWAP_1] = temp;
 			PaintRoomMap();
 			break;
-			
+
 		case ID_COSMETIC_HIDE_2:
 		case ID_COSMETIC_HIDE_3:
 		case ID_COSMETIC_HIDE_4:
@@ -765,12 +765,12 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 			ShellExecute(hwnd, "open", "https://github.com/andrewschultz/rpg-mapping-tools/tree/master/u5map",
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
-			
+
 		case ID_ABOUT_README_REPO:
 			ShellExecute(hwnd, "open", "https://raw.githubusercontent.com/andrewschultz/rpg-mapping-tools/master/u4map/ReadMe.txt",
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
-			
+
 		case ID_ABOUT_README_LOCAL:
 			ShellExecute(hwnd, "open", "readme.txt", NULL, NULL, SW_SHOWNORMAL);
 			break;
@@ -781,7 +781,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 			mouseDownX = LOWORD(lparam)/16;
 			mouseDownY = HIWORD(lparam)/16;
 			checkWrapHalf();
-			
+
 			temp = mainDun[mouseDownX][mouseDownY][curLev][curDun];
 			if (temp == 0x30)
 			{
@@ -792,7 +792,7 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 				}
 			}
 			break;
-			
+
 		case WM_LBUTTONDOWN:
 			mouseDownX = LOWORD(lparam)/16;
 			mouseDownY = HIWORD(lparam)/16;
@@ -845,17 +845,17 @@ Bugs? schultz.andrew@sbcglobal.net", "About U4 Dungeon Surfer", MB_OK);
 						char buffer[300];
 
 						temp = mainDun[mouseDownX][mouseDownY][curLev][curDun];
-						
+
 						if (temp == 0x10 || temp == 0x30)
 							tryGoingUp();
-						
+
 						if (temp == 0x20)
 							if (!syncLevelToRoom)
 							{
 							curLev++;
 							PaintDunMap();
 							}
-						
+
 						if ((temp <= 0xa3) && (temp >= 0xa0))
 						{
 							sprintf(buffer, "%s field", fieldStr[temp - 0xa0]);
@@ -916,7 +916,7 @@ WNDCLASS winclass;	// this will hold the class we create
 HACCEL hAccelTable;
 MSG		 msg;		// generic message
 
-winclass.style			= CS_DBLCLKS | CS_OWNDC | 
+winclass.style			= CS_DBLCLKS | CS_OWNDC |
                           CS_HREDRAW | CS_VREDRAW;
 winclass.lpfnWndProc	= WindowProc;
 winclass.cbClsExtra		= 0;
@@ -938,7 +938,7 @@ if (!RegisterClass(&winclass))
 							  WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
 					 		  0,0,	   // x,y
 							  20*ICONSIZE, 16*ICONSIZE, // width, height
-							  NULL,	   // handle to parent 
+							  NULL,	   // handle to parent
 							  NULL,	   // handle to menu
 							  hInstance,// instance
 							  NULL)))	// creation parms
@@ -971,18 +971,18 @@ if (!RegisterClass(&winclass))
 	while (1)
 	{
 	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
-		{ 
+		{
 		// test if this is a quit
         if (msg.message == WM_QUIT)
            break;
-	
+
         if (!TranslateAccelerator(hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
 		} // end if
-    
+
 	}
 	return 0;
 }
@@ -993,10 +993,10 @@ void spoilDungeon(short thisDun)
 	char buffer2[100] = "";
 	short i, temp = 0;
 	short needComma = 0;
-	
+
 	RECT rc;
 	HDC hdc = GetDC(hwnd);
-	
+
 	GetClientRect(hwnd, &rc);
 
 	rc.left = 0;
@@ -1048,7 +1048,7 @@ void spoilDungeon(short thisDun)
 
 	for (i=POISONFIELD; i <= SLEEPFIELD; i++)
 		temp += dunSpoil[i][thisDun];
-	
+
 	if (temp)
 	{
 		strcat(buffer, "Fields: ");
@@ -1062,12 +1062,12 @@ void spoilDungeon(short thisDun)
 	}
 	else
 		strcat(buffer, "No magic fields.\n");
-	
+
 	temp = 0;
-	
+
 	for (i=PLAIN_FOUNTAIN; i <= POISON_FOUNTAIN; i++)
 		temp += dunSpoil[i][thisDun];
-	
+
 	if (temp)
 	{
 		strcat(buffer, "Fountains: ");
@@ -1090,11 +1090,11 @@ void readDun(char x[20], int q)
 	short i, j, k, l, temp, temp2;
 	int numDun = 16;
 	FILE * F = fopen(x, "rb");
-	
+
 	if (F == NULL)
 	{
 		char buffer[200];
-		
+
 		if (!noFileWarnYet)
 		{
 		sprintf(buffer, "The program was not able to read %s! It probably won't run successfully. You may need to copy the Ultima 4 .DNG files over.", x);
@@ -1111,9 +1111,9 @@ void readDun(char x[20], int q)
 		for (j=0; j < 8; j++)
 			for (i=0; i < 8; i++)
 			{
-				temp = fgetc(F); //?? 0xd(0-9) & 0xf0 == 
+				temp = fgetc(F); //?? 0xd(0-9) & 0xf0 ==
 				temp2 = temp;
-				
+
 				//for when we want to spoil dungeons so we don't have to keep reading it in
 				for (l = 0; l < DUNTRACKING; l++)
 					if (temp == dunIconVal[l])
@@ -1121,7 +1121,7 @@ void readDun(char x[20], int q)
 
 				if (temp == 0xb0)
 					stoneLoc[q] = (k<<8)+(j<<4)+i;
-				
+
 				if ((i == 0) || (j == 0) || (i == 7) || (j == 7))
 					if (temp != 0xf0)
 						levelWraps[k][q] = 1;
@@ -1431,7 +1431,7 @@ if (!dungeonDump)
 
 			}
 		}
-		
+
 	}
 
 	if (showChanged)

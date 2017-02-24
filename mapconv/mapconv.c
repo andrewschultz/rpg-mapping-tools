@@ -154,7 +154,7 @@ typedef struct
 	short Yi;
 	short Xf;
 	short Yf;
-	
+
 	short ary[640][640];
 	short checkAry[640][640];
 	short transpary[640][640];
@@ -987,7 +987,7 @@ void WriteToBmp()
 			printf("%s is new out file\n", outStr);
 	}
 	F3 = fopen(outStr, "wb");
-	
+
 	for (i = 0;  i < HEADERSIZE;  i++)
 	{
         switch(i)
@@ -1209,7 +1209,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 	short XtrErr[256] = {0};
 
 	short transparencyWarnYet = 0;
-	
+
 	char buffer[200];
 	char * SecondString;
 	short XtrTransparencyRead = 0;

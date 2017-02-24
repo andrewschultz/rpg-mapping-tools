@@ -1,8 +1,24 @@
+###############################
+#
+#dw.pl
+#
+#decompresses Demon's Winter Map file(s)
+
+use strict;
+use warnings;
+
 open(A, "sum.map");
 binmode(A);
 
 open(B, ">dwout.bin");
 binmode(B);
+
+#############locals
+my $buffer; # the  big one
+my $buf2;
+my $j;
+my $o;
+my $rep;
 
 read(A, $buffer, 1, 0); # throwaway at start
 

@@ -1,7 +1,7 @@
 // u5map.cpp : Defines the entry point for the application.
 //
 
-#define WIN32_LEAN_AND_MEAN  
+#define WIN32_LEAN_AND_MEAN
 
 #include <ddraw.h>
 #include <windowsx.h>
@@ -173,9 +173,9 @@ HDC level2dc;
 
 HDC localhdc;
 
-LRESULT CALLBACK WindowProc(HWND hwnd, 
-						    UINT msg, 
-                            WPARAM wparam, 
+LRESULT CALLBACK WindowProc(HWND hwnd,
+						    UINT msg,
+                            WPARAM wparam,
                             LPARAM lparam)
 {
 	short temp;
@@ -546,7 +546,7 @@ Bugs? schultz.andrew@sbcglobal.net", "Basics", MB_OK);
 			ShellExecute(hwnd, "open", "https://raw.githubusercontent.com/andrewschultz/rpg-mapping-tools/master/u4map/ReadMe.txt",
 				NULL, NULL, SW_SHOWNORMAL);
 			break;
-			
+
 		case ID_ABOUT_README_LOCAL:
 			ShellExecute(hwnd, "open", "readme.txt", NULL, NULL, SW_SHOWNORMAL);
 			break;
@@ -634,7 +634,7 @@ WNDCLASS winclass;	// this will hold the class we create
 HACCEL hAccelTable;
 MSG		 msg;		// generic message
 
-winclass.style			= CS_DBLCLKS | CS_OWNDC | 
+winclass.style			= CS_DBLCLKS | CS_OWNDC |
                           CS_HREDRAW | CS_VREDRAW;
 winclass.lpfnWndProc	= WindowProc;
 winclass.cbClsExtra		= 0;
@@ -656,7 +656,7 @@ if (!RegisterClass(&winclass))
 							  WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
 					 		  0,0,	   // x,y
 							  20*ICONSIZE, 540, // width, height. We want space for text at the bottom to allow room description.
-							  NULL,	   // handle to parent 
+							  NULL,	   // handle to parent
 							  NULL,	   // handle to menu
 							  hInstance,// instance
 							  NULL)))	// creation parms
@@ -684,18 +684,18 @@ if (!RegisterClass(&winclass))
 	while (1)
 	{
 	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
-		{ 
+		{
 		// test if this is a quit
         if (msg.message == WM_QUIT)
            break;
-	
+
         if (!TranslateAccelerator(hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
 		} // end if
-    
+
 	}
 	return 0;
 }
@@ -991,7 +991,7 @@ void PaintRoomMap()
 					32, 32, leveldc, 448 + 32 * checkAry[toSquare2X[i][curRoom][curDun]][toSquare2Y[i][curRoom][curDun]],
 					448, 32, 32, 0x000000);
 	}
-	
+
 	//now text list of monsters
 
 	{//I suppose we could cheat here and StretchBlt Icon #0
@@ -1165,10 +1165,10 @@ void spoilDungeon(short thisDun)
 	char buffer2[100] = "";
 	short i, temp = 0;
 	short needComma = 0;
-	
+
 	RECT rc;
 	HDC hdc = GetDC(hwnd);
-	
+
 	GetClientRect(hwnd, &rc);
 
 	rc.left = 0;
@@ -1190,11 +1190,11 @@ void spoilDungeon(short thisDun)
 
 	sprintf(buffer, "%s info: %d chests, %d secret doors, %d writing, %d cave-ins\n", dunName[thisDun], dunSpoil[CHEST][thisDun],
 		dunSpoil[SECRET_DOOR][thisDun], dunSpoil[WRITING][thisDun], dunSpoil[CAVEIN][thisDun]);
-	
+
 	temp = 0;
 	for (i=POISON_FIELD; i <= FIRE_FIELD; i++)
 		temp += dunSpoil[i][thisDun];
-	
+
 	if (temp)
 	{
 		strcat(buffer, "Fields: ");
@@ -1205,9 +1205,9 @@ void spoilDungeon(short thisDun)
 	}
 	else
 		strcat(buffer, "No magic fields.\n");
-	
+
 	temp = dunSpoil[VISIBLE_PIT][thisDun] + dunSpoil[HIDDEN_PIT][thisDun];
-	
+
 	if (temp)
 	{
 		strcat(buffer, "Pits: ");
@@ -1218,10 +1218,10 @@ void spoilDungeon(short thisDun)
 	}
 	else
 		strcat(buffer, "No pits.\n");
-	
+
 	for (i=HEAL_FOUNTAIN; i < HURT_FOUNTAIN; i++)
 		temp += dunSpoil[i][thisDun];
-	
+
 	if (temp)
 	{
 		strcat(buffer, "Fountains: ");

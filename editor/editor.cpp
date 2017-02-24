@@ -4,7 +4,7 @@
 //  icons inside squares
 //  tracking squares done
 //  1 way doors
-#define WIN32_LEAN_AND_MEAN  
+#define WIN32_LEAN_AND_MEAN
 
 #include <ddraw.h>
 #include <windowsx.h>
@@ -62,7 +62,7 @@ void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf);
 void SaveBitmapFile(HWND hwnd, short trim);
 void parseCmdLine(LPSTR cmdLine, HWND hwnd);
 
-char textToShift[200]; // receives name of item to delete. 
+char textToShift[200]; // receives name of item to delete.
 void setInitialChecks(HWND hwnd);
 void switchIconPointer(HWND hwnd, short q);
 void shiftTheMap(HWND hwnd, short x, short y);
@@ -73,7 +73,7 @@ BOOL CALLBACK HexDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lPara
 
 // DEFINES ////////////////////////////////////////////////
 
-// defines for windows 
+// defines for windows
 #define WINDOW_CLASS_NAME "WINCLASS1"
 
 // MACROS /////////////////////////////////////////////////
@@ -121,9 +121,9 @@ short prevDefArray[10] = {
 long shotcount=0;
 
 // FUNCTIONS //////////////////////////////////////////////
-LRESULT CALLBACK WindowProc(HWND hwnd, 
-						    UINT msg, 
-                            WPARAM wparam, 
+LRESULT CALLBACK WindowProc(HWND hwnd,
+						    UINT msg,
+                            WPARAM wparam,
                             LPARAM lparam)
 {
 // this is the main message handler of the system
@@ -372,12 +372,12 @@ switch(msg)
 
 		case ID_EDIT_MOVE_TO_ICON:
 			//GotoDlgCtrl(GetDlgItem(ID_TEXTBOX_ITEM_TO_JUMP));
-			DialogBox(NULL, MAKEINTRESOURCE(IDD_HEXDIALOG), hwnd, reinterpret_cast<DLGPROC>(HexDlgProc));	
+			DialogBox(NULL, MAKEINTRESOURCE(IDD_HEXDIALOG), hwnd, reinterpret_cast<DLGPROC>(HexDlgProc));
 			if (textToShift[0])
 			{
 				long x = strtol(textToShift, NULL, 16);
 				if (x >= 0x100)
-				{ 
+				{
 					MessageBox(NULL, "Must be between 0 and 0xff.", "Bad input", MB_OK);
 					break;
 				}
@@ -699,7 +699,7 @@ switch(msg)
 				} else MessageBox(hwnd, "Hooray!", "No blank squares left.", MB_OK);
 
 			}
-			
+
 			break;
 
 		case ID_FLIP_12:
@@ -755,19 +755,19 @@ switch(msg)
 			break;
 		}
 
-	case WM_CREATE: 
+	case WM_CREATE:
         {
 				ReloadTheMap(hwnd);
 				drawMyIcons(hwnd);
 		return(0);
 		} break;
 
-	case WM_PAINT: 
+	case WM_PAINT:
 		{
 		// simply validate the window
 				ReloadTheMap(hwnd);
 				drawMyIcons(hwnd);
-		hdc = BeginPaint(hwnd,&ps);	 
+		hdc = BeginPaint(hwnd,&ps);
 		EndPaint(hwnd,&ps);
 		return(0);
    		} break;
@@ -839,8 +839,8 @@ switch(msg)
 
 			sprintf(buffer, "Cut/paste data:\r\n%02x,%02x to %02x,%02x.", bufferL, bufferU, bufferR+1, bufferD+1);
 			hdc = GetDC(hwnd);
-    
-			// set the colors 
+
+			// set the colors
 			SetTextColor(hdc, RGB(0,255,0));
 			SetBkColor(hdc,RGB(0,0,255));
 			SetBkMode(hdc,OPAQUE);
@@ -902,7 +902,7 @@ switch(msg)
 				sprintf(buffer, "%02d,%02d decimal\r\n%02x,%02x hex", xCurrent, yc2, xCurrent, yc2);
 				hdc = GetDC(hwnd);
 
-				// set the colors 
+				// set the colors
 				SetTextColor(hdc, RGB(0,255,0));
 				SetBkColor(hdc,RGB(0,0,0));
 				SetBkMode(hdc,OPAQUE);
@@ -933,8 +933,8 @@ switch(msg)
 
 				sprintf(buffer, "Unknown click area %d %d",MouseDownX, MouseDownY);
 				hdc = GetDC(hwnd);
-        
-				// set the colors 
+
+				// set the colors
 				SetTextColor(hdc, RGB(0,255,0));
 				SetBkColor(hdc,RGB(0,0,0));
 				SetBkMode(hdc,OPAQUE);
@@ -972,9 +972,9 @@ switch(msg)
 				}
 				else if (KEY_DOWN(VK_SHIFT))
 				{
-					UDWallArray[xCurrent][yCurrent] = 
-					LRWallArray[xCurrent][yCurrent] = 
-					UDWallArray[xCurrent][(yCurrent+1) % MAXICONSHIGH] = 
+					UDWallArray[xCurrent][yCurrent] =
+					LRWallArray[xCurrent][yCurrent] =
+					UDWallArray[xCurrent][(yCurrent+1) % MAXICONSHIGH] =
 					LRWallArray[(xCurrent+1) % MAXICONSWIDE][yCurrent] = 0;
 				}
 				else
@@ -1066,7 +1066,7 @@ switch(msg)
 							xCurrent--;
 							if (xCurrent & 0xf00)
 								xCurrent += MAXICONSWIDE - 1;
-							break; 
+							break;
 
 						case VK_RIGHT:
 							xCurrent++;
@@ -1095,7 +1095,7 @@ switch(msg)
 						sprintf(buffer, "%02d,%02d D\r\n%02x,%02x H", xCurrent, yc2, xCurrent, yc2);
 						hdc = GetDC(hwnd);
 
-						// set the colors 
+						// set the colors
 						SetTextColor(hdc, RGB(0,255,0));
 						SetBkColor(hdc,RGB(0,0,0));
 						SetBkMode(hdc,OPAQUE);
@@ -1343,7 +1343,7 @@ switch(msg)
 			case VK_6:
 			case VK_7:
 			case VK_8:
-			case VK_9:	
+			case VK_9:
 				if (KEY_DOWN(VK_SHIFT))
 				{
 					DrawPointerRectangle(hwnd, MAXICONSWIDE + 3 + WallIconNumber, 1, RGB(0,0,0));
@@ -1366,7 +1366,7 @@ switch(msg)
 
 			return(0);
 			break;
-        
+
     case WM_MOUSEMOVE: // whenever the mouse moves this is sent
          {
         // extract x,y and buttons
@@ -1381,7 +1381,7 @@ switch(msg)
 		if (workNotSaved)
 		{
 			long x = MessageBox(NULL, "Do you wish to exit without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
-			if (x != 1) 
+			if (x != 1)
 				return(0);
 		}
 		DestroyWindow(hwnd);
@@ -1398,7 +1398,7 @@ switch(msg)
 
     } // end switch
 
-// process any messages that we didn't take care of 
+// process any messages that we didn't take care of
 return (DefWindowProc(hwnd, msg, wparam, lparam));
 
 } // end WinProc
@@ -1417,7 +1417,7 @@ MSG		 msg;		// generic message
 HACCEL hAccelTable;
 
 // first fill in the window class stucture
-winclass.style			= CS_DBLCLKS | CS_OWNDC | 
+winclass.style			= CS_DBLCLKS | CS_OWNDC |
                           CS_HREDRAW | CS_VREDRAW;
 winclass.lpfnWndProc	= WindowProc;
 winclass.cbClsExtra		= 0;
@@ -1439,7 +1439,7 @@ if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, // class
 						  WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 					 	  0,0,	   // x,y
 						  16*(MAXICONSWIDE+24),16*(MAXICONSHIGH+4), // width, height
-						  NULL,	   // handle to parent 
+						  NULL,	   // handle to parent
 						  NULL,	   // handle to menu
 						  hinstance,// instance
 						  NULL)))	// creation parms
@@ -1488,18 +1488,18 @@ walldc = CreateCompatibleDC(localhdc);
 while(1)
 	{
 	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
-		{ 
+		{
 		// test if this is a quit
         if (msg.message == WM_QUIT)
            break;
-	
+
         if (!TranslateAccelerator(hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
 		} // end if
-    
+
     // main game processing goes here
 
 	} // end while
@@ -1542,7 +1542,7 @@ char        locFileTitle[MAXFILENAME];
   locOFN.nMaxFileTitle = MAXFILENAME;
   locOFN.lpstrInitialDir = NULL;
   locOFN.lpstrTitle = TEXT("Open...");
-  
+
   locOFN.Flags = OFN_FILEMUSTEXIST;
 
   locOFN.lpstrDefExt = NULL;
@@ -1553,7 +1553,7 @@ char        locFileTitle[MAXFILENAME];
 if (workNotSaved)
 {
 	long x = MessageBox(NULL, "Do you wish to open a new file without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
-	if (x != 1) 
+	if (x != 1)
 		return;
 }
 
@@ -1597,7 +1597,7 @@ char        locFileTitle[MAXFILENAME];
   locOFN.nMaxFileTitle = MAXFILENAME;
   locOFN.lpstrInitialDir = NULL;
   locOFN.lpstrTitle = TEXT("Open...");
-  
+
   locOFN.Flags = 0;
 
   locOFN.lpstrDefExt = NULL;
@@ -1608,7 +1608,7 @@ char        locFileTitle[MAXFILENAME];
 if (workNotSaved)
 {
 	long x = MessageBox(NULL, "Do you wish to open a new file without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
-	if (x != 1) 
+	if (x != 1)
 		return;
 }
 
@@ -1616,7 +1616,7 @@ if (workNotSaved)
   {
 	  long acc;
 	  long q = strlen(locFileName);
-	  if ((strlen(locFileName) < 4) || 
+	  if ((strlen(locFileName) < 4) ||
 		  !((locFileName[q-1] == 'p') && (locFileName[q-2] == 'a') && (locFileName[q-3] == 'm') && (locFileName[q-4] == '.')))
 		  strcat(locFileName, ".map");
 
@@ -1626,7 +1626,7 @@ if (workNotSaved)
 		  MessageBox(NULL, "The file already exists. Use ctrl-o to open.", "File exists", MB_OK);
 		  return;
 	  }
-	  
+
 	  strcpy(CurrentFileName, locFileName);
 	  changeBarText(hwnd);
 	  workNotSaved = 0;
@@ -1711,7 +1711,7 @@ void CreateNewMapfile(long x, long y)
 
 	fputc(x, F);
 	fputc(y, F);
-	
+
 	myW = x;
 	myH = y;
 
@@ -1733,7 +1733,7 @@ void SaveMapfile()
 
 	GetCurrentDirectory(200, buffer2);
 	strcat(MsgBoxMsg, buffer2);
-	
+
 	if (CurrentFileName[0] == 0)
 	{
 		q = MessageBox(hwnd, MsgBoxMsg, "Blank file", MB_OKCANCEL);
@@ -2001,7 +2001,7 @@ void SaveBitmapFile(HWND hwnd, short trim)
 	strcpy(buf2, CurrentFileName);
 	buf2[strlen(buf2)-3] = 'b';
 	buf2[strlen(buf2)-2] = 'm';
-	
+
 	if (!IsWindow(hwnd))	/* should never happen, but just in case... */
 		return;
 
@@ -2125,7 +2125,7 @@ void SaveBitmapFile(HWND hwnd, short trim)
 		WriteFile(fh,pBytes,numBytes,&bytesWritten,NULL);
 		CloseHandle(fh);
 	}
-	
+
 	DeleteObject(SelectObject(hDC,oldBM));
 	DeleteDC(hDC);
 	ReleaseDC(hwnd,hWinDC);
@@ -2162,7 +2162,7 @@ void drawMyIcons(HWND hwnd)
 
 				// output the message
 	TextOut(localhdc,600,0,buffer,strlen(buffer));
-	
+
 	sprintf(buffer, "Ground Icons");
 
 	TextOut(localhdc,600,128,buffer,strlen(buffer));
@@ -2171,7 +2171,7 @@ void drawMyIcons(HWND hwnd)
 }
 
 void changeBarText(HWND hwnd)
-{ 
+{
 	char guiTitle[100] = "GUI Map Drawer - ";
 	if (CurrentFileName[0] == 0)
 		strcat(guiTitle, "new file");
@@ -2188,7 +2188,7 @@ void regularTextOut(char x[100], HWND hwnd)
 
 	hdc = GetDC(hwnd);
 
-	// set the colors 
+	// set the colors
 	SetTextColor(hdc, RGB(0,255,0));
 	SetBkColor(hdc,RGB(0,0,0));
 	SetBkMode(hdc,OPAQUE);
@@ -2204,33 +2204,33 @@ void regularTextOut(char x[100], HWND hwnd)
 
 BOOL CALLBACK HexDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message) 
+    switch (message)
     {
 		case WM_INITDIALOG:
 			return TRUE;
 
         case WM_COMMAND:
-            switch (LOWORD(wParam)) 
-            { 
-                case IDOK: 
+            switch (LOWORD(wParam))
+            {
+                case IDOK:
                     GetDlgItemText(hwndDlg, ID_TEXTBOX_ITEM_TO_JUMP, textToShift, 80);
-                    EndDialog(hwndDlg, wParam); 
+                    EndDialog(hwndDlg, wParam);
 					return TRUE;
- 
-                    // Fall through. 
- 
+
+                    // Fall through.
+
                 case IDCANCEL:
 					textToShift[0] = 0;
-                    EndDialog(hwndDlg, wParam); 
-                    return TRUE; 
-            } 
-    } 
-    return FALSE; 
+                    EndDialog(hwndDlg, wParam);
+                    return TRUE;
+            }
+    }
+    return FALSE;
 }
 
 BOOL CALLBACK ShiftDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message) 
+    switch (message)
     {
 		case WM_INITDIALOG:
 			{
@@ -2243,8 +2243,8 @@ BOOL CALLBACK ShiftDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lPa
 			return TRUE;
 
         case WM_COMMAND:
-            switch (LOWORD(wParam)) 
-            { 
+            switch (LOWORD(wParam))
+            {
                 case IDOK:
 					{
 						char temp[80];
@@ -2287,16 +2287,16 @@ BOOL CALLBACK ShiftDlgProc(HWND hwndDlg, UINT message, WPARAM wParam, LPARAM lPa
 						EndDialog(hwndDlg, wParam);
 					}
 					return TRUE;
- 
-                    // Fall through. 
- 
+
+                    // Fall through.
+
                 case IDCANCEL:
 					textToShift[0] = 0;
-                    EndDialog(hwndDlg, wParam); 
-                    return TRUE; 
-            } 
-    } 
-    return FALSE; 
+                    EndDialog(hwndDlg, wParam);
+                    return TRUE;
+            }
+    }
+    return FALSE;
 }
 
 void setInitialChecks(HWND hwnd)
@@ -2478,7 +2478,7 @@ void shiftTheMap(HWND hwnd, short x, short y)
 void checkShiftExpand(HWND hwnd, short dl, short dr, short du, short dd)
 {
 	if (shiftLeft + dl < 0)
-	{ 
+	{
 		MessageBox(hwnd, "Too far left!", "Can't shift", MB_OK);
 		return;
 	}
@@ -2531,7 +2531,7 @@ void noteNewShiftBox(HWND hwnd)
 
 	sprintf(buffer, "Shift area: %d,%d to %d,%d      ", shiftLeft, shiftUp, shiftRight, shiftDown);
 
-	// set the colors 
+	// set the colors
 	SetTextColor(hdc, RGB(0,255,0));
 	SetBkColor(hdc,RGB(0,0,0));
 	SetBkMode(hdc,OPAQUE);
