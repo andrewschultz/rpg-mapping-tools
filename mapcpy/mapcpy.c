@@ -47,7 +47,7 @@ main(int argc, char * argv[])
 	long keepGoing = 1;
 	unsigned int count = 1;
 	short goDirection = 1;
-	long toSet = 0, temp = 0;
+	long toSet = 0, temp = 0, temp2 = 0;
 
 	long curLine = 0, tabIndex = 0;
 
@@ -326,11 +326,11 @@ main(int argc, char * argv[])
 
 		case '&':
 			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
-				hJump = (short)strtol(buffer+i+1, NULL, 16);
+				hJump = (short)strtol(buffer+2, NULL, 10);
 			else if ((buffer[1] == 'v') || (buffer[1] == 'V'))
-				vJump = (short)strtol(buffer+i+1, NULL, 16);
+				vJump = (short)strtol(buffer+2, NULL, 10);
 			else
-				hJump = vJump = (short)strtol(buffer+i, NULL, 16);
+				hJump = vJump = (short)strtol(buffer+1, NULL, 10);
 			break;
 
 		case '*':
@@ -856,13 +856,13 @@ main(int argc, char * argv[])
 							myary[i][j] = 0x4e;
 			}
 
-			temp = outW-outWi ? 4 - ((outW - outWi) % 4) : 0;
+			temp2 = ((outW-outWi) % 4) ? 4 - ((outW - outWi) % 4) : 0;
 			for (j=outHi; j < outH; j++)
 			{
 				for (i=outWi; i < outW; i++)
 					fputc(myary[i][outH-1-j], I);
 				if (i)
-					for (i=0; i < temp; i++)
+					for (i=0; i < temp2; i++)
 						fputc(0, I);
 			}
 
@@ -896,10 +896,10 @@ main(int argc, char * argv[])
 			if (localLaunch)
 			{
 				char cmdbuf[100] = "mspaint ";
-				strcat(cmdbuf, buffer+i+1);
+				strcat(cmdbuf, buffer+temp+1);
 				system(cmdbuf);
 			}
-			break;
+ 			break;
 
 		case '\\':
 			{
