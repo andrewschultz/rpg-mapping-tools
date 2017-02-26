@@ -129,7 +129,16 @@ char EgaHdr[ADJ_HEADER_SIZE] = {
 	(char)0xff, (char)0xff, (char)0xff,
 };
 
-short LCDs[10] = { 119, 128, 93, 109, 46, 107, 122, 37, 127, 47 };
+//the LCDs are from 0 to F
+//B is a tricky one since it could be equivalent to 6 or 8.
+//
+//   1
+// 2  4
+//   8
+//16  32
+//  64
+
+short LCDs[16] = { 119, 128, 93, 109, 46, 107, 123, 37, 127, 47, 63, 122, 83, 124, 95, 91 };
 
 typedef struct
 {
@@ -179,17 +188,22 @@ typedef struct
 	char cutColor;
 	short cutNext;
 
+	long unknownLCDColor;
+
 }
 DomesdayBook;
 
 DomesdayBook BmpHandler;
 
+//Function Declaractions
 int ReadInIcons(char [MAXSTRING]);
 short NMRRead(char [MAXSTRING]);
 void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
 short otherIcon(char x);
-void LCDize(short whichNum, short whichIcon, short usedYet);
+
+void unknownToLCD();
+void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short wm, short hm, short hw, short clearBefore);
 int LatestNumber(FILE *);
 void ReadRawData();
 int CharToNum(int);
@@ -203,6 +217,7 @@ void snip();
 void HelpBombOut();
 void AHSHelp();
 
+//Globals with defaults
 long InMapH = 256;
 long InMapW = 256;
 
@@ -216,6 +231,7 @@ short lcd_blank = 0;
 short curBase = 16;
 
 short foundExtra = 0;
+short fillUnknownWithLCD;
 
 main(int argc, char * argv[])
 {
@@ -239,6 +255,8 @@ main(int argc, char * argv[])
 	BmpHandler.iconNumBase = 16;
 	BmpHandler.startIconBase = 10;
 	BmpHandler.mainXtrBase = 10;
+
+	BmpHandler.unknownLCDColor = 0x808080;
 
 	for (i=0; i < 256; i++)
 		BmpHandler.IconDefined[i] = 0;
@@ -270,6 +288,13 @@ main(int argc, char * argv[])
 				break;
 
 			case 'a':
+				if (argv[CurComd][2] == 'f')
+				{
+					fillUnknownWithLCD = 1;
+					if (argv[CurComd][3] == '=')
+						BmpHandler.unknownLCDColor = strtol(argv[CurComd]+3, NULL, 16);
+					break;
+				}
 				AHSHelp();
 				return 0;
 
@@ -870,9 +895,11 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				}
 				temp = (short) strtol(buffer+1, NULL, 16);
 				for (i1 = 0; i1 < 10; i1++)
-					LCDize(i1, (short)(temp + i1), (short)(buffer[0] == 'L'));
+					LCDize((short)i1, (short)(temp + i1), (short)(buffer[0] == 'L'),
+						(short)(BmpHandler.TheWidth / 2),
+						(short)(BmpHandler.TheWidth / 2),
+						(short)((BmpHandler.TheWidth + 1) / 4), 1);
 				break;
-
 
 			case '\n':	//blank line
 				blankWarn++;
@@ -1780,12 +1807,34 @@ short otherIcon(char x)
 	}
 }
 
-void LCDize(short whichNum, short whichIcon, short allowPrevDefined)
+void unknownToLCD()
+{
+	long outlineColor = BmpHandler.unknownLCDColor ^ 0x808080;
+	short i;
+
+	if (BmpHandler.TheWidth != BmpHandler.TheHeight)
+	{
+		printf("Sorry, can't do anything when width != height. Or, rather, it's too tricky.\n");
+		return;
+	}
+
+	if (BmpHandler.TheWidth < 8)
+	{
+		printf("Sorry, that's too narrow. Need 8x8 at least.");
+		return;
+	}
+
+	for (i=0; i < 256; i++)
+	{
+		if (!BmpHandler.IconDefined[i])
+		{
+		}
+	}
+}
+
+void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short wm, short hm, short hw, short clearBefore)
 {
 	short lcdbin = LCDs[whichNum];
-	short wm = BmpHandler.TheWidth / 2;
-	short hm = BmpHandler.TheWidth / 2;
-	short hw = (BmpHandler.TheWidth + 1) / 4;
 	short i, j;
 
 	for (j=0; j < BmpHandler.TheHeight; j++)
