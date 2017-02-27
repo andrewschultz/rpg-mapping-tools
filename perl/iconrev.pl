@@ -131,7 +131,7 @@ for my $k (sort { $a <=> $b } keys %gotByte)
   read(A, $buffer, 4);
   @byteBuf = split(//, $buffer);
   $temp = 0;
-  for (0..2) { $temp *= 256; $temp += ord($byteBuf[$_]); }
+  for (0..2) { $temp += ord($byteBuf[$_])  * (256 ** $_); }
   $palette{$k} = sprintf("%06x", $temp);
   print "$k => $tempcolor{$k}, $palette{$k}\n";
 }

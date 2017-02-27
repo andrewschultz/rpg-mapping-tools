@@ -2,99 +2,35 @@
 # note MCM extension is a bit annoying to type in all the time
 e=MCM	O=2
 W600	H600	w42	h42
+&v-8
 #############################big outside map
 x0	y0
-rM00E01/
-dy-8	rM08E01/
-dy-8	rM16E01/
-dy-8	rM24E01/
-dy-8	rM32E01/
-dy-8	rM40E01/
-dy-8	rM48E01/
-dy-8	rM56E01/
-u32	rM01E01/
-dy-8	rM09E01/
-dy-8	rM17E01/
-dy-8	rM25E01/
-dy-8	rM33E01/
-dy-8	rM41E01/
-dy-8	rM49E01/
-dy-8	rM57E01/
-u32	rM02E01/
-dy-8	rM10E01/
-dy-8	rM18E01/
-dy-8	rM26E01/
-dy-8	rM34E01/
-dy-8	rM42E01/
-dy-8	rM50E01/
-dy-8	rM58E01/
-u32	rM03E01/
-dy-8	rM11E01/
-dy-8	rM19E01/
-dy-8	rM27E01/
-dy-8	rM35E01/
-dy-8	rM43E01/
-dy-8	rM51E01/
-dy-8	rM59E01/
-u32	rM04E01/
-dy-8	rM12E01/
-dy-8	rM20E01/
-dy-8	rM28E01/
-dy-8	rM36E01/
-dy-8	rM44E01/
-dy-8	rM52E01/
-dy-8	rM60E01/
-u32	rM05E01/
-dy-8	rM13E01/
-dy-8	rM21E01/
-dy-8	rM29E01/
-dy-8	rM37E01/
-dy-8	rM45E01/
-dy-8	rM53E01/
-dy-8	rM61E01/
-u32	rM06E01/
-dy-8	rM14E01/
-dy-8	rM22E01/
-dy-8	rM30E01/
-dy-8	rM38E01/
-dy-8	rM46E01/
-dy-8	rM54E01/
-dy-8	rM62E01/
-u32	rM07E01/
-dy-8	rM15E01/
-dy-8	rM23E01/
-dy-8	rM31E01/
-dy-8	rM39E01/
-dy-8	rM47E01/
-dy-8	rM55E01/
-dy-8	rM63E01/
+rM00E01/	rM08E01/	rM16E01/	rM24E01/	rM32E01/	rM40E01/	rM48E01/	rM56E01/
+u32	rM01E01/	rM09E01/	rM17E01/	rM25E01/	rM33E01/	rM41E01/	rM49E01/	rM57E01/
+u32	rM02E01/	rM10E01/	rM18E01/	rM26E01/	rM34E01/	rM42E01/	rM50E01/	rM58E01/
+u32	rM03E01/	rM11E01/	rM19E01/	rM27E01/	rM35E01/	rM43E01/	rM51E01/	rM59E01/
+u32	rM04E01/	rM12E01/	rM20E01/	rM28E01/	rM36E01/	rM44E01/	rM52E01/	rM60E01/
+u32	rM05E01/	rM13E01/	rM21E01/	rM29E01/	rM37E01/	rM45E01/	rM53E01/	rM61E01/
+u32	rM06E01/	rM14E01/	rM22E01/	rM30E01/	rM38E01/	rM46E01/	rM54E01/	rM62E01/
+u32	rM07E01/	rM15E01/	rM23E01/	rM31E01/	rM39E01/	rM47E01/	rM55E01/	rM63E01/
 O=4
 #####################Phoroshe Tulara
 x270	y0
-rM00E02/
-dy-8	rM02E02/
-u32	rM01E02/
-dy-8	rM03E02/
-u43	rM10E02/
-dy-8	rM12E02/
-u32	rM11E02/
-dy-8	rM13E02/
+rM00E02/	rM02E02/
+u32	rM01E02/	rM03E02/
+u43	rM10E02/	rM12E02/
+u32	rM11E02/	rM13E02/
 #####################Haraza Kafari
 x270	y78
-rM00E03/
-dy-8	rM02E03/
-u32	rM01E03/
-dy-8	rM03E03/
-u43	rM10E03/
-dy-8	rM12E03/
-u32	rM11E03/
-dy-8	rM13E03/
+rM00E03/	rM02E03/
+u32	rM01E03/	rM03E03/
+u43	rM10E03/	rM12E03/
+u32	rM11E03/	rM13E03/
 #########################################Marat Noriin
 x420	y0
-rM00E04/
-dy-8	rM01E04/
-u43	rM10E04/
-dy-8	rM11E04/
+rM00E04/	rM01E04/
+u43	rM10E04/	rM11E04/
+&
 ############################################Galaq (2x1) Rulaan (2x2)
 x270	y166
 rM00E05/
@@ -228,4 +164,3 @@ rM41E25/	dy-8
 rM43E25/
 >blo.bmp
 ;
-

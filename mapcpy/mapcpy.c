@@ -714,7 +714,7 @@ main(int argc, char * argv[])
 				}
 				if (vertical == wasVert)
 					printf("Warning line %s doesn't really change anything as vertical was already %c.\n",
-						curLine, tabIndex, buffer[1]);
+						lineTab, buffer[1]);
 			}
 			break;
 
