@@ -1,4 +1,4 @@
-/*Mapconv.c
+ /*Mapconv.c
 Takes a bitmap file and a text file on the side and processes them.
 Search for HelpBombOut for the parameters it takes in.
 AHSHelp gives parameters for an AHS file.
@@ -51,6 +51,8 @@ Maybe have option to start with a certain line or end with it as well.
 
 #define BLANKICON 0
 #define BLANKCOLOR 8
+
+#define TRANSPARENT_LCD 2
 
 #define MAXICONSIZE 16
 
@@ -138,7 +140,12 @@ char EgaHdr[ADJ_HEADER_SIZE] = {
 //16  32
 //  64
 
-short LCDs[16] = { 119, 128, 93, 109, 46, 107, 123, 37, 127, 47, 63, 122, 83, 124, 95, 91 };
+short LCDs[16] = {
+	119, 128, 93, 109,
+	46, 107, 123, 37,
+	127, 47, 63, 122,
+	83, 124, 91, 27
+};
 
 typedef struct
 {
@@ -203,7 +210,7 @@ void OneIcon(int, char [MAXSTRING], FILE *);
 short otherIcon(char x);
 
 void unknownToLCD();
-void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short wm, short hm, short hw, short clearBefore);
+void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short xi, short yi, short dx, short dy, short clearBefore);
 int LatestNumber(FILE *);
 void ReadRawData();
 int CharToNum(int);
@@ -796,6 +803,7 @@ int ReadInIcons(char yzzy[MAXSTRING])
 	char buffer[200];
 	short i1, i2, i3;
 	short blankWarn = 0;
+	short keepGoing = 1;
 
 	if (foundExtra)
 	{
@@ -816,9 +824,11 @@ int ReadInIcons(char yzzy[MAXSTRING])
 		return INVALID;
 	}
 
-	while(1)
+	while(keepGoing)
 	{
-		fgets(buffer, 40, F);
+		if (fgets(buffer, 100, F) == NULL)
+			break;
+
 		lineInFile++;
 		//printf("Reading %s", buffer);
 
@@ -896,9 +906,10 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				temp = (short) strtol(buffer+1, NULL, 16);
 				for (i1 = 0; i1 < 10; i1++)
 					LCDize((short)i1, (short)(temp + i1), (short)(buffer[0] == 'L'),
-						(short)(BmpHandler.TheWidth / 2),
-						(short)(BmpHandler.TheWidth / 2),
-						(short)((BmpHandler.TheWidth + 1) / 4), 1);
+						(short)((BmpHandler.TheWidth + 1) / 4), (short) 1, //Xi Yi
+						(short)((BmpHandler.TheWidth/4) + ((BmpHandler.TheWidth+1)/4)),
+						(short)((BmpHandler.TheWidth / 2) - 1), //dY
+						(short) 1);
 				break;
 
 			case '\n':	//blank line
@@ -948,14 +959,18 @@ int ReadInIcons(char yzzy[MAXSTRING])
 				break;
 
 			case ';':
-				return THEEND;
+				keepGoing = 0;
+				break;
 
 			default:
 				printf("Invalid command line %d: %s", lineInFile, buffer);
 				return INVALID;
 		}
 	}
-	return VALID;
+	if (fillUnknownWithLCD)
+		unknownToLCD();
+
+ 	return VALID;
 
 }
 
@@ -1811,6 +1826,8 @@ void unknownToLCD()
 {
 	long outlineColor = BmpHandler.unknownLCDColor ^ 0x808080;
 	short i;
+	short wd = (BmpHandler.TheWidth-4) >> 1;
+	short hd = (BmpHandler.TheHeight-1) >> 1;
 
 	if (BmpHandler.TheWidth != BmpHandler.TheHeight)
 	{
@@ -1828,24 +1845,31 @@ void unknownToLCD()
 	{
 		if (!BmpHandler.IconDefined[i])
 		{
+			printf("Adding %02x.\n", i);
+			LCDize((short)(i >> 4), i, 0, 1, 1, wd, (short)((BmpHandler.TheHeight)/2-1), 1);
+			LCDize((short)(i & 0xf), i, TRANSPARENT_LCD,
+				(short)(wd+3), 1,	//xi, yi
+				wd, (short)((BmpHandler.TheHeight)/2-1), //dx, dy
+				1);
 		}
 	}
 }
 
-void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short wm, short hm, short hw, short clearBefore)
+void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short xi, short yi, short dx, short dy, short clearBefore)
 {
 	short lcdbin = LCDs[whichNum];
 	short i, j;
-
-	for (j=0; j < BmpHandler.TheHeight; j++)
-		for (i=0; i < BmpHandler.TheWidth; i++)
-			BmpHandler.Icons[whichIcon][i][j] = lcd_blank;
 
 	if ((allowPrevDefined == 0) && (BmpHandler.IconDefined[whichIcon] != 0))
 	{
 		printf("Icon %x already used, so I am not reassigning it.\n", whichIcon);
 		return;
 	}
+
+	if (allowPrevDefined != TRANSPARENT_LCD)
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0; i < BmpHandler.TheWidth; i++)
+				BmpHandler.Icons[whichIcon][i][j] = lcd_blank;
 
 	if ((BmpHandler.IconDefined[whichIcon] != 0) && (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS))
 	{
@@ -1854,40 +1878,43 @@ void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short wm, s
 
 	BmpHandler.IconDefined[whichIcon] = 1;
 
-	if (hw < 2)
-		hw = 2;
+	if (dx < 2)
+	{
+		printf("Uh-oh, width is too narrow.\n");
+		return;
+	}
 
 	if (lcdbin & 1)
-		for (i= wm - hw; i <= wm + hw; i++)
+		for (i = xi; i <= dx+xi; i++)
 			BmpHandler.Icons[whichIcon][i][1] = lcd_fill;
 
 	if (lcdbin & 2)
-		for (i= 1; i <= hm; i++)
-			BmpHandler.Icons[whichIcon][wm-hw][i] = lcd_fill;
+		for (i = yi; i <= yi+dy; i++)
+			BmpHandler.Icons[whichIcon][xi][i] = lcd_fill;
 
 	if (lcdbin & 4)
-		for (i= 1; i <= hm; i++)
-			BmpHandler.Icons[whichIcon][wm+hw][i] = lcd_fill;
+		for (i = yi; i <= yi+dy; i++)
+			BmpHandler.Icons[whichIcon][xi+dx][i] = lcd_fill;
 
 	if (lcdbin & 8)
-		for (i= wm - hw; i <= wm + hw; i++)
-			BmpHandler.Icons[whichIcon][i][hm] = lcd_fill;
+		for (i = xi; i <= xi+dx; i++)
+			BmpHandler.Icons[whichIcon][i][yi+dy] = lcd_fill;
 
 	if (lcdbin & 16)
-		for (i= hm; i <= BmpHandler.TheHeight - 2; i++)
-			BmpHandler.Icons[whichIcon][wm-hw][i] = lcd_fill;
+		for (i = yi+dy; i <= yi+dy*2; i++)
+			BmpHandler.Icons[whichIcon][xi][i] = lcd_fill;
 
 	if (lcdbin & 32)
-		for (i= hm; i <= BmpHandler.TheHeight - 2; i++)
-			BmpHandler.Icons[whichIcon][wm+hw][i] = lcd_fill;
+		for (i = yi+dy; i <= yi+dy*2; i++)
+			BmpHandler.Icons[whichIcon][xi+dx][i] = lcd_fill;
 
 	if (lcdbin & 64)
-		for (i= wm - hw; i <= wm + hw; i++)
-			BmpHandler.Icons[whichIcon][i][BmpHandler.TheHeight - 2] = lcd_fill;
+		for (i = xi; i <= dx+xi; i++)
+			BmpHandler.Icons[whichIcon][i][yi+dy*2] = lcd_fill;
 
 	if (lcdbin & 128)
-		for (i=1; i <= BmpHandler.TheHeight - 2; i++)
-			BmpHandler.Icons[whichIcon][wm][i] = lcd_fill;
+		for (i = 1; i <= yi+dy*2; i++)
+			BmpHandler.Icons[whichIcon][xi+dx/2][i] = lcd_fill;
 }
 
 int LatestNumber(FILE * F)
