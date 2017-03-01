@@ -222,6 +222,7 @@ void printGrid();
 void snip();
 
 void HelpBombOut();
+void helpMinorFeatures();
 void AHSHelp();
 
 //Globals with defaults
@@ -520,6 +521,7 @@ main(int argc, char * argv[])
 void HelpBombOut()
 {
 	printf("Flag -? for this help command.\n\
+Flag -?? for minor features.\n\
 Flag -0 so bin file puts 0s for known.\n\
 Flag -a shows options for AHS files and how to write them.n\
 Flag -b specifies blank icon.\n\
@@ -541,6 +543,13 @@ Flag -u to debug squares with no icon.\n\
 Flag -uf to debug squares with no icon, only showing the first.\n\
 Flag -v to reVerse the default top-down process of -uf.\n\
 Flag -x to add extra modifications to the base BMP files, -xn to add -xtr, and -x0 to disable XTR file/add -nox.\n");
+
+}
+
+void helpMinorFeatures()
+{
+	printf("-xy signifies t hat this is Xyphus, for a jagged map\n\
+-i(s/h/w) forces icon width/height, mostly used for testing\n");
 
 }
 
