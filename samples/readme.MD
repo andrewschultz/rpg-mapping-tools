@@ -1,6 +1,8 @@
-# samples directory
+# Samples Directory Readme
 
 There are a lot of subdirectories here. More specifically, there's one for each series. If a series isn't mentioned specifically below, it means there's only one game tracked. Most of these games are Apple and/or PC, but often I go with the PC version of the game, because it's easier to extract the maps. You can pretty much find a file labeled map.* or *.map. Or there are a lot of files with the same dimensions, and they're not icon files.
+
+## Major Subdirectories
 
 * 2400 AD is a one-player top-down RPG with cute bright graphics. It's the first one I ever wrote maps for on my own (I wrote Deathlord maps with Wilson Lau). I had a Geocities website way back when. I've included files to derive maps from the Apple and PC versions.
 * Ancient Legends is, ironically, the most recent of these games, published in 2016. It has a sequel under development, Lawless Legends.
@@ -15,6 +17,11 @@ There are a lot of subdirectories here. More specifically, there's one for each 
 Note that a lot of games with 3-d views, such as Might and Magic, aren't currently included. They are in the sister directory samples-3d.
 
 Also note some games may be partially included. For instance, Bard's Tale has a 2-d map for Skara Brae, which can be included here.
+
+## How to use the files
+
+* TXT files can be fed into the mapcpy app which has code in a sister directory.
+* The resulting BMPs can be used with (if available) NMR and AHS files and an optional XTR file to create full maps with mapconv. I haven't recreated a lot of these files, but they are what mapconv uses. NOTE a goal is to merge mapcpy and the basic mapconv. Until I do that I probably won't have many AHS/XTR/NMR files added.
 
 # future projects (?)
 
