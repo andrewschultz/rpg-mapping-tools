@@ -240,6 +240,8 @@ short curBase = 16;
 short foundExtra = 0;
 short fillUnknownWithLCD;
 
+short xyphus = 0;
+
 main(int argc, char * argv[])
 {
 	char myFile[50];
@@ -436,6 +438,11 @@ main(int argc, char * argv[])
 				break;
 
 			case 'x':
+				if (argv[CurComd][2] == 'y')
+				{
+					xyphus = 1;
+					break;
+				}
 				if (argv[CurComd][2] == '0')
 				{
 					MAPCONV_STATUS |= MAPCONV_NOTE_NO_XTR;
@@ -1021,6 +1028,7 @@ void WriteToBmp()
 	FILE * F3;
 	char outStr[MAXSTRING];
 	short len = strlen(BmpHandler.OutStr);
+	short xyphusJump = 0;
 
 	int i, j, i2, j2, j3, count;
 
@@ -1137,6 +1145,13 @@ void WriteToBmp()
 	for (j = BmpHandler.Yi;  j < BmpHandler.Yf;  j++)
 		for (j2 = 0;  j2 < BmpHandler.TheHeight;  j2++)
 		{
+			if (xyphus && (j & 1))
+			{
+				xyphusJump = 1;
+				for (i2=0; i2 < BmpHandler.TheWidth / 2; i2++)
+					putc(0, F3);
+			}
+
 			for (i = BmpHandler.Xi;  i < BmpHandler.Xf;  i++)
 				for (i2 = 0;  i2 < BmpHandler.TheWidth;  i2++)
 				{
@@ -1156,6 +1171,10 @@ void WriteToBmp()
                   if (temp % 4)
                     for (j3=(temp%4);  j3<4;  j3++)
 			    fputc(0, F3);
+
+			if (xyphusJump)
+				for (i2=0; i2 < (BmpHandler.TheWidth+1) / 2; i2++)
+					putc(0, F3);
 		}
 	fclose(F1);
 	fclose(F3);
