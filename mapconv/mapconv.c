@@ -263,6 +263,8 @@ main(int argc, char * argv[])
 	BmpHandler.startIconBase = 10;
 	BmpHandler.mainXtrBase = 10;
 
+	BmpHandler.TheHeight = BmpHandler.TheWidth = 0;
+
 	BmpHandler.unknownLCDColor = 0x808080;
 
 	for (i=0; i < 256; i++)
@@ -348,6 +350,33 @@ main(int argc, char * argv[])
 				break;
 
 			case 'i':
+				if (argv[CurComd][2] == 's')
+				{
+					if (argc > CurComd)
+						BmpHandler.TheHeight = BmpHandler.TheWidth = (short)strtol(argv[CurComd+1], NULL, 10);
+					else
+						printf("-i(s/h/w) requires a numerical argument after.");
+					CurComd++;
+					break;
+				}
+				if (argv[CurComd][2] == 'h')
+				{
+					if (argc > CurComd)
+						BmpHandler.TheHeight = (short)strtol(argv[CurComd+1], NULL, 10);
+					else
+						printf("-i(s/h/w) requires a numerical argument after.");
+					CurComd++;
+					break;
+				}
+				if (argv[CurComd][2] == 'w')
+				{
+					if (argc > CurComd)
+						BmpHandler.TheWidth = (short)strtol(argv[CurComd+1], NULL, 10);
+					else
+						printf("-i(s/h/w) requires a numerical argument after.");
+					CurComd++;
+					break;
+				}
 				if (argv[CurComd][2] == 'b')
 				{
 					MAPCONV_STATUS |= MAPCONV_IGNORE_BINS;
@@ -814,9 +843,6 @@ int ReadInIcons(char yzzy[MAXSTRING])
 		for (i2 = 0;  i2 < MAXICONSIZE;  i2++)
 			for (i3 = 0;  i3 < MAXICONSIZE;  i3++)
                                 BmpHandler.Icons[i1][i3][i2] = BmpHandler.BlankColor;
-
-	BmpHandler.TheHeight = 8;
-	BmpHandler.TheWidth = 8;
 
 	if (F == NULL)
 	{
