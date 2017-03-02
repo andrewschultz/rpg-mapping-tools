@@ -25,6 +25,7 @@ use warnings;
 ######################these really should be set. If not, I slap the user on the wrist.
 my $iconHeight = 0;
 my $iconWidth = 0;
+my $threshhold = 2;
 
 ######################these don't need to but may come in handy
 my $bottomEdge = 0;
@@ -57,6 +58,7 @@ while ($count <= $#ARGV)
   /^-ct$/ && do { $topEdge = $that; $count += 2; next; };
   /^-cr$/ && do { $bottomEdge = $that; $count += 2; next; };
   /^-f$/ && do { $fileName = $that; $count += 2; next; };
+  /^-t$/ && do { $threshhold = $that; $count += 2; next; };
   /^-x$/ && do { @excludeArray = split(/,/, $that); $count += 2; next; };
   /^-\?$/ && do { usage(); };
   print "Invalid parameter $this\n\n";
@@ -95,6 +97,9 @@ sub showLikelyIcons
    my %gotByte;
    my %palette;
    my $col;
+
+   my $badPattern = 0;
+   my $belowThreshhold = 0;
 
    my $ih;
    my $temp;
@@ -151,11 +156,14 @@ for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
 {
   for $col (@excludeArray)
   {
-  if ($iconHash{$ih} =~ /\b$col\b/) { next OUTER; }
+  if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
   }
-  if ($iconHash{$ih} > 1) { print "#icon with $iconHash{$ih} hits\n0x??\n"; print vflip($ih); }
+  if ($iconHash{$ih} >= $threshhold) { print "#icon with $iconHash{$ih} hits\n0x??\n"; print vflip($ih); }
+  else { $belowThreshhold++; }
 }
 
+if ($badPattern) { print "#$badPattern icons with bad patterns were ignored.\n"; }
+if ($belowThreshhold) { print "#$belowThreshhold icons occurred below $threshhold times and were ignored.\n"; }
 }
 
 sub vflip
