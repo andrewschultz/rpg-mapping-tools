@@ -19,6 +19,9 @@
 use Image::Info qw(image_info dim);
 use Image::Size;
 
+#use List::MoreUtils qw(uniq);
+use List::Util qw[min max];
+
 use strict;
 use warnings;
 
@@ -34,6 +37,7 @@ my $leftEdge = 0;
 my $rightEdge = 0;
 my $fileName = "";
 my @excludeArray = ();
+my @binAry = ();
 
 my $toRead = 0;
 
@@ -50,13 +54,14 @@ while ($count <= $#ARGV)
 
   for ($this)
   {
+  /^-b$/ && do { @binAry = split(/,/, $that); verifyBinArray(); $count += 2; next; };
   /^-h$/ && do { $iconHeight = $that; $count += 2; next; };
   /^-w$/ && do { $iconWidth = $that; $count += 2; next; };
   /^-(hw|wh|s)$/ && do { $iconWidth = $iconHeight = $that; $count += 2; next; };
   /^-cl$/ && do { $leftEdge = $that; $count += 2; next; };
-  /^-cb$/ && do { $rightEdge = $that; $count += 2; next; };
+  /^-cr$/ && do { $rightEdge = $that; $count += 2; next; };
   /^-ct$/ && do { $topEdge = $that; $count += 2; next; };
-  /^-cr$/ && do { $bottomEdge = $that; $count += 2; next; };
+  /^-cb$/ && do { $bottomEdge = $that; $count += 2; next; };
   /^-f$/ && do { $fileName = $that; $count += 2; next; };
   /^-t$/ && do { $threshhold = $that; $count += 2; next; };
   /^-x$/ && do { @excludeArray = split(/,/, $that); $count += 2; next; };
@@ -103,15 +108,37 @@ sub showLikelyIcons
 
    my $ih;
    my $temp;
+   my $binWidth;
+   my $binHeight;
+
+   #side binary file vars
+   my $doBin = defined($binAry[0]);
+   my %binProb;
+   my $binOffset;
+   my @binVals;
 
   open(A, "$fileName") || die ("Can't open $fileName!");
   binmode(A);
+
+  if ($doBin)
+  {
+    open(B, $binAry[0]) || die ("Couldn't open $binAry[0]");
+	binmode(B);
+	($binWidth, $binHeight) = imgsize($binAry[0]);
+  }
 
   seek(A, 0x436, 0);
   seek(A, $bottomEdge * $imgWidth, 1);
 
   for ($j2=0; $j2 < ($imgHeight-$topEdge-$bottomEdge) / $iconHeight; $j2++)
   {
+    if ($doBin)
+	{
+	  $binOffset = $binAry[1] + $binWidth * ($binHeight - $binAry[2] -$j2 - 1);
+	  seek(B, 0x436+$binOffset, 0);
+	  read(B, $buffer, $binAry[3] - $binAry[1]);
+	   @binVals = split(//, $buffer);
+	}
     @iconList = ();
     for ($j1=0; $j1 < $iconHeight; $j1++)
 	{
@@ -128,10 +155,32 @@ sub showLikelyIcons
       }
 	  #for (0..$#iconList) { print "$_ $iconList[$_]\n"; }
     }
+
+	if ($doBin)
+	{
+	for (0..min($#iconList, $#binVals))
+	{
+	  if (!$binProb{ord($binVals[$_])})
+	  {
+	    $binProb{ord($binVals[$_])} = $iconList[$_];
+	  }
+	}
+	}
     for (@iconList) { $iconHash{$_}++; }
   }
 
  $mytempcolor = 0;
+
+ if ($doBin)
+ {
+   my $idx;
+   open(C, "> iconrev-out.txt");
+   for $idx(sort {$a <=> $b} keys %binProb)
+   {
+     print C sprintf("0x%02x\n%s\n", $idx, vflip($binProb{$idx}));
+   }
+   close(C);
+ }
 
 for my $k (sort { $a <=> $b } keys %gotByte)
 {
@@ -171,15 +220,31 @@ sub vflip
   my $x;
   my $y;
   my $temp = $_[0];
+  my $retVal = "";
+
   $temp =~ s/^-//;
   my @a1 = split(/-/, $temp);
-  @a1 = map {$tempcolor{$_}} @a1;
+  @a1 = map {defined($tempcolor{$_}) ? $tempcolor{$_} : $_ } @a1;
   my @a2 = ();
   for $y (reverse (0..$iconHeight-1))
   {
-    print @a1[$y*$iconWidth..$y*$iconWidth+$iconWidth-1];
-	print "\n";
+    #print @a1[$y*$iconWidth..$y*$iconWidth+$iconWidth-1];
+	#print "\n";
+    $retVal .= join("", @a1[$y*$iconWidth..$y*$iconWidth+$iconWidth-1]) . "\n";
+	#print "$y: Ret now $retVal!\n";
   }
+  return $retVal;
+}
+
+sub verifyBinArray
+{
+  if ($#binAry != 4) { die ("Binary array needs 5 arguments: file, Xi, Yi, Xf, Yf."); }
+  if (! -f $binAry[0]) { die ("No file $binAry[0]."); }
+  if ($binAry[1] > $binAry[3]) { die("Xi needs to be less than Xf."); }
+  if ($binAry[2] > $binAry[4]) { die("Yi needs to be less than Yf."); }
+  my $type = Image::Info::image_type($binAry[0]);
+  if ((!defined($type->{file_type})) || ($type->{file_type} ne "BMP"))
+  { die ("$binAry[0] must be a BMP file. Have " . (defined($type->{file_type}) ? $type->{file_type} : "nothing") ."."); }
 }
 
 sub usage
