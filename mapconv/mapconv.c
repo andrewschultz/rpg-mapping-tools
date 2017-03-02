@@ -203,7 +203,7 @@ DomesdayBook;
 DomesdayBook BmpHandler;
 
 //Function Declaractions
-int ReadInIcons(char [MAXSTRING]);
+int ReadInIcons(char [MAXSTRING], short reset);
 short NMRRead(char [MAXSTRING]);
 void putlong(long, FILE *);
 void OneIcon(int, char [MAXSTRING], FILE *);
@@ -462,7 +462,10 @@ main(int argc, char * argv[])
 				printf("%s is not a known option, bailing out.\n", argv[CurComd]);
 
 			case '?':
-				HelpBombOut();
+				if (argv[CurComd][2] == '?')
+					helpMinorFeatures();
+				else
+					HelpBombOut();
 				return 0;
 
 			}
@@ -524,6 +527,7 @@ void HelpBombOut()
 Flag -?? for minor features.\n\
 Flag -0 so bin file puts 0s for known.\n\
 Flag -a shows options for AHS files and how to write them.n\
+Flag -af fills unknown squares with LCD of their hex values.n\
 Flag -b specifies blank icon.\n\
 Flag -c to set default blank color, in hexadecimal.\n\
 Flag -d to get rid of *.png.(bak/000) files.\n\
@@ -541,14 +545,13 @@ Flag -S to print out sort warning for icon files.\n\
 Flag -t(xx) to flag transparency and specify the color. Black=default.\n\
 Flag -u to debug squares with no icon.\n\
 Flag -uf to debug squares with no icon, only showing the first.\n\
-Flag -v to reVerse the default top-down process of -uf.\n\
 Flag -x to add extra modifications to the base BMP files, -xn to add -xtr, and -x0 to disable XTR file/add -nox.\n");
 
 }
 
 void helpMinorFeatures()
 {
-	printf("-xy signifies t hat this is Xyphus, for a jagged map\n\
+	printf("-xy signifies mapping for Xyphus, which has a half-icon shifted jagged map\n\
 -i(s/h/w) forces icon width/height, mostly used for testing\n");
 
 }
@@ -683,7 +686,7 @@ short NMRRead(char FileStr[MAXSTRING])
 			strcat(BmpHandler.BmpStr, ".bmp");
 			ReadRawData();
 
-			if (ReadInIcons(BmpHandler.PixStr) == INVALID)
+			if (ReadInIcons(BmpHandler.PixStr, 1) == INVALID)
 			{
 				printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
 				return NMR_READ_PIXCORRUPT;
@@ -753,7 +756,7 @@ short NMRRead(char FileStr[MAXSTRING])
 			strcpy(BmpHandler.PixStr, BufStr + 2);
 			snip(BmpHandler.PixStr);
 
-			if (ReadInIcons(BmpHandler.PixStr) == INVALID)
+			if (ReadInIcons(BmpHandler.PixStr, 1) == INVALID)
 			{
 				printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
 				return NMR_READ_PIXCORRUPT;
@@ -840,7 +843,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 }
 
-int ReadInIcons(char yzzy[MAXSTRING])
+int ReadInIcons(char yzzy[MAXSTRING], short reset)
 {
 	FILE * F = fopen(yzzy, "r");
 	short hwdef = 0;
@@ -855,10 +858,17 @@ int ReadInIcons(char yzzy[MAXSTRING])
 		printf("WARNING: i= is before x= in the NMR file. This may cause false errors to be thrown.\n");
 	}
 
-	for (i1 = 0;  i1 < NUM_ICONS;  i1++)
-		for (i2 = 0;  i2 < MAXICONSIZE;  i2++)
-			for (i3 = 0;  i3 < MAXICONSIZE;  i3++)
-                                BmpHandler.Icons[i1][i3][i2] = BmpHandler.BlankColor;
+	if (reset == 1)
+	{
+		for (i1 = 0;  i1 < NUM_ICONS;  i1++)
+		{
+			BmpHandler.IconDefined[i1] = 0;
+			BmpHandler.IconUsed[i1] = 0;
+			for (i2 = 0;  i2 < MAXICONSIZE;  i2++)
+				for (i3 = 0;  i3 < MAXICONSIZE;  i3++)
+					BmpHandler.Icons[i1][i3][i2] = BmpHandler.BlankColor;
+		}
+	}
 
 	if (F == NULL)
 	{
@@ -1834,12 +1844,14 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	}
 
 	BmpHandler.IconDefined[q] = 1;
+	BmpHandler.IconUsed[q] = 1;
 
 	if (!processFurther)
 		return;
 
 	for (j=0;  j < BmpHandler.TheHeight; j++)
 	{
+		BmpHandler.IconUsed[q] = 1;
 		lineInFile++;
 		fgets(buffer, 40, F);
 		for (i=0;  i < BmpHandler.TheWidth;  i++)
@@ -1889,9 +1901,10 @@ void unknownToLCD()
 		return;
 	}
 
-	if (BmpHandler.TheWidth < 8)
+	if ((BmpHandler.TheWidth < 8) || (BmpHandler.TheHeight < 8))
 	{
-		printf("Sorry, that's too narrow. Need 8x8 at least.");
+		printf("Sorry, dimensions of %dx%d is too narrow to LCDize unknown icons. I'll need 8x8 at least.\n",
+			BmpHandler.TheWidth, BmpHandler.TheHeight);
 		return;
 	}
 
@@ -1899,7 +1912,7 @@ void unknownToLCD()
 	{
 		if (!BmpHandler.IconDefined[i])
 		{
-			printf("Adding %02x.\n", i);
+			//printf("Adding %02x.\n", i);
 			LCDize((short)(i >> 4), i, 0, 1, 1, wd, (short)((BmpHandler.TheHeight)/2-1), 1);
 			LCDize((short)(i & 0xf), i, TRANSPARENT_LCD,
 				(short)(wd+3), 1,	//xi, yi

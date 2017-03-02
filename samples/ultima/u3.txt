@@ -6,7 +6,7 @@
 #
 #
 E=ULT	O=0
-W320	H320	x0	y0	w64	h64
+W300	H300	x0	y0	w64	h64
 ###########################towns and outside
 ###########################ambrosia/sosaria included to keep map orderly
 rBRITISH/	dy+2	rDEATH/	dy+2	rEXODUS/	dy+2	rFAWN/
