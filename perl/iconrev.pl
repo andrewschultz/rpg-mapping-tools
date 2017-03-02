@@ -39,6 +39,8 @@ my $fileName = "";
 my @excludeArray = ();
 my @binAry = ();
 
+my $iconGuess = "";
+
 my $toRead = 0;
 
 my $count = 0;
@@ -63,6 +65,7 @@ while ($count <= $#ARGV)
   /^-ct$/ && do { $topEdge = $that; $count += 2; next; };
   /^-cb$/ && do { $bottomEdge = $that; $count += 2; next; };
   /^-f$/ && do { $fileName = $that; $count += 2; next; };
+  /^-f$/ && do { $iconGuess = $that; $count += 2; next; };
   /^-t$/ && do { $threshhold = $that; $count += 2; next; };
   /^-x$/ && do { @excludeArray = split(/,/, $that); $count += 2; next; };
   /^-\?$/ && do { usage(); };
@@ -174,7 +177,19 @@ sub showLikelyIcons
  if ($doBin)
  {
    my $idx;
-   open(C, "> iconrev-out.txt");
+   if (!$iconGuess)
+   {
+     if (defined($binAry[5])
+	 {
+	 $iconGuess = $binAry[5];
+	 }
+	 else
+	 {
+     $iconGuess = $fileName;
+	 $iconGuess =~ s/(\.bmp)?$/-icons.txt/;
+	 }
+   }
+   open(C, ">$iconGuess");
    for $idx(sort {$a <=> $b} keys %binProb)
    {
      print C sprintf("0x%02x\n%s\n", $idx, vflip($binProb{$idx}));
@@ -238,7 +253,7 @@ sub vflip
 
 sub verifyBinArray
 {
-  if ($#binAry != 4) { die ("Binary array needs 5 arguments: file, Xi, Yi, Xf, Yf."); }
+  if ($#binAry != 4 && $binAry != 5) { die ("Binary array needs 5-6 arguments: file, Xi, Yi, Xf, Yf, optional out file."); }
   if (! -f $binAry[0]) { die ("No file $binAry[0]."); }
   if ($binAry[1] > $binAry[3]) { die("Xi needs to be less than Xf."); }
   if ($binAry[2] > $binAry[4]) { die("Yi needs to be less than Yf."); }
@@ -253,6 +268,8 @@ print<<EOT;
 -h/-w set icon height-width, -s sets both
 -c(lbrt) sets cutoff for what to read, in pixels
 -f specifies file
+-ig specifies icon guess file (can also be in -b CSV)
+-b specifies binary file to crib from to guess icons, then Xi Yi Xf Yf
 -? gives this
 EOT
 exit()
