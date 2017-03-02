@@ -32,6 +32,7 @@ my $topEdge = 0;
 my $leftEdge = 0;
 my $rightEdge = 0;
 my $fileName = "";
+my @excludeArray = ();
 
 my $toRead = 0;
 
@@ -56,6 +57,7 @@ while ($count <= $#ARGV)
   /^-ct$/ && do { $topEdge = $that; $count += 2; next; };
   /^-cr$/ && do { $bottomEdge = $that; $count += 2; next; };
   /^-f$/ && do { $fileName = $that; $count += 2; next; };
+  /^-x$/ && do { @excludeArray = split(/,/, $that); $count += 2; next; };
   /^-\?$/ && do { usage(); };
   print "Invalid parameter $this\n\n";
   usage();
@@ -67,7 +69,8 @@ if (!$iconHeight) { print "WARNING you should've set icon height to nonzero, def
 
 my ($imgWidth, $imgHeight) = imgsize($fileName);
 my $type = Image::Info::image_type($fileName);
-if ($type->{file_type} ne "BMP") { die ("Need a BMP file. Have $type->{file_type}."); }
+if ((!defined($type->{file_type})) || ($type->{file_type} ne "BMP"))
+{ die ("Need a BMP file. Have " . (defined($type->{file_type}) ? $type->{file_type} : "nothing") ."."); }
 print "W $imgWidth H $imgHeight type $type->{file_type}\n";
 
 my $virtH = $imgHeight - $topEdge - $bottomEdge;
@@ -91,6 +94,7 @@ sub showLikelyIcons
    my $thisByte;
    my %gotByte;
    my %palette;
+   my $col;
 
    my $ih;
    my $temp;
@@ -141,8 +145,14 @@ for (sort {$a <=> $b} keys %gotByte) { print " $_=$palette{$_}"; }
 print "\n";
 
 print "Results of which icons go where:\n";
+
+OUTER:
 for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
 {
+  for $col (@excludeArray)
+  {
+  if ($iconHash{$ih} =~ /\b$col\b/) { next OUTER; }
+  }
   if ($iconHash{$ih} > 1) { print "#icon with $iconHash{$ih} hits\n0x??\n"; print vflip($ih); }
 }
 
