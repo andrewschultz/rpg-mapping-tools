@@ -140,11 +140,16 @@ char EgaHdr[ADJ_HEADER_SIZE] = {
 //16  32
 //  64
 
-short LCDs[16] = {
-	119, 128, 93, 109,
-	46, 107, 123, 37,
-	127, 47, 63, 122,
-	83, 124, 91, 27
+short LCDs[36] = {
+	119, 128, 93, 109, //0-3
+	46, 107, 123, 37, //4-7
+	127, 47, 63, 122, //8-b
+	83, 124, 91, 27, // c-f
+	47, 62, 0, 193, //g-j
+	0, 18, 0, 55, //k-n
+	119, 31, 47, 19, //o-r
+	107, 0, 118, 0, //s-v
+	0, 0, 0, 0, //y-z
 };
 
 typedef struct
@@ -1749,6 +1754,14 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][j] = BmpHandler.Icons[tst][i][j];
 		break;
 
+	case 'H': //horizontal trimming, with color after
+		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[2]);
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0; i < tst2; i++)
+				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
+		break;
+
 	case 'l': //rotate 90 degrees left
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
@@ -1764,6 +1777,23 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
 		break;
+
+	case 'L':
+		if ((tst >= 0) || (tst <= 9))
+			LCDize(tst, (short)q, 0,
+				(short)((BmpHandler.TheWidth + 1) / 4), (short) 1, //Xi Yi
+				(short)((BmpHandler.TheWidth/4) + ((BmpHandler.TheWidth+1)/4)),
+				(short)((BmpHandler.TheWidth / 2) - 1), //dY
+				(short) 1);
+		break;
+
+	case 'O': //this puts a ring around a square, border color first then fill
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				BmpHandler.Icons[q][j][BmpHandler.TheHeight-1-i] =
+				(i == 0 || j == 0 || i == BmpHandler.TheWidth-1 || j == BmpHandler.TheHeight-1) ? tst>>4 : tst & 0xf;
+		break;
+
 
 	case 'r': //rotate 90 degrees right
 		if (BmpHandler.IconDefined[tst] == 0)
@@ -1781,6 +1811,16 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][i] = BmpHandler.Icons[tst][i][j];
 		break;
 
+	case 'S': //switch 2 colors. Actually, you can switch with a null color with no problem.
+		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[2]);
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0; i < BmpHandler.TheWidth; i++)
+				if ((BmpHandler.Icons[q][i][j] == tst) || (BmpHandler.Icons[q][i][j] == tst2))
+					BmpHandler.Icons[q][i][j] = tst + tst2 - BmpHandler.Icons[q][i][j];
+		overwriteCheck = -1;
+		break;
+
 	case 'v': //copies one icon to another, flipped vertically
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
@@ -1790,6 +1830,14 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		for (j=0; j < BmpHandler.TheHeight; j++)
 			for (i=0;  i < BmpHandler.TheWidth;  i++)
 				BmpHandler.Icons[q][i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
+		break;
+
+	case 'V': //vertical trimming, with color after
+		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[2]);
+		for (j=0; j < tst2; j++)
+			for (i=0; i < BmpHandler.TheWidth; i++)
+				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
 		break;
 
 	case 'x': //alternating checkerboard colors
@@ -1802,32 +1850,6 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 					BmpHandler.Icons[q][i][j] = tst2;
 				else
 					BmpHandler.Icons[q][i][j] = tst;
-		break;
-
-	case 'H': //horizontal trimming, with color after
-		tst = CharToNum(myBuf[1]);
-		tst2 = CharToNum(myBuf[2]);
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0; i < tst2; i++)
-				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
-		break;
-
-	case 'V': //vertical trimming, with color after
-		tst = CharToNum(myBuf[1]);
-		tst2 = CharToNum(myBuf[2]);
-		for (j=0; j < tst2; j++)
-			for (i=0; i < BmpHandler.TheWidth; i++)
-				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
-		break;
-
-	case 'S': //switch 2 colors. Actually, you can switch with a null color with no problem.
-		tst = CharToNum(myBuf[1]);
-		tst2 = CharToNum(myBuf[2]);
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0; i < BmpHandler.TheWidth; i++)
-				if ((BmpHandler.Icons[q][i][j] == tst) || (BmpHandler.Icons[q][i][j] == tst2))
-					BmpHandler.Icons[q][i][j] = tst + tst2 - BmpHandler.Icons[q][i][j];
-		overwriteCheck = -1;
 		break;
 
 	default:
