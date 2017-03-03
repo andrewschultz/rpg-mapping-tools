@@ -321,6 +321,12 @@ main(int argc, char * argv[])
 				break;
 
 			case 'c':
+				if (argv[CurComd][2] == 'h')
+				{
+					printf("0=black 1=white 2=red 3=green 4=blue 5=orange 6=purple 7=yellow\n");
+					printf("8=grey 9=pink 10=DkBlue 11=LtBlue 12=LtBrown 13=Brown 14=LtGrn 15=DkGreen\n");
+					return 0;
+				}
 				BmpHandler.BlankColor = (short)strtol(argv[CurComd+1], NULL, 16);
 				printf("Use default color %x for blank icons.\n", BmpHandler.BlankColor);
 				break;
@@ -556,7 +562,8 @@ Flag -x to add extra modifications to the base BMP files, -xn to add -xtr, and -
 
 void helpMinorFeatures()
 {
-	printf("-xy signifies mapping for Xyphus, which has a half-icon shifted jagged map\n\
+	printf("-ch asks for color help\n\
+-xy signifies mapping for Xyphus, which has a half-icon shifted jagged map\n\
 -i(s/h/w) forces icon width/height, mostly used for testing\n");
 
 }
@@ -997,7 +1004,10 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 				}
 				else
 				{
-					printf("Bad hexadecimal at %d.\n", lineInFile);
+					if (strlen(buffer) > 6)
+						printf("Possible extra icon row at line %d.\n", lineInFile);
+					else
+						printf("Bad hexadecimal at %d.\n", lineInFile);
 					return INVALID;
 				}
 				break;
@@ -1873,22 +1883,35 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 
 	for (j=0;  j < BmpHandler.TheHeight; j++)
 	{
+		short buflen;
 		BmpHandler.IconUsed[q] = 1;
 		lineInFile++;
 		fgets(buffer, 40, F);
+		buflen = strlen(buffer);
+
+		if (buffer[0] == '*')
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+				BmpHandler.Icons[q][i][j] = CharToNum(buffer[1]);
+			if (buflen < BmpHandler.TheWidth+1)
+				printf("Warning: line %d has only %d length.\n", lineInFile, strlen(buffer));
+			if (buflen > BmpHandler.TheWidth+1)
+				printf("Warning: line %d runs over with %d length.\n", lineInFile, strlen(buffer));
+
 		for (i=0;  i < BmpHandler.TheWidth;  i++)
-                {
-                        BmpHandler.Icons[q][i][j] = CharToNum(buffer[i]);
-                        if ((buffer[i] > '9') || (buffer[i] < '0'))
-						  if ((buffer[i] > 'Z') || (buffer[i] < 'A'))
-							if ((buffer[i] > 'z') || (buffer[i] < 'a'))
-							{
-                              printf("Reading icon 0x%x(%d), bogus char 0x%x at %d,%d in icon, line %d.\n",
-								  q, q, buffer[i], i, j, lineInFile);
-							  if ( buffer[i] == 0xa)
-								  printf("Likely early carriage return.\n");
-							}
-                }
+		{
+            BmpHandler.Icons[q][i][j] = CharToNum(buffer[i]);
+            if ((buffer[i] > '9') || (buffer[i] < '0'))
+			  if ((buffer[i] > 'Z') || (buffer[i] < 'A'))
+				if ((buffer[i] > 'z') || (buffer[i] < 'a'))
+				{
+                  printf("Reading icon 0x%x(%d), bogus char 0x%x at %d,%d in icon, line %d.\n",
+					  q, q, buffer[i], i, j, lineInFile);
+				  if ( buffer[i] == 0xa)
+					  break;
+				}
+        }
+		if (buffer[i] == '\\')
+			break;
 	}
 }
 
