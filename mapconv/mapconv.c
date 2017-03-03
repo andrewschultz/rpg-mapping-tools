@@ -36,6 +36,8 @@ Maybe have option to start with a certain line or end with it as well.
 #include <stdlib.h>
 #include <io.h>
 
+#include "mapconv-help.h"
+
 #define NUM_ICONS 256
 
 #define HEIGHT_FOUND 1
@@ -139,16 +141,19 @@ char EgaHdr[ADJ_HEADER_SIZE] = {
 //   8
 //16  32
 //  64
+//
+//128 = line down the middle
+//possible future is diagonals
 
 short LCDs[36] = {
 	119, 128, 93, 109, //0-3
 	46, 107, 123, 37, //4-7
 	127, 47, 63, 122, //8-b
 	83, 124, 91, 27, // c-f
-	47, 62, 0, 193, //g-j
-	0, 18, 0, 55, //k-n
+	47, 62, 193, 0, //g-j
+	0, 18, 182, 55, //k-n
 	119, 31, 47, 19, //o-r
-	107, 0, 118, 0, //s-v
+	107, 129, 118, 0, //s-v
 	0, 0, 0, 0, //y-z
 };
 
@@ -225,10 +230,6 @@ void ModifyArray(char [MAXSTRING]);
 void PrintOutUnused();
 void printGrid();
 void snip();
-
-void HelpBombOut();
-void helpMinorFeatures();
-void AHSHelp();
 
 //Globals with defaults
 long InMapH = 256;
@@ -531,85 +532,6 @@ main(int argc, char * argv[])
 	}
 
 	return 0;
-}
-
-void HelpBombOut()
-{
-	printf("Flag -? for this help command.\n\
-Flag -?? for minor features.\n\
-Flag -0 so bin file puts 0s for known.\n\
-Flag -a shows options for AHS files and how to write them.n\
-Flag -af fills unknown squares with LCD of their hex values.n\
-Flag -b specifies blank icon.\n\
-Flag -c to set default blank color, in hexadecimal.\n\
-Flag -d to get rid of *.png.(bak/000) files.\n\
-Flag -eb to erase binary files, -ei to erase and ignore, -ib to ignore binary.\n\
-Flag -db to give debug text (xtr files, etc.).\n\
-Flag -h to output html file of the output graphic's palettes.\n\
-Flag -n to turn off default header.\n\
-Flag -i to show icon debugging.\n\
-Flag -nh to show NMR help.\n\
-Flag -p to postprocess to png. -pa also erases png.bak/000 files.\n\
-Flag -r to regenerate the base BMP file.\n\
-Flag -R to reverse when IDing unused icons (default is top to bottom).\n\
-Flag -s to show used/unused icon stats at the end.\n\
-Flag -S to print out sort warning for icon files.\n\
-Flag -t(xx) to flag transparency and specify the color. Black=default.\n\
-Flag -u to debug squares with no icon.\n\
-Flag -uf to debug squares with no icon, only showing the first.\n\
-Flag -x to add extra modifications to the base BMP files, -xn to add -xtr, and -x0 to disable XTR file/add -nox.\n");
-
-}
-
-void helpMinorFeatures()
-{
-	printf("-ch asks for color help\n\
--xy signifies mapping for Xyphus, which has a half-icon shifted jagged map\n\
--i(s/h/w) forces icon width/height, mostly used for testing\n");
-
-}
-
-void AHSHelp()
-{
-	printf("# means a comment.\n\
-h15 sets height to 15. (default 8, max 16)\n\
-w13 sets width to 13. (default 8, max 16)\n\
-hw/wh/s9 sets height and width to 9. (default 8, max 16)\n\
-0x0a=3 sets icon 0x0a to 3 (green).\n\
-0x0fc0e copies icon 0x0e to 0x0f.\n\
-0x12h03 makes 0x12 a horizontal flip of 03.\n\
-0x12h03 makes 0x12 a vertical flip of 03.\n\
-\n\
-0x0ax34 alternates 3/4 in checkerboard pattern, starting with 3.\n\
-0x0a/35 puts 3 in the upper left, 5 in lower right, diagonal. Extra / means 3 along the center.\n\
-0x0a\\35 puts 3 in the upper right, 5 in lower left, diagonal. Extra \\ means 3 along the center.\n\
-\n\
-0x12l06 rotates 06 90 degrees left.\n\
-0x12r06 rotates 06 90 degrees right.\n\
-0x12H34 horizonally clips an icon by 3, with color 4 trim.\n\
-0x12V34 vertically clips an icon by 3, with color 4 trim.\n\
-0x12S34 switches 2 colors in an icon, in this case, 3 and 4.\n\
-L00 = start LCD 0-9 at number given (l means don't overwrite icons that are there).\n\
-\n\
-\'#\' detects the character instead of, say, 0x0a.\n\
-> runs something from the command line.\n\
-\n\
-; ends the file.\n");
-}
-
-void NMRHelp()
-{
-	printf("NMR Help\n\
-A quick and dirty guide to NMR files. #'s are comments, which are not allowed, yet.\n\
-my-in.bmp\n\
-my-in.pix #doesn't need the same prefix\n\
-x-init,y-init,x-final,y-final,BINFILE,BMPFILE\n\
-Additional lines make more maps\n\
-. #flushes the buffer\n\
-GT #optional command line stuff\n\
-semicolon #ends input\n");
-
-	printf("NMR Help\n");
 }
 
 short NMRRead(char FileStr[MAXSTRING])
