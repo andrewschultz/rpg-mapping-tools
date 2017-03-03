@@ -620,6 +620,7 @@ short NMRRead(char FileStr[MAXSTRING])
 	char * BufStr2;
 
 	short thisLine = 0;
+	long buflen = 0;
 
 	short i;
 
@@ -654,6 +655,7 @@ short NMRRead(char FileStr[MAXSTRING])
 	{
 		thisLine++;
 		fgets(BufStr, MAXSTRING, F);
+		buflen = strlen(BufStr);
 
 		if (BufStr[0] == '#')
 			continue;
@@ -766,6 +768,8 @@ short NMRRead(char FileStr[MAXSTRING])
 			break;
 
 		case 'i': //read in an icons file
+			if (strcmp(BufStr+buflen-4, "ahs") && strcmp(BufStr+buflen-4, "pix"))
+				printf("WARNING: wrong extension for icons file.\n");
 			strcpy(BmpHandler.PixStr, BufStr + 2);
 			snip(BmpHandler.PixStr);
 
@@ -813,11 +817,15 @@ short NMRRead(char FileStr[MAXSTRING])
 			break;
 
 		case 'r': //read in a raw-data file
+			if (strcmp(BufStr+buflen-4, "bmp"))
+				printf("WARNING: wrong extension for BMP file.\n");
 			strcpy(BmpHandler.BmpStr, BufStr + 2);
 			ReadRawData();
 			break;
 
 		case 'x': //read in an XTR file
+			if (strcmp(BufStr+buflen-4, "xtr"))
+				printf("WARNING: wrong extension for XTR file.\n");
 			strcpy(BmpHandler.XtrStr, BufStr + 2);
 			snip(BmpHandler.XtrStr);
 
@@ -1806,13 +1814,12 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[q][j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
 		break;
 
-	case 'L':
-		if ((tst >= 0) || (tst <= 9))
-			LCDize(tst, (short)q, 0,
-				(short)((BmpHandler.TheWidth + 1) / 4), (short) 1, //Xi Yi
-				(short)((BmpHandler.TheWidth/4) + ((BmpHandler.TheWidth+1)/4)),
-				(short)((BmpHandler.TheWidth / 2) - 1), //dY
-				(short) 1);
+	case 'L': // lcd digits
+		LCDize(tst, (short)q, 0,
+			(short)((BmpHandler.TheWidth + 1) / 4), (short) 1, //Xi Yi
+			(short)((BmpHandler.TheWidth/4) + ((BmpHandler.TheWidth+1)/4)),
+			(short)((BmpHandler.TheWidth / 2) - 1), //dY
+			(short) 1);
 		break;
 
 	case 'O': //this puts a ring around a square, border color first then fill

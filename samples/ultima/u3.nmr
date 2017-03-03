@@ -1,0 +1,12 @@
+#\coding\games\mapconv\mapconv -af -u -x -t u3.nmr
+r=u3.bmp
+i=u3.ahs
+x=u3.xtr
+o=132,132,196,196,u3-sosaria.bmp,u3-sosaria.bin
+o=198,132,262,196,u3-ambrosia.bmp,u3-ambrosia.bin
+o=0,0,130,130,u3-b-d.bmp,u3-b-d.bin
+o=0,132,130,262,u3-e-l.bmp,u3-e-l.bin
+o=132,0,262,130,u3-m-y.bmp,u3-m-y.bin
+i=u3d.ahs
+o=132,198,274,286,u3-dungeons.bmp,u3-dungeons.bin
+;

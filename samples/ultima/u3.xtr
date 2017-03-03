@@ -1,0 +1,30 @@
+#base 10 for where to start
+s=10
+#we can have 0xff as an icon number/value
+i=16
+#main icon coordinatebase is 10 e.g. 10 comes after 09
+m=10
+###############################
+x132
+y132
+#Uncomment this to get rid of the whirlpool.
+#00,56,00
+#This looks like a small misprint. I'm not sure why it's there.
+23,17,04
+#Dawn
+37,53,19
+#Moongates
+08,08,f1
+57,46,f3
+15,27,f5
+36,58,f7
+15,29,f9
+12,55,fb 
+31,31,fd
+58,31,ff
+#places to find good stuff
+tu+
+33,03,94
+19,44,94
+t-
+;
