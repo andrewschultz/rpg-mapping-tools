@@ -246,6 +246,7 @@ short curBase = 16;
 short foundExtra = 0;
 short fillUnknownWithLCD;
 
+short transpUnder = 0;
 short xyphus = 0;
 
 main(int argc, char * argv[])
@@ -867,7 +868,7 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 
 	if (foundExtra)
 	{
-		printf("WARNING: i= is before x= in the NMR file. This may cause false errors to be thrown.\n");
+		printf("WARNING: i= is after x= in the NMR file. This may cause false errors to be thrown.\n");
 	}
 
 	if (reset == 1)
@@ -1200,7 +1201,7 @@ void WriteToBmp()
 					if ((BmpHandler.transpary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]) && (xyz != BmpHandler.TransparencyColor))
 						fputc((char)xyz, F3);
 					else
-						fputc((char)BmpHandler.Icons[BmpHandler.ary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.TheHeight-j2-1], F3);
+				 		fputc((char)BmpHandler.Icons[BmpHandler.ary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.TheHeight-j2-1], F3);
 				}
                   if (temp % 4)
                     for (j3=(temp%4);  j3<4;  j3++)
@@ -1327,6 +1328,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 	long xi=0, yi=0, x2=0, y2=0;
 	long count;
 	short lineNum = 0;
+	short temp = 0;
 	short XtrErr[256] = {0};
 
 	short transparencyWarnYet = 0;
@@ -1478,12 +1480,22 @@ void ModifyArray(char XtrStr[MAXSTRING])
 				transparencyWarnYet = 1;
 				printf("WARNING line %d has a transparency toggle but you aren't running the -t option.\n", lineNum);
 			}
-			if (buffer[1] == '-')
-				XtrTransparencyRead = 0;
-			else if (buffer[1] == '+')
-				XtrTransparencyRead = 1;
+
+			temp = 1;
+			if (buffer[temp] == 'u')
+			{
+				XtrTransparencyRead = transpUnder = (buffer[2] == '+');
+				temp++;
+			}
 			else
-				printf("%s = bad transparency line at %d. Need t+ or t-.\n", buffer, lineNum);
+				transpUnder = 0;
+
+			if (buffer[temp] == '-')
+				XtrTransparencyRead = 0;
+			else if (buffer[temp] == '+')
+				XtrTransparencyRead = 1;
+			else if (buffer[1] != 'u')
+				printf("%s = bad transparency line at %d. Need t(u)(+/-).\n", buffer, lineNum);
 			break;
 
 		case '~':
@@ -1590,7 +1602,13 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			{
 				if (BmpHandler.transpary[xc+xi][yc+yi])
 					printf("Warning: possible redefined xtr/transp %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
-				BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
+				if (transpUnder)
+				{
+					BmpHandler.transpary[xc+xi][yc+yi] = BmpHandler.ary[xc+xi][yc+yi];
+					BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
+				}
+				else
+					BmpHandler.transpary[xc+xi][yc+yi] = (short)nv;
 			}
 			else
 			{
@@ -1804,6 +1822,18 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				(i == 0 || j == 0 || i == BmpHandler.TheWidth-1 || j == BmpHandler.TheHeight-1) ? tst>>4 : tst & 0xf;
 		break;
 
+	case 'p': // palette replacement eg change reds to purple, 0x34p2~6 (switch) or 0x34p2-6 (only 2 to 6)
+		tst = CharToNum(myBuf[1]);
+		tst2 = CharToNum(myBuf[3]);
+		for (j=0; j < BmpHandler.TheHeight; j++)
+			for (i=0;  i < BmpHandler.TheWidth;  i++)
+			{
+				if (BmpHandler.Icons[q][j][i] == tst)
+					BmpHandler.Icons[q][j][i] = tst2;
+				else if ((BmpHandler.Icons[q][j][i] == tst2) && (myBuf[2] == '~'))
+					BmpHandler.Icons[q][j][i] = tst;
+			}
+		break;
 
 	case 'r': //rotate 90 degrees right
 		if (BmpHandler.IconDefined[tst] == 0)
