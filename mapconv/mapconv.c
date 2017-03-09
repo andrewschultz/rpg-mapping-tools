@@ -82,6 +82,7 @@ short NewPIXFile;
 #define MAPCONV_REGENERATE_BASE_FILE 16384
 #define MAPCONV_XTRA_AMENDMENTS_ALT_NAME 32768
 #define MAPCONV_NOTE_NO_XTR 65536
+#define MAPCONV_SHOW_FREQ_STATS 131072
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -189,6 +190,8 @@ typedef struct
 	short IconUsed[256];
 	short IconDefined[256];
 
+	short freqAry[256];
+
 	short IsNewPIX;
 
 	short LastIconViewed;
@@ -228,6 +231,8 @@ void ReadFromBmp();
 void WriteToBmp();
 void ModifyArray(char [MAXSTRING]);
 void PrintOutUnused();
+void runFreqStats();
+int comp (const void * elem1, const void * elem2);
 void printGrid();
 void snip();
 
@@ -471,6 +476,10 @@ main(int argc, char * argv[])
 				}
 				break;
 
+			case '#':
+				MAPCONV_STATUS |= MAPCONV_SHOW_FREQ_STATS;
+				break;
+
 			default:
 				printf("%s is not a known option, bailing out.\n", argv[CurComd]);
 
@@ -507,10 +516,10 @@ main(int argc, char * argv[])
 	}
 
 	if (!foundExtra && (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS))
-		printf("You ran the -x option but the NMR file didn't reference a proper XTR file.\n");
+		printf("WARNING: You ran the -x option but the NMR file didn't reference a proper XTR file.\n");
 
 	if (foundExtra && !(MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS))
-		printf("The NMR file referenced an extra file but you didn't run the -x option.\n");
+		printf("WARNING: The NMR file referenced an extra file but you didn't run the -x option.\n");
 
 	if (BmpHandler.printHTMLFile > 0)
 	{
@@ -1190,6 +1199,9 @@ void PrintOutUnused()
 
 	printGrid();
 
+	for (i=0; i < 256; i++)
+		BmpHandler.freqAry[i] = 0;
+
 	for (j = BmpHandler.Yi; j < BmpHandler.Yf; j++)
 	{
 		k=j;
@@ -1199,13 +1211,14 @@ void PrintOutUnused()
 		}
 		for (i = BmpHandler.Xi; i < BmpHandler.Xf; i++)
 		{ //printf("%2x", BmpHandler.ary[i][j]);
+			BmpHandler.freqAry[BmpHandler.ary[i][k]]++;
 			if (!BmpHandler.IconUsed[BmpHandler.ary[i][k]])
 			{
 				if ((MAPCONV_STATUS & MAPCONV_DEBUG_ONLY_FIRST) && (used[BmpHandler.ary[i][k]]))
 				{
 				}
 				else
-					printf("%02x %02x Unused icon %x also %d %d.\n", i, k, BmpHandler.ary[i][k], i-BmpHandler.Xi, k-BmpHandler.Yi);
+					printf("%02x %02x (hex coord) Unused icon %x(hex) also %d %d (decimal coord).\n", i, k, BmpHandler.ary[i][k], i-BmpHandler.Xi, k-BmpHandler.Yi);
 				used[BmpHandler.ary[i][k]]++;
 				if (BmpHandler.IconUsed[BmpHandler.ary[i][k]] == 0)
 					unusedBaseIcons++;
@@ -1227,6 +1240,10 @@ void PrintOutUnused()
 		}
 //		printf("\n");
 	}
+	if (MAPCONV_STATUS & MAPCONV_SHOW_FREQ_STATS)
+	{
+		runFreqStats();
+	}
 	if (MAPCONV_STATUS & MAPCONV_SHOW_END_STATS)
 	{
 		float q = ((float)(totalUsed*100))/(totalUsed+totalUnused);
@@ -1236,6 +1253,31 @@ void PrintOutUnused()
 	}
 	if (totalUnused > 0)
 		printGrid();
+}
+
+void runFreqStats()
+{
+	short idx[256];
+	short i;
+
+	for (i=0; i < 256; i++)
+		idx[i] = i;
+
+    qsort (idx, sizeof(idx)/sizeof(*idx), sizeof(*idx), comp);
+
+    for (i = 0 ; i < 256 ; i++)
+		if (BmpHandler.freqAry[idx[i]])
+	        printf ("%d: %d\n", idx[i], BmpHandler.freqAry[idx[i]]);
+
+}
+
+int comp (const void * elem1, const void * elem2)
+{
+    short f = *((short*)elem1);
+    short s = *((short*)elem2);
+    if (BmpHandler.freqAry[f] < BmpHandler.freqAry[s]) return  1;
+    if (BmpHandler.freqAry[f] > BmpHandler.freqAry[s]) return -1;
+    return 0;
 }
 
 void printGrid()
@@ -1762,6 +1804,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				else if ((BmpHandler.Icons[q][j][i] == tst2) && (myBuf[2] == '~'))
 					BmpHandler.Icons[q][j][i] = tst;
 			}
+		overwriteCheck = -1;
 		break;
 
 	case 'r': //rotate 90 degrees right
@@ -1946,8 +1989,6 @@ void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short xi, s
 	{
 		printf("Warning: icon %x already used, overwriting.\n", whichIcon);
 	}
-
-	BmpHandler.IconDefined[whichIcon] = 1;
 
 	if (dx < 2)
 	{
