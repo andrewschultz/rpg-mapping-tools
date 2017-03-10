@@ -277,58 +277,66 @@ main(int argc, char * argv[])
 		case '\n':
 			break;
 
-		//absolute offsets
-		case 'a':
-			if (buffer[1] == 'x')
-				myAbsX = strtol(buffer+2, NULL, 10);
-			if (buffer[1] == 'y')
-				myAbsY = strtol(buffer+2, NULL, 10);
-			break;
-
-		case 'A': //anchor
-			if (buffer[1] == 'x')
-			{
-				myX = myLastX = myAnchorX = strtol(buffer+2, NULL, 10);
-				break;
-			}
-			if (buffer[1] == 'y')
-			{
-				myY = myLastY = myAnchorY = strtol(buffer+2, NULL, 10);
-				break;
-			}
-			break;
-
-		case 'F': // FROM anchor
-			if (buffer[1] == 'x')
-			{
-				myLastX = myX = myAnchorX + strtol(buffer+2, NULL, 10);
-				break;
-			}
-			if (buffer[1] == 'y')
-			{
-				myLastY = myY = myAnchorY + strtol(buffer+2, NULL, 10);
-				break;
-			}
-			doFringe = 1;
-			break;
-
 		case '0':
 			if (buffer[1])
 			{
 				printf("WARNING: you may've put an 0 where you meant an o at line %s.\n", lineTab);
 			}
+			printf("WARNING (%s): probably deprecated command 0. Use & instead.", lineTab);
 			addSpace = 0;
 			break;
 
 		case '1':
 			if (buffer[1])
 			{
-				printf("WARNING: you may've put a 1 where you meant something else at line %s.\n", lineTab);
+				printf("WARNING (%s): you may've put a 1 where you meant something else at line %s.\n", lineTab);
 			}
+			printf("WARNING: probably deprecated command 1. Use & instead.", lineTab);
 			addSpace = 1;
 			break;
 
-		case '&':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			printf("WARNING: No commands start with numbers, except for adding/subtracting a space.");
+			break;
+
+		case '{': // 4 coordinates giving the local rectangle of what to print
+		case '[':
+		case '(':
+			if ((buffer[1] == '}') || (buffer[1] == ']') || (buffer[1] == ')'))
+			{
+				myXMin = 0;
+				myXMax = myW;
+				myYMin = 0;
+				myYMax = 0;
+				break;
+			}
+			readBrackets(buffer+1);
+			break;
+
+		case ';':
+			keepGoing = 0;
+			break;
+
+		case '+': //+/-/^/v rotate the start-x in the rectangle. For moving around, use dx/dy
+			myXModOffset = strtol(buffer+1, NULL, 10);
+			break;
+
+		case '-': //+/-/^/v rotate the start-x in the rectangle. For moving around, use dx/dy
+			myXModOffset = myW - strtol(buffer+1, NULL, 10);
+			break;
+
+		case '^': //+/-/^/v rotate the start-x in the rectangle. For moving around, use dx/dy
+			myYModOffset = myH - strtol(buffer+1, NULL, 10);
+			break;
+
+		case '&': // changes hjump and/or vjump, which is the default to jump after reading in a rectangle
 			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
 				hJump = (short)strtol(buffer+2, NULL, 10);
 			else if ((buffer[1] == 'v') || (buffer[1] == 'V'))
@@ -337,7 +345,8 @@ main(int argc, char * argv[])
 				hJump = vJump = (short)strtol(buffer+1, NULL, 10);
 			break;
 
-		case '*':
+		case '*': // changes everything to a specific color, default is black
+			// if there are 4 commas then it is only a range of coordinates
 			{
 				short defaultSquare = 0;
 				short clearR = MAXW;
@@ -409,7 +418,7 @@ main(int argc, char * argv[])
 					break;
 
 				default:
-					printf("Line %s needs either 0 or 4 commas for *-fill.\n", lineTab);
+					printf("Line %s needs either 0 or 4 commas for *-fill, even if you're using the default color.\n", lineTab);
 					clearR = -1;
 					break;
 				}
@@ -420,432 +429,8 @@ main(int argc, char * argv[])
 			}
 			break;
 
-		case 'c':
-		case 'C':
-			if ((buffer[1] == '6') && (buffer[2] == '4'))
-			{
-				commodore = (buffer[3] != '-');
-				break;
-			}
-
-			if ((buffer[1] == 'r') || (buffer[1] == 'R'))
-			{
-				myX = myLastX + myW;
-				myY = myLastY;
-				if (addSpace == 1)
-					myX++;
-				break;
-				printf("Invalid command--cr is the only one.");
-			}
-			break;
-
-		case 'b':
-		case 'B':
-			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
-				readType = BIT_HIGH_FIRST;
-			else if ((buffer[1] == 'l') || (buffer[1] == 'L'))
-				readType = BIT_LOW_FIRST;
-			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
-				readType = STRAIGHT_BYTES;
-			else
-				printf("WARNING line %s: BH or BL (bit/high or low first) are the only two options for B.\
--/0/no byte clears it.\n", lineTab);
-			break;
-
-		case 'n':
-		case 'N':
-			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
-				readType = NIB_HIGH_FIRST;
-			else if ((buffer[1] == 'l') || (buffer[1] == 'L'))
-				readType = NIB_LOW_FIRST;
-			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
-				readType = STRAIGHT_BYTES;
-			else
-				printf("WARNING line %s: NH or NL (nibble/high or low first) are the only two options for N.\
--/0/no byte clears it.\n", lineTab);
-			break;
-
-		case 't':
-			if (buffer[1] == 'c')
-			{
-				transpColor = strtol(buffer+2, NULL, 16);
-				break;
-			}
-			if (buffer[1] == '-')
-				setTransparent = 0;
-			else
-				setTransparent = 1;
-			break;
-
-		//x/y move you to absolute coordinates myX+myAbsX
-		case 'x':
-			if (buffer[1] == 'd')
-			{
-				myX = strtol(buffer+2, NULL, 10) + myX;
-				myLastX = myX;
-			}
-			else
-			{
-			myX = strtol(buffer+1, NULL, 10);
-			myLastX = myX;
-			}
-			break;
-
-		case 'y':
-			if (buffer[1] == 'd')
-			{
-				myY += strtol(buffer+2, NULL, 10);
-				myLastY = myY;
-			}
-			else
-			{
-			myY = strtol(buffer+1, NULL, 10);
-			myLastY = myY;
-			}
-			break;
-
-		case 'd': // this changes the starting point to draw the rectangle
-			if (buffer[1] == 'x')
-			{
-				if (buffer[2] == '-')
-				{
-					if (myX < strtol(buffer+3, NULL, 10))
-					{
-						printf("WARNING dx command went to -x, %d back %d at line %s\n",
-							myX, strtol(buffer+3, NULL, 10), lineTab);
-						break;
-					}
-					myX -= strtol(buffer+3, NULL, 10);
-				}
-				else
-					myX += strtol(buffer+2, NULL, 10);
-				//printf("Adding %d to x, now %d\n", strtol(buffer+2, NULL, 10), myX);
-				break;
-			}
-			if (buffer[1] == 'y')
-			{
-				if (buffer[2] == '-')
-				{
-					if (myY < strtol(buffer+3, NULL, 10))
-					{
-						printf("WARNING dy command went to -y, %d back %d at line %s\n",
-							myY, strtol(buffer+3, NULL, 10), lineTab);
-						break;
-					}
-					myY -= strtol(buffer+3, NULL, 10);
-				}
-				else
-					myY += strtol(buffer+2, NULL, 10);
-				//printf("Adding %d to y, now %d\n", strtol(buffer+2, NULL, 10), myY);
-				break;
-			}
-			printf("Error at line %s. d(xy) is proper usage for moving.\n", lineTab);
-			break;
-
-		//+/-/^/v rotate the start-x in the rectangle. For moving around, use dx/dy
-		case '+':
-			myXModOffset = strtol(buffer+1, NULL, 10);
-			break;
-
-		case '-':
-			myXModOffset = myW - strtol(buffer+1, NULL, 10);
-			break;
-
-		case 'v':
-			myYModOffset = strtol(buffer+1, NULL, 10);
-			break;
-
-		case '^':
-			myYModOffset = myH - strtol(buffer+1, NULL, 10);
-			break;
-
-		case 'W':
-			if (buffer[1] == '-')
-				outWi = strtol(buffer+2, NULL, 10);
-			else
-				outW = strtol(buffer+1, NULL, 10);
-			break;
-
-		case 'H':
-			if (buffer[1] == '-')
-				outHi = strtol(buffer+2, NULL, 10);
-			else
-				outH = strtol(buffer+1, NULL, 10);
-			break;
-
-		case 'h':
-			myH = strtol(buffer+1, NULL, 10);
-			break;
-
-		case 'w':
-			myW = strtol(buffer+1, NULL, 10);
-			myXMax = myW;
-			break;
-
-		case '{':
-			if (buffer[1] == '}')
-			{
-				myXMin = 0;
-				myXMax = myW;
-				myYMin = 0;
-				myYMax = 0;
-				break;
-			}
-			readBrackets(buffer+1);
-			break;
-
-		case 'm':
-			printf("WARNING: %s has deprecated m-command. Use {} instead with 0's for unused min/max, {} to reset.\n", lineTab);
-			if (buffer[1] == '{')
-			{
-				readBrackets(buffer+2);
-				break;
-			}
-			if (buffer[1] == '-')
-			{
-				myXMin = 0;
-				myXMax = myW;
-				if (buffer[2] == '-')
-				{
-					myYMin = 0;
-					myYMax = 0;
-				}
-				break;
-			}
-			if ((buffer[1] == 'y') || (buffer[1] == 'Y'))
-			{
-				myYMin = strtol(buffer+2, NULL, 10);
-				if (myYMin < 0)
-					myYMin = myH + myYMin;
-				if (buffer[1] == '-')
-				{
-					myYMin = 0;
-					myYMax = myH;
-				if (myYMin < 0)
-					myYMin = 0;
-				}
-				break;
-			}
-			myXMin = strtol(buffer+1, NULL, 10);
-			if (myXMin < 0)
-				myXMin = myW + myXMin;
-			if (myXMin < 0)
-				myXMin = 0;
-			break;
-
-		case 'M':
-			printf("WARNING: %s has deprecated m-command. Use {} instead with 0's for unused min/max, {} to reset.\n", lineTab);
-			if (buffer[1] == '{')
-			{
-				readBrackets(buffer+2);
-				break;
-			}
-			if ((buffer[1] == 'y') || (buffer[1] == 'Y'))
-			{
-				myYMax = strtol(buffer+2, NULL, 10);
-				if (myYMax < 0)
-					myYMax = myH + myYMin;
-				if (buffer[2] == '-')
-				{
-					myYMin = 0;
-					myYMax = 0;
-					if (buffer[3] == '-')
-					{
-						myXMin = 0;
-						myXMax = myW;
-					}
-				if (myYMax < 0)
-					myYMax = 0;
-					break;
-				}
-			}
-			myXMax = strtol(buffer+1, NULL, 10);
-			if (myXMax < 0)
-				myXMax = myW + myXMax;
-			if (buffer[1] == '-')
-			{
-				myXMin = 0;
-				myXMax = myW;
-			}
-			if ((myXMax > myW) || (myXMax == 0))
-				myXMax = myW;
-			break;
-
-		case 'p': // persist
-			if ((buffer[1] == '-') || (buffer[1] == '0'))
-				persist = 0;
-			else if ((buffer[1] == '+') || (buffer[1] == 0) || (buffer[1] == '\n'))
-				persist = 1;
-			else
-				printf("Unknown persist prompt %c at %s, need -/0/+/(empty).\n", buffer[1], lineTab);
-			break;
-
-		case 'q':
-			if (buffer[1] == '-')
-			{
-				quartering = 0;
-				qflags = 15;
-				break;
-			}
-			if ((buffer[1] == 'n') || (buffer[1] == 'N'))
-			{
-				qflags |= 1; qflags &= 0xfc;
-			}
-			if ((buffer[1] == 's') || (buffer[1] == 'S'))
-			{
-				qflags |= 4; qflags &= 0xff;
-			}
-			if ((buffer[2] == 'e') || (buffer[2] == 'E'))
-			{
-				qflags |= 2; qflags &= 0xfe;
-			}
-			if ((buffer[2] == 'w') || (buffer[2] == 'W'))
-			{
-				qflags |= 8; qflags &= 0xf8;
-			}
-			if ((qflags != 12) && (qflags != 9) && (qflags != 6) && (qflags != 3))
-			{
-				printf ("Bailing. Bad qflags value of %d at line %s given %s\n", qflags, lineTab, buffer);
-			}
-			break;
-
-		case ';':
-			keepGoing = 0;
-			break;
-
-		case 'R':	//force vertical or horizontal
-			if ((buffer[1] == 'v') || (buffer[1] == 'V'))
-			{
-				if (forceH)
-				{
-					printf("Already forcing horizontal line %s.\n", lineTab);
-					break;
-				}
-				if (forceV)
-				{
-					printf("Already forcing vertical line %s.\n", lineTab);
-					break;
-				}
-				forceV = 1;
-			}
-			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
-			{
-				if (forceH)
-				{
-					printf("Already forcing horizontal line %s.\n", lineTab);
-					break;
-				}
-				if (forceV)
-				{
-					printf("Already forcing vertical line %s.\n", lineTab);
-					break;
-				}
-			}
-			break;
-
-		case 'r':
-			{
-				short gotoJump = 0;
-				if (G)
-					fclose(G);
-				if (buffer[strlen(buffer)-1] == '\n')
-					 buffer[strlen(buffer)-1] = 0;
-				if (buffer[strlen(buffer)-1] == '/')
-				{
-					buffer[strlen(buffer)-1] = 0;
-					myOffset = myDefaultOffset;
-					gotoJump = 1;
-				}
-
-				if (needToProc)
-				{
-					printf("WARNING: %s (line %s) occurs before processing the last 'r' line.\n", buffer, lineTab);
-					needToProc = 0;
-				}
-				if (debug)
-					printf("Reading %s, also extension %s\n", buffer+1, myExt);
-				G = fopen(buffer+1, "rb");
-				if (G == NULL)
-				{
-					char altFile[200];
-					if (myExt[0])
-					{
-						strcpy(altFile, buffer+1);
-						strcat(altFile, myExt);
-						G = fopen(altFile, "rb");
-						if (G == NULL)
-						{
-							altFile[strlen(altFile)-strlen(myExt)] = 0;
-							strcat(altFile, ".");
-							strcat(altFile, myExt);
-							G = fopen(altFile, "rb");
-						}
-					}
-					if (G == NULL)
-					{
-						printf("Oops file %s does not exist. Bailing at line %s.\n", buffer+1, lineTab);
-						return 0;
-					}
-				}
-				if (gotoJump)
-					 goto fromr;
-				else
-					needToProc = 1;
-			}
-			break;
-
-		case 'V':
-			{
-				short wasVert = vertical;
-				if (buffer[1] == '+')
-					vertical = 1;
-				else if (buffer[1] == '-')
-					vertical = 0;
-				else
-				{
-					printf("V needs to have + or -.");
-					break;
-				}
-				if (vertical == wasVert)
-					printf("Warning line %s doesn't really change anything as vertical was already %c.\n",
-						lineTab, buffer[1]);
-			}
-			break;
-
-		case 'e':
-		case 'E':
-			if (buffer[1] == '=')
-			{
-				if (buffer[strlen(buffer)-1] == '\n')
-					buffer[strlen(buffer)-1] = 0;
-				strcpy(myExt, buffer+2);
-			}
-			break;
-
-		case 'f': // switches which direction a partial-save will go
-			goDirection = 0 - goDirection;
-			break;
-
-		case 'g': // this is specific to Gegege No Kitaro
-			if (buffer[1] == 'e')
-				gegege=1;
-			break;
-
-		case 'L':
-			myLastY = myY;
-			myLastX = myX;
-			break;
-
-		case 'u': // "up and over"
-			if (vertical)
-				myLastX = myLastX + strtol(buffer+1, NULL, 10);
-			else
-				myLastY = myLastY + strtol(buffer+1, NULL, 10);
-			myY = myLastY;
-			myX = myLastX;
-			break;
-
 		case '<': //reset current-x if we are reading sectors that don't match up with rows
+			//not clear how this is different than CR but I am keeping for backwards compatibility
 			if (curX > 0)
 			{
 				short temp = 256 - (short)curX;
@@ -1027,6 +612,274 @@ main(int argc, char * argv[])
 			}
 			break;
 
+		//absolute offsets
+		case 'a':
+			if (buffer[1] == 'x')
+				myAbsX = strtol(buffer+2, NULL, 10);
+			if (buffer[1] == 'y')
+				myAbsY = strtol(buffer+2, NULL, 10);
+			break;
+
+		case 'A': //anchor
+			if (buffer[1] == 'x')
+			{
+				myX = myLastX = myAnchorX = strtol(buffer+2, NULL, 10);
+				break;
+			}
+			if (buffer[1] == 'y')
+			{
+				myY = myLastY = myAnchorY = strtol(buffer+2, NULL, 10);
+				break;
+			}
+			break;
+
+		case 'b':
+		case 'B':
+			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
+				readType = BIT_HIGH_FIRST;
+			else if ((buffer[1] == 'l') || (buffer[1] == 'L'))
+				readType = BIT_LOW_FIRST;
+			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
+				readType = STRAIGHT_BYTES;
+			else
+				printf("WARNING line %s: BH or BL (bit/high or low first) are the only two options for B.\
+-/0/no byte clears it.\n", lineTab);
+			break;
+
+		case 'c': //in the case of Xyphus maps I used the Commodore
+		case 'C': //it may have 2 bytes at the start of a 256-block so we need to ignore those
+				  //however without C64 we do a carriage return resetting the X to 0 and moving down
+				  //this doesn't appear in final files but is good for debugging when we need to jigsaw things together
+			if ((buffer[1] == '6') && (buffer[2] == '4'))
+			{
+				commodore = (buffer[3] != '-');
+				break;
+			}
+
+			if ((buffer[1] == 'r') || (buffer[1] == 'R'))
+			{
+				myX = myLastX + myW;
+				myY = myLastY;
+				break;
+				printf("Invalid command--cr is the only one.");
+			}
+			break;
+
+		case 'd': // this changes the starting point to draw the rectangle
+			if (buffer[1] == 'x')
+			{
+				if (buffer[2] == '-')
+				{
+					if (myX < strtol(buffer+3, NULL, 10))
+					{
+						printf("WARNING dx command went to -x, %d back %d at line %s\n",
+							myX, strtol(buffer+3, NULL, 10), lineTab);
+						break;
+					}
+					myX -= strtol(buffer+3, NULL, 10);
+				}
+				else
+					myX += strtol(buffer+2, NULL, 10);
+				//printf("Adding %d to x, now %d\n", strtol(buffer+2, NULL, 10), myX);
+				break;
+			}
+			if (buffer[1] == 'y')
+			{
+				if (buffer[2] == '-')
+				{
+					if (myY < strtol(buffer+3, NULL, 10))
+					{
+						printf("WARNING dy command went to -y, %d back %d at line %s\n",
+							myY, strtol(buffer+3, NULL, 10), lineTab);
+						break;
+					}
+					myY -= strtol(buffer+3, NULL, 10);
+				}
+				else
+					myY += strtol(buffer+2, NULL, 10);
+				//printf("Adding %d to y, now %d\n", strtol(buffer+2, NULL, 10), myY);
+				break;
+			}
+			printf("Error at line %s. d(xy) is proper usage for moving.\n", lineTab);
+			break;
+
+		case 'e':
+		case 'E':
+			if (buffer[1] == '=')
+			{
+				if (buffer[strlen(buffer)-1] == '\n')
+					buffer[strlen(buffer)-1] = 0;
+				strcpy(myExt, buffer+2);
+			}
+			break;
+
+		case 'F': // FROM anchor
+			if (buffer[1] == 'x')
+			{
+				myLastX = myX = myAnchorX + strtol(buffer+2, NULL, 10);
+				break;
+			}
+			if (buffer[1] == 'y')
+			{
+				myLastY = myY = myAnchorY + strtol(buffer+2, NULL, 10);
+				break;
+			}
+			doFringe = 1;
+			break;
+
+		case 'f': // switches which direction a partial-save will go
+			goDirection = 0 - goDirection;
+			break;
+
+		case 'g': // this is specific to Gegege No Kitaro
+			if (buffer[1] == 'e')
+				gegege=1;
+			break;
+
+		case 'H':
+			if (buffer[1] == '-')
+				outHi = strtol(buffer+2, NULL, 10);
+			else
+				outH = strtol(buffer+1, NULL, 10);
+			break;
+
+		case 'h':
+			myH = strtol(buffer+1, NULL, 10);
+			break;
+
+		case 'L':
+			myLastY = myY;
+			myLastX = myX;
+			break;
+
+		case 'm': //The m's are deprecated as they were a bit clumsy, but they're contained here for backwards compatibility for now
+			printf("WARNING: %s has deprecated m-command. Use {} instead with 0's for unused min/max, {} to reset.\n", lineTab);
+			if (buffer[1] == '{')
+			{
+				readBrackets(buffer+2);
+				break;
+			}
+			if (buffer[1] == '-')
+			{
+				myXMin = 0;
+				myXMax = myW;
+				if (buffer[2] == '-')
+				{
+					myYMin = 0;
+					myYMax = 0;
+				}
+				break;
+			}
+			if ((buffer[1] == 'y') || (buffer[1] == 'Y'))
+			{
+				myYMin = strtol(buffer+2, NULL, 10);
+				if (myYMin < 0)
+					myYMin = myH + myYMin;
+				if (buffer[1] == '-')
+				{
+					myYMin = 0;
+					myYMax = myH;
+				if (myYMin < 0)
+					myYMin = 0;
+				}
+				break;
+			}
+			myXMin = strtol(buffer+1, NULL, 10);
+			if (myXMin < 0)
+				myXMin = myW + myXMin;
+			if (myXMin < 0)
+				myXMin = 0;
+			break;
+
+		case 'M': //capital m was xMax or, with y, yMax
+			printf("WARNING: %s has deprecated m-command. Use {} instead with 0's for unused min/max, {} to reset.\n", lineTab);
+			if (buffer[1] == '{')
+			{
+				readBrackets(buffer+2);
+				break;
+			}
+			if ((buffer[1] == 'y') || (buffer[1] == 'Y'))
+			{
+				myYMax = strtol(buffer+2, NULL, 10);
+				if (myYMax < 0)
+					myYMax = myH + myYMin;
+				if (buffer[2] == '-')
+				{
+					myYMin = 0;
+					myYMax = 0;
+					if (buffer[3] == '-')
+					{
+						myXMin = 0;
+						myXMax = myW;
+					}
+				if (myYMax < 0)
+					myYMax = 0;
+					break;
+				}
+			}
+			myXMax = strtol(buffer+1, NULL, 10);
+			if (myXMax < 0)
+				myXMax = myW + myXMax;
+			if (buffer[1] == '-')
+			{
+				myXMin = 0;
+				myXMax = myW;
+			}
+			if ((myXMax > myW) || (myXMax == 0))
+				myXMax = myW;
+			break;
+
+		case 'n':
+		case 'N':
+			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
+				readType = NIB_HIGH_FIRST;
+			else if ((buffer[1] == 'l') || (buffer[1] == 'L'))
+				readType = NIB_LOW_FIRST;
+			else if ((buffer[1] == '0') || (buffer[1] == '-') || (buffer[1] == 0))
+				readType = STRAIGHT_BYTES;
+			else
+				printf("WARNING line %s: NH or NL (nibble/high or low first) are the only two options for N.\
+-/0/no byte clears it.\n", lineTab);
+			break;
+
+		case 'p': // persist tells you whether {}/m rectangles of what to output should persist or disappear after reading next rectangle
+			if ((buffer[1] == '-') || (buffer[1] == '0'))
+				persist = 0;
+			else if ((buffer[1] == '+') || (buffer[1] == 0) || (buffer[1] == '\n'))
+				persist = 1;
+			else
+				printf("Unknown persist prompt %c at %s, need -/0/+/(empty).\n", buffer[1], lineTab);
+			break;
+
+		case 'q':
+			if (buffer[1] == '-')
+			{
+				quartering = 0;
+				qflags = 15;
+				break;
+			}
+			if ((buffer[1] == 'n') || (buffer[1] == 'N'))
+			{
+				qflags |= 1; qflags &= 0xfc;
+			}
+			if ((buffer[1] == 's') || (buffer[1] == 'S'))
+			{
+				qflags |= 4; qflags &= 0xff;
+			}
+			if ((buffer[2] == 'e') || (buffer[2] == 'E'))
+			{
+				qflags |= 2; qflags &= 0xfe;
+			}
+			if ((buffer[2] == 'w') || (buffer[2] == 'W'))
+			{
+				qflags |= 8; qflags &= 0xf8;
+			}
+			if ((qflags != 12) && (qflags != 9) && (qflags != 6) && (qflags != 3))
+			{
+				printf ("Bailing. Bad qflags value of %d at line %s given %s\n", qflags, lineTab, buffer);
+			}
+			break;
+
 		case 'O':	//capital o = force the offset if it's under 0x230
 		case 'o':   //otherwise just offset in file
 			if (buffer[1] == '-')
@@ -1172,6 +1025,87 @@ fromr:
 
 			break;
 
+		case 'R':	//force vertical or horizontal
+			if ((buffer[1] == 'v') || (buffer[1] == 'V'))
+			{
+				if (forceH)
+				{
+					printf("Already forcing horizontal line %s.\n", lineTab);
+					break;
+				}
+				if (forceV)
+				{
+					printf("Already forcing vertical line %s.\n", lineTab);
+					break;
+				}
+				forceV = 1;
+			}
+			if ((buffer[1] == 'h') || (buffer[1] == 'H'))
+			{
+				if (forceH)
+				{
+					printf("Already forcing horizontal line %s.\n", lineTab);
+					break;
+				}
+				if (forceV)
+				{
+					printf("Already forcing vertical line %s.\n", lineTab);
+					break;
+				}
+			}
+			break;
+
+		case 'r': // read in a file
+			{
+				short gotoJump = 0;
+				if (G)
+					fclose(G);
+				if (buffer[strlen(buffer)-1] == '\n')
+					 buffer[strlen(buffer)-1] = 0;
+				if (buffer[strlen(buffer)-1] == '/')
+				{
+					buffer[strlen(buffer)-1] = 0;
+					myOffset = myDefaultOffset;
+					gotoJump = 1;
+				}
+
+				if (needToProc)
+				{
+					printf("WARNING: %s (line %s) occurs before processing the last 'r' line.\n", buffer, lineTab);
+					needToProc = 0;
+				}
+				if (debug)
+					printf("Reading %s, also extension %s\n", buffer+1, myExt);
+				G = fopen(buffer+1, "rb");
+				if (G == NULL)
+				{
+					char altFile[200];
+					if (myExt[0])
+					{
+						strcpy(altFile, buffer+1);
+						strcat(altFile, myExt);
+						G = fopen(altFile, "rb");
+						if (G == NULL)
+						{
+							altFile[strlen(altFile)-strlen(myExt)] = 0;
+							strcat(altFile, ".");
+							strcat(altFile, myExt);
+							G = fopen(altFile, "rb");
+						}
+					}
+					if (G == NULL)
+					{
+						printf("Oops file %s does not exist. Bailing at line %s.\n", buffer+1, lineTab);
+						return 0;
+					}
+				}
+				if (gotoJump)
+					 goto fromr;
+				else
+					needToProc = 1;
+			}
+			break;
+
 		case 'S': //sector read, usually for Apple and 256. Capital = force no 00's if <x230
 		case 's': // ",(#)" means only read that many(hex) bytes
 			if (buffer[1] == 't')
@@ -1280,6 +1214,87 @@ fromr:
 						}
 					}
 				}
+			}
+			break;
+
+		case 't':
+			if (buffer[1] == 'c')
+			{
+				transpColor = strtol(buffer+2, NULL, 16);
+				break;
+			}
+			if (buffer[1] == '-')
+				setTransparent = 0;
+			else
+				setTransparent = 1;
+			break;
+
+		case 'u': // "up and over"
+			if (vertical)
+				myLastX = myLastX + strtol(buffer+1, NULL, 10);
+			else
+				myLastY = myLastY + strtol(buffer+1, NULL, 10);
+			myY = myLastY;
+			myX = myLastX;
+			break;
+
+		case 'V':
+			{
+				short wasVert = vertical;
+				if (buffer[1] == '+')
+					vertical = 1;
+				else if (buffer[1] == '-')
+					vertical = 0;
+				else
+				{
+					printf("V needs to have + or -.");
+					break;
+				}
+				if (vertical == wasVert)
+					printf("Warning line %s doesn't really change anything as vertical was already %c.\n",
+						lineTab, buffer[1]);
+			}
+			break;
+
+		case 'v':
+			myYModOffset = strtol(buffer+1, NULL, 10);
+			break;
+
+		case 'W':
+			if (buffer[1] == '-')
+				outWi = strtol(buffer+2, NULL, 10);
+			else
+				outW = strtol(buffer+1, NULL, 10);
+			break;
+
+		case 'w':
+			myW = strtol(buffer+1, NULL, 10);
+			myXMax = myW;
+			break;
+
+		case 'x': //x/y move you to absolute coordinates myX+myAbsX
+			if (buffer[1] == 'd')
+			{
+				myX = strtol(buffer+2, NULL, 10) + myX;
+				myLastX = myX;
+			}
+			else
+			{
+			myX = strtol(buffer+1, NULL, 10);
+			myLastX = myX;
+			}
+			break;
+
+		case 'y': //x/y move you to absolute coordinates myX+myAbsX
+			if (buffer[1] == 'd')
+			{
+				myY += strtol(buffer+2, NULL, 10);
+				myLastY = myY;
+			}
+			else
+			{
+			myY = strtol(buffer+1, NULL, 10);
+			myLastY = myY;
 			}
 			break;
 
