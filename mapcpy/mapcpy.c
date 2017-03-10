@@ -39,6 +39,9 @@ main(int argc, char * argv[])
 	short needToBMP = 0;
 	short commentBlock = 0;
 
+	short myYMin = 0;
+	short myYMax = 0;
+
 	short cutBuffer[200][200];
 
 	short commodore = 0;
@@ -70,6 +73,8 @@ main(int argc, char * argv[])
 	short forceV = 0;
 
 	short bailOnWarn = 0;
+
+	short persist = 0;
 
 	short readType = STRAIGHT_BYTES;
 
@@ -203,7 +208,7 @@ main(int argc, char * argv[])
 		if (debug)
 			printf("%s: %s", lineTab, myLine);
 
-		if (myLine[1] == '#')
+		if (myLine[0] == '#')
 		{
 			if (commentBlock && (myLine[1] == '-'))
 				commentBlock = 0;
@@ -580,10 +585,37 @@ main(int argc, char * argv[])
 
 		case 'm':
 			myXMin = strtol(buffer+1, NULL, 10);
+			if (myXMin < 0)
+				myXMin = myW + myXMin;
+			if (buffer[1] == '-')
+			{
+				myXMin = 0;
+				myXMax = myW;
+			}
+			if (myXMin < 0)
+				myXMin = 0;
 			break;
 
 		case 'M':
 			myXMax = strtol(buffer+1, NULL, 10);
+			if (myXMax < 0)
+				myXMax = myW + myXMax;
+			if (buffer[1] == '-')
+			{
+				myXMin = 0;
+				myXMax = myW;
+			}
+			if ((myXMax > myW) || (myXMax == 0))
+				myXMax = myW;
+			break;
+
+		case 'p': // persist
+			if ((buffer[1] == '-') || (buffer[1] == '0'))
+				persist = 0;
+			else if ((buffer[1] == '+') || (buffer[1] == 0) || (buffer[1] == '\n'))
+				persist = 1;
+			else
+				printf("Unknown persist prompt %c at %s, need -/0/+/(empty).\n", buffer[1], lineTab);
 			break;
 
 		case 'q':
@@ -1062,8 +1094,12 @@ fromr:
 				myX += myW + hJump;
 			myXModOffset = 0;
 			myYModOffset = 0;
+
+			if (!persist)
+			{
 			myXMin = 0;
 			myXMax = myW;
+			}
 			if (addSpace == 1)
 				myY++;
 

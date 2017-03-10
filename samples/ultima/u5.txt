@@ -65,7 +65,8 @@ u33	o34	dx+1	o38	dx+1	o3c
 ######################Dwellings
 u34
 rDWELLING
-o0	dx+1	o4	dx+1	o8	dx+1	o24	dx+1	o28	dx+1	o2c
+p
+o0	dx+1	m3	M14	o4	dx+1	o8	dx+1	m-	o24	dx+1	m8	M23	o28	dx+1	o2c	m-
 u33	o18	dx+1	o1c	dx+1	o20	dx+1	o30	dx+1	o34
 u33	oc	dx+1	o10	dx+1	o14	dx+1	o38	dx+1	o3c
 rKEEP
