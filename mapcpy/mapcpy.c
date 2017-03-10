@@ -39,9 +39,6 @@ main(int argc, char * argv[])
 	short needToBMP = 0;
 	short commentBlock = 0;
 
-	short myYMin = 0;
-	short myYMax = 0;
-
 	short cutBuffer[200][200];
 
 	short commodore = 0;
@@ -56,8 +53,9 @@ main(int argc, char * argv[])
 
 	long myDefaultOffset = 0;
 	long myAbsX = 0, myAbsY = 0;
-	long myLastX = 0, myLastY = 0, myX = 0, myY = 0, myH = 0, myW = 0, myOffset = 0, myXMin = 0, myXMax = 32, setTransparent = 0, transpColor = 0,
-		myYModOffset=0, myXModOffset=0, outHi=0, outWi=0, outH=256, outW=256, doFringe = 0, gegege=0;
+	long myLastX = 0, myLastY = 0, myX = 0, myY = 0, myH = 0, myW = 0, myOffset = 0, myXMin = 0, myYMin = 0, myYMax = 0,
+		myXMax = 32, setTransparent = 0, transpColor = 0, myYModOffset=0, myXModOffset=0, outHi=0, outWi=0, outH=256, outW=256,
+		doFringe = 0, gegege=0;
 	long myAnchorX = 0, myAnchorY = 0;
 	long i, j, i2, j2;
 	short qflags = 15, quartering = 0;
@@ -584,19 +582,58 @@ main(int argc, char * argv[])
 			break;
 
 		case 'm':
-			myXMin = strtol(buffer+1, NULL, 10);
-			if (myXMin < 0)
-				myXMin = myW + myXMin;
 			if (buffer[1] == '-')
 			{
 				myXMin = 0;
 				myXMax = myW;
+				if (buffer[2] == '-')
+				{
+					myYMin = 0;
+					myYMax = 0;
+				}
+				break;
 			}
+			if ((buffer[1] == 'y') || (buffer[1] == 'Y'))
+			{
+				myYMin = strtol(buffer+2, NULL, 10);
+				if (myYMin < 0)
+					myYMin = myH + myYMin;
+				if (buffer[1] == '-')
+				{
+					myYMin = 0;
+					myYMax = myH;
+				if (myYMin < 0)
+					myYMin = 0;
+				}
+				break;
+			}
+			myXMin = strtol(buffer+1, NULL, 10);
+			if (myXMin < 0)
+				myXMin = myW + myXMin;
 			if (myXMin < 0)
 				myXMin = 0;
 			break;
 
 		case 'M':
+			if ((buffer[1] == 'y') || (buffer[1] == 'Y'))
+			{
+				myYMax = strtol(buffer+2, NULL, 10);
+				if (myYMax < 0)
+					myYMax = myH + myYMin;
+				if (buffer[2] == '-')
+				{
+					myYMin = 0;
+					myYMax = 0;
+					if (buffer[3] == '-')
+					{
+						myXMin = 0;
+						myXMax = myW;
+					}
+				if (myYMax < 0)
+					myYMax = 0;
+					break;
+				}
+			}
 			myXMax = strtol(buffer+1, NULL, 10);
 			if (myXMax < 0)
 				myXMax = myW + myXMax;
@@ -1024,6 +1061,11 @@ fromr:
 					j2 = (j*goDirection+myYModOffset) % myH;
 
 					ch = fgetc(G) & 0xff;
+					if (j < myYMin)
+						continue;
+					if (myYMax && (j >= myYMax))
+						continue;
+
 					if (replace[ch] != -1)
 						ch = replace[ch];
 					if ((setTransparent) && (ch == transpColor))

@@ -3,6 +3,8 @@
 #
 #Ultima V map copy file
 #
+#the upper levels were used to tweak the m/my (clip reading region) commands
+#so we only see the square the person can walk on and not the whole (redundant) map
 #
 H520	W520
 e=DAT
@@ -66,7 +68,7 @@ u33	o34	dx+1	o38	dx+1	o3c
 u34
 rDWELLING
 p
-o0	dx+1	m3	M14	o4	dx+1	o8	dx+1	m-	o24	dx+1	m8	M23	o28	dx+1	o2c	m-
+o0	dx+1	my11	My22	m3	M14	o4	dx+1	o8	dx+1	m--	o24	dx+1	m8	M23	o28	dx+1	o2c	m-
 u33	o18	dx+1	o1c	dx+1	o20	dx+1	o30	dx+1	o34
 u33	oc	dx+1	o10	dx+1	o14	dx+1	o38	dx+1	o3c
 rKEEP
