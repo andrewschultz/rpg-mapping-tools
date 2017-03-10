@@ -29,6 +29,10 @@ bool viable (int a1, int a2, int a3); //very limited function
 
 void usage();
 void mapCpyFmt();
+void readBrackets(char * x);
+
+char lineTab[20];
+long myXMin = 0, myXMax = 0, myYMin = 0, myYMax = 0, myW, myH;
 
 main(int argc, char * argv[])
 {
@@ -53,9 +57,8 @@ main(int argc, char * argv[])
 
 	long myDefaultOffset = 0;
 	long myAbsX = 0, myAbsY = 0;
-	long myLastX = 0, myLastY = 0, myX = 0, myY = 0, myH = 0, myW = 0, myOffset = 0, myXMin = 0, myYMin = 0, myYMax = 0,
-		myXMax = 32, setTransparent = 0, transpColor = 0, myYModOffset=0, myXModOffset=0, outHi=0, outWi=0, outH=256, outW=256,
-		doFringe = 0, gegege=0;
+	long myLastX = 0, myLastY = 0, myX = 0, myY = 0, myOffset = 0, setTransparent = 0, transpColor = 0,
+		myYModOffset=0, myXModOffset=0, outHi=0, outWi=0, outH=256, outW=256, doFringe = 0, gegege=0;
 	long myAnchorX = 0, myAnchorY = 0;
 	long i, j, i2, j2;
 	short qflags = 15, quartering = 0;
@@ -81,8 +84,6 @@ main(int argc, char * argv[])
 
 	char myFile[200] = "";
 	char myLine[500];
-
-	char lineTab[20];
 
 	char * buffer;
 
@@ -581,7 +582,25 @@ main(int argc, char * argv[])
 			myXMax = myW;
 			break;
 
+		case '{':
+			if (buffer[1] == '}')
+			{
+				myXMin = 0;
+				myXMax = myW;
+				myYMin = 0;
+				myYMax = 0;
+				break;
+			}
+			readBrackets(buffer+1);
+			break;
+
 		case 'm':
+			printf("WARNING: %s has deprecated m-command. Use {} instead with 0's for unused min/max, {} to reset.\n", lineTab);
+			if (buffer[1] == '{')
+			{
+				readBrackets(buffer+2);
+				break;
+			}
 			if (buffer[1] == '-')
 			{
 				myXMin = 0;
@@ -615,6 +634,12 @@ main(int argc, char * argv[])
 			break;
 
 		case 'M':
+			printf("WARNING: %s has deprecated m-command. Use {} instead with 0's for unused min/max, {} to reset.\n", lineTab);
+			if (buffer[1] == '{')
+			{
+				readBrackets(buffer+2);
+				break;
+			}
 			if ((buffer[1] == 'y') || (buffer[1] == 'Y'))
 			{
 				myYMax = strtol(buffer+2, NULL, 10);
@@ -1280,6 +1305,68 @@ fromr:
 	if (G) fclose(G);
 	return 0;
 
+}
+
+void readBrackets(char * x)
+{
+	int i;
+	short commas = 0;
+	short nextInt = 1;
+
+	for (i=0; i < (int)strlen(x); i++)
+		commas += (x[i] == ',');
+
+	if (commas != 3)
+	{
+		printf("Line/tab %s needs 3 commas for m{}. You have %d.\n", lineTab, commas);
+	}
+
+	commas = 0;
+	for (i=0; i < (int)strlen(x); i++)
+	{
+		if (nextInt)
+		{
+			nextInt = 0;
+			commas++;
+			switch (commas)
+			{
+			case 1:
+				myXMin = strtol(x+i, NULL, 10);
+				if (myXMin < 0)
+					myXMin += myW;
+				if (myXMin < 0)
+					myXMin = 0;
+				break;
+			case 2:
+				myYMin = strtol(x+i, NULL, 10);
+				if (myYMin < 0)
+					myYMin += myH;
+				if (myYMin < 0)
+					myYMin = 0;
+				break;
+			case 3:
+				myXMax = strtol(x+i, NULL, 10);
+				if (myXMax < 0)
+					myXMax += myW;
+				if ((myXMax < 0) || (myXMax > myW))
+					myXMax = myW;
+				break;
+			case 4:
+				myYMax = strtol(x+i, NULL, 10);
+				if (myYMax < 0)
+					myYMax += myH;
+				if (myYMax < 0)
+					myYMax = 0;
+				i = strlen(x); //cheating to save a bit of time
+				break;
+			default:
+				printf("%s: UH OH. This really should not have happened in m{} %d commas found.\n", lineTab, commas);
+				break;
+			}
+		}
+		if (x[i] == ',')
+			nextInt = 1;
+	}
 }
 
 short isYellow(short x)

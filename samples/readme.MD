@@ -27,8 +27,8 @@ Also note some games may be partially included. For instance, Bard's Tale has a 
 
 ## Very Likely
 
-* Sundog (may write guide too)
 * BT1/2/3 town maps (dungeons would be in 3-d)
+* Sundog (may write guide too)
 
 ## Likely, Plus Guide
 
@@ -36,15 +36,21 @@ Also note some games may be partially included. For instance, Bard's Tale has a 
 
 ## Conditional
 
+* Caverns of Mordia?
+* Crown of Arthain?
+* Dark Heart of Uukrul (special encoding?)
 * Deathlord (would require compression reading)
+* Dunjonquest / Apshai Trilogy (?)
 * Gemstone Healer/Warrior (maybe just room maps)
 * Legend of Blacksilver (part of Questron but maybe not enough--I can extract from disks and maybe use icon files too)
 * Might and magic i/ii (might be 3d)
-* Wasteland (save states only?)
-* Uukrul
-* Apshai Trilogy (?)
 * Realms of Darkness
 * Realm of Impossibility
+* Wasteland (save states only?)
+
+## games that can't be mapped but I can write guides
+
+* Beneath Apple Manor
 
 ## non Apple
 
