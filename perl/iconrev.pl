@@ -131,13 +131,6 @@ sub showLikelyIcons
   open(A, "$fileName") || die ("Can't open $fileName!");
   binmode(A);
 
-  if ($doBin)
-  {
-    open(B, $binAry[0]) || die ("Couldn't open $binAry[0]");
-	binmode(B);
-	($binWidth, $binHeight) = imgsize($binAry[0]);
-  }
-
   seek(A, 0x436, 0);
   seek(A, $bottomEdge * $imgWidth + $leftEdge, 1);
 
@@ -146,11 +139,21 @@ sub showLikelyIcons
 
   print "$iconsWide by $iconsHigh read-in.\n";
 
+  if ($doBin)
+  {
+    open(B, $binAry[0]) || die ("Couldn't open $binAry[0]");
+	binmode(B);
+	($binWidth, $binHeight) = imgsize($binAry[0]);
+	my $binCutWidth = $binAry[3] - $binAry[1];
+	my $binCutHeight = $binAry[4] - $binAry[2];
+	if ($binCutWidth != $iconsWide) { die ("width of bin file/icons doesn't match: $binCutWidth($binAry[0]) vs $iconsWide($fileName)"); }
+	if ($binCutHeight != $iconsHigh) { die ("height of bin file/icons doesn't match: $binCutHeight($binAry[0]) vs $iconsHigh($fileName)"); }
+  }
   for ($j2=0; $j2 < $iconsHigh; $j2++)
   {
     if ($doBin)
 	{
-	  $binOffset = $binAry[1] + $binWidth * ($binHeight - $binAry[2] -$j2 - 1);
+	  $binOffset = $binAry[1] + $binWidth * ($binHeight - ($binAry[2] + $iconsHigh - $j2));
 	  seek(B, 0x436+$binOffset, 0);
 	  read(B, $buffer, $binAry[3] - $binAry[1]);
 	   @binVals = split(//, $buffer);
@@ -174,10 +177,12 @@ sub showLikelyIcons
 
 	if ($doBin)
 	{
+	#print join(",", map {ord($_)} @binVals) . "\n";
 	for (0..min($#iconList, $#binVals))
 	{
 	  if (!$binProb{ord($binVals[$_])})
 	  {
+	    #printf("Assigning icon value %d to the icon at %d, %d.\n", ord($binVals[$_]), $_, $iconsHigh - $j2 - 1);
 	    $binProb{ord($binVals[$_])} = $iconList[$_];
 	  }
 	}
@@ -237,6 +242,10 @@ print "\n";
 
 print "Results of which icons go where:\n";
 
+my $foundOne;
+
+#for (sort keys %binProb) { print "$_: $binProb{$_}\n"; } die;
+
 OUTER:
 for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
 {
@@ -250,10 +259,22 @@ for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
 	{
 	  print "#first occurrence of icon below at $firstOccur{$ih}, last at $lastOccur{$ih}\n";
 	}
-    print "#icon with $iconHash{$ih} hits\n0x??\n";
+    print "#icon with $iconHash{$ih} hits\n0x";
+	$foundOne = 0;
+	for (sort keys %binProb)
+	{
+	  if ($binProb{$_} eq $ih)
+	  {
+	  if ($foundOne) { print "/"; }
+	  printf("%02x", $_);
+	  $foundOne = 1;
+	  }
+	}
+	if (!$foundOne) { print "??"; }
+	print "\n";
 	print vflip($ih);
   }
-  else { $belowthreshold++; }
+  elsif ($iconHash{$ih} > 0) { $belowthreshold++; }
 }
 
 if ($badPattern) { print "#$badPattern icons with bad patterns were ignored.\n"; }
