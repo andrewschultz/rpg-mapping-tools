@@ -5,9 +5,10 @@
 #reverse engineers the icons we find in any one generated map
 #note this is not perfect, as for instance we will have town names that give false "new" icons
 #
-#example
+#examples
 #
 #iconrev.pl -s 6 -ct 20 -f bikkuriman_world.bmp > iconrev.txt
+#iconrev.pl -s 8 -cr 128 -f ultima_3_sosaria.bmp -b u3.bmp,132,132,196,196 > iconrev.txt
 #
 #icons are 6x6, cut 20 off the top from my bikkurian world map
 #
@@ -45,6 +46,7 @@ my $toRead = 0;
 
 my $count = 0;
 
+my %occur;
 my %tempcolor;
 my $mytempcolor;
 
@@ -131,9 +133,14 @@ sub showLikelyIcons
   }
 
   seek(A, 0x436, 0);
-  seek(A, $bottomEdge * $imgWidth, 1);
+  seek(A, $bottomEdge * $imgWidth + $leftEdge, 1);
 
-  for ($j2=0; $j2 < ($imgHeight-$topEdge-$bottomEdge) / $iconHeight; $j2++)
+  my $iconsHigh = ($imgHeight-$topEdge-$bottomEdge) / $iconHeight;
+  my $iconsWide = ($imgWidth-$leftEdge-$rightEdge) / $iconWidth;
+
+  print "$iconsWide by $iconsHigh read-in.\n";
+
+  for ($j2=0; $j2 < $iconsHigh; $j2++)
   {
     if ($doBin)
 	{
@@ -147,7 +154,7 @@ sub showLikelyIcons
 	{
 	  read(A, $buffer, $imgWidth);
 	  @byteBuf = split(//, $buffer);
-      for ($i2=0; $i2 < $imgWidth / $iconWidth; $i2++)
+      for ($i2=0; $i2 < $iconsWide; $i2++)
       {
         for ($i1=0; $i1 < $iconHeight; $i1++)
         {
@@ -179,7 +186,7 @@ sub showLikelyIcons
    my $idx;
    if (!$iconGuess)
    {
-     if (defined($binAry[5])
+     if (defined($binAry[5]))
 	 {
 	 $iconGuess = $binAry[5];
 	 }
@@ -222,7 +229,15 @@ for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
   {
   if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
   }
-  if ($iconHash{$ih} >= $threshhold) { print "#icon with $iconHash{$ih} hits\n0x??\n"; print vflip($ih); }
+  if ($iconHash{$ih} >= $threshhold)
+  {
+    print "#icon with $iconHash{$ih} hits\n0x??\n";
+	if (defined($binAry[0]))
+	{
+	  print "#first occurrence at $occur{$ih}\n";
+	}
+	print vflip($ih);
+  }
   else { $belowThreshhold++; }
 }
 
@@ -253,7 +268,7 @@ sub vflip
 
 sub verifyBinArray
 {
-  if ($#binAry != 4 && $binAry != 5) { die ("Binary array needs 5-6 arguments: file, Xi, Yi, Xf, Yf, optional out file."); }
+  if ($#binAry != 4 && $#binAry != 5) { die ("Binary array needs 5-6 arguments: file, Xi, Yi, Xf, Yf, optional out file."); }
   if (! -f $binAry[0]) { die ("No file $binAry[0]."); }
   if ($binAry[1] > $binAry[3]) { die("Xi needs to be less than Xf."); }
   if ($binAry[2] > $binAry[4]) { die("Yi needs to be less than Yf."); }
