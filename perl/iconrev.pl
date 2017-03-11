@@ -12,7 +12,7 @@
 #
 #icons are 6x6, cut 20 off the top from my bikkurian world map
 #
-# features to add include threshhold icon can appear to be flagged as important
+# features to add include threshold icon can appear to be flagged as important
 # as well as actual icons from a real world map
 # also where an icon first occurs etc.
 #
@@ -26,10 +26,13 @@ use List::Util qw[min max];
 use strict;
 use warnings;
 
+######################options
+my $trackOccur = 1; #tells where the icons first/last pop up. You can disable if you want
+
 ######################these really should be set. If not, I slap the user on the wrist.
 my $iconHeight = 0;
 my $iconWidth = 0;
-my $threshhold = 2;
+my $threshold = 2;
 
 ######################these don't need to but may come in handy
 my $bottomEdge = 0;
@@ -46,7 +49,9 @@ my $toRead = 0;
 
 my $count = 0;
 
-my %occur;
+my %lastOccur;
+my %firstOccur;
+
 my %tempcolor;
 my $mytempcolor;
 
@@ -68,7 +73,8 @@ while ($count <= $#ARGV)
   /^-cb$/ && do { $bottomEdge = $that; $count += 2; next; };
   /^-f$/ && do { $fileName = $that; $count += 2; next; };
   /^-f$/ && do { $iconGuess = $that; $count += 2; next; };
-  /^-t$/ && do { $threshhold = $that; $count += 2; next; };
+  /^-nt$/ && do { $trackOccur = 0; $count++; next; };
+  /^-t$/ && do { $threshold = $that; $count += 2; next; };
   /^-x$/ && do { @excludeArray = split(/,/, $that); $count += 2; next; };
   /^-\?$/ && do { usage(); };
   print "Invalid parameter $this\n\n";
@@ -109,7 +115,7 @@ sub showLikelyIcons
    my $col;
 
    my $badPattern = 0;
-   my $belowThreshhold = 0;
+   my $belowthreshold = 0;
 
    my $ih;
    my $temp;
@@ -176,7 +182,16 @@ sub showLikelyIcons
 	  }
 	}
 	}
-    for (@iconList) { $iconHash{$_}++; }
+	if ($trackOccur)
+	{
+    for (reverse(0..$#iconList))
+	{
+	  $temp = sprintf("(%d,%d)", $_, $iconsHigh - $j2 - 1);
+	  $iconHash{$iconList[$_]}++;
+	  if (!$lastOccur{$iconList[$_]}) { $lastOccur{$iconList[$_]} = $temp; }
+	  $firstOccur{$iconList[$_]} = $temp;
+    }
+	}
   }
 
  $mytempcolor = 0;
@@ -229,20 +244,20 @@ for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
   {
   if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
   }
-  if ($iconHash{$ih} >= $threshhold)
+  if ($iconHash{$ih} >= $threshold)
   {
-    print "#icon with $iconHash{$ih} hits\n0x??\n";
-	if (defined($binAry[0]))
+    if ($trackOccur)
 	{
-	  print "#first occurrence at $occur{$ih}\n";
+	  print "#first occurrence of icon below at $firstOccur{$ih}, last at $lastOccur{$ih}\n";
 	}
+    print "#icon with $iconHash{$ih} hits\n0x??\n";
 	print vflip($ih);
   }
-  else { $belowThreshhold++; }
+  else { $belowthreshold++; }
 }
 
 if ($badPattern) { print "#$badPattern icons with bad patterns were ignored.\n"; }
-if ($belowThreshhold) { print "#$belowThreshhold icons occurred below $threshhold times and were ignored.\n"; }
+if ($belowthreshold) { print "#$belowthreshold icons occurred below $threshold times and were ignored.\n"; }
 }
 
 sub vflip
@@ -283,6 +298,7 @@ print<<EOT;
 -h/-w set icon height-width, -s sets both
 -c(lbrt) sets cutoff for what to read, in pixels
 -f specifies file
+-nt specifies no tracking of first/last icons
 -ig specifies icon guess file (can also be in -b CSV)
 -b specifies binary file to crib from to guess icons, then Xi Yi Xf Yf
 -? gives this
