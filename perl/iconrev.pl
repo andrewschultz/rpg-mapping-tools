@@ -52,6 +52,10 @@ my $count = 0;
 my %lastOccur;
 my %firstOccur;
 
+my %iconCandFreq;
+my %iconCandTotal;
+my %iconCandidates;
+
 my %tempcolor;
 my $mytempcolor;
 
@@ -177,9 +181,34 @@ sub showLikelyIcons
 
 	if ($doBin)
 	{
+	my $myIcon;
+	my $cand;
 	#print join(",", map {ord($_)} @binVals) . "\n";
 	for (0..min($#iconList, $#binVals))
 	{
+	  my $myIcon = ord($binVals[$_]);
+	  my $foundIcon = 0;
+
+	  if ($iconCandTotal{$myIcon})
+	  {
+	  for $cand (1..$iconCandTotal{$myIcon})
+	  {
+	    if ($iconList[$_] eq $iconCandidates{"$myIcon-$cand"})
+		{
+		  $iconCandFreq{"$myIcon-$cand"}++;
+		  $foundIcon = 1;
+		}
+	  }
+	  }
+	  if (!$foundIcon)
+	  {
+	    #print "Adding to icon candidate total of $myIcon.\n";
+		if ($iconCandTotal{$myIcon}) { $iconCandTotal{$myIcon}++; }
+		else { $iconCandTotal{$myIcon} = 1; }
+	    $iconCandFreq{"$myIcon-$iconCandTotal{$myIcon}"} = 1;
+		$iconCandidates{"$myIcon-$iconCandTotal{$myIcon}"} = $iconList[$_];
+	  }
+
 	  if (!$binProb{ord($binVals[$_])})
 	  {
 	    #printf("Assigning icon value %d to the icon at %d, %d.\n", ord($binVals[$_]), $_, $iconsHigh - $j2 - 1);
@@ -191,10 +220,19 @@ sub showLikelyIcons
 	{
     for (reverse(0..$#iconList))
 	{
+	  my $myIcon = ord($binVals[$_]);
 	  $temp = sprintf("(%d,%d)", $_, $iconsHigh - $j2 - 1);
+	  if ($doBin)
+	  {
+	  if (!$lastOccur{$myIcon}) { $lastOccur{$myIcon} = $temp; }
+	  $firstOccur{$myIcon} = $temp;
+	  }
+	  else
+	  {
 	  $iconHash{$iconList[$_]}++;
 	  if (!$lastOccur{$iconList[$_]}) { $lastOccur{$iconList[$_]} = $temp; }
 	  $firstOccur{$iconList[$_]} = $temp;
+	  }
     }
 	}
   }
@@ -203,6 +241,8 @@ sub showLikelyIcons
 
  if ($doBin)
  {
+   #for (1..$iconCandTotal{4}) { my $temp = "4-$_"; print "4-$_: "; print "$iconCandFreq{$temp}"; print "\n"; print "$iconCandidates{$temp}"; print "\n"; }
+
    my $idx;
    if (!$iconGuess)
    {
@@ -246,13 +286,36 @@ my $foundOne;
 
 #for (sort keys %binProb) { print "$_: $binProb{$_}\n"; } die;
 
+if (defined($binVals[0]))
+{
+for $ih (sort {$a <=> $b} keys %iconCandTotal)
+{
+  my $curMax = 1;
+  my $sumHits = $iconCandFreq{"$ih-1"};
+    if ($trackOccur)
+	{
+	  print "#first occurrence of icon below at $firstOccur{$ih}, last at $lastOccur{$ih}\n";
+	}
+  for (2..$iconCandTotal{$ih})
+  {
+    $sumHits += $iconCandFreq{"$ih-$_"};
+	#print "$ih-$_ adds " . $iconCandFreq{"$ih-$_"} . "\n";
+    if ($iconCandFreq{"$ih-$_"} > $iconCandFreq{"$ih-$curMax"}) { $curMax = $_; }
+  }
+    print "#icon with $sumHits hits\n";
+  printf("0x%02x\n%s", $ih, vflip($iconCandidates{"$ih-$curMax"}));
+  for $col (@excludeArray)
+  {
+  #if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
+  }
+}
+}
+else
+{
 OUTER:
 for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
 {
-  for $col (@excludeArray)
-  {
-  if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
-  }
+  next;
   if ($iconHash{$ih} >= $threshold)
   {
     if ($trackOccur)
@@ -275,6 +338,7 @@ for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
 	print vflip($ih);
   }
   elsif ($iconHash{$ih} > 0) { $belowthreshold++; }
+}
 }
 
 if ($badPattern) { print "#$badPattern icons with bad patterns were ignored.\n"; }
