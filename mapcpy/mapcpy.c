@@ -43,7 +43,7 @@ main(int argc, char * argv[])
 	short needToBMP = 0;
 	short commentBlock = 0;
 
-	short cutBuffer[200][200];
+	short cutBuffer[200][200]; // for future using a cut buffer but probably not strictly necessary. Maybe limit it to 256?
 
 	short commodore = 0;
 
@@ -322,6 +322,164 @@ main(int argc, char * argv[])
 
 		case ';':
 			keepGoing = 0;
+			break;
+
+		case '$':
+			{
+				short index = 0;
+				long lastComma = 0;
+				long coords[10];
+				short commas = 0;
+				long inCommands = 1;
+
+				long xi, yi, xClip, yClip, xTo, yTo;
+				for (i=0; i < (short)strlen(buffer); i++)
+				{
+					coords[commas] = i;
+					if (buffer[i] == ',')
+					{
+						commas++;
+						if (commas == 5)
+							continue;
+						lastComma = i;
+						switch(commas)
+						{
+						case 0:
+							xi = strtol(buffer+i+1, NULL, 10);
+							break;
+
+						case 1:
+							yi = strtol(buffer+i+1, NULL, 10);
+							break;
+
+						case 2:
+							xClip = strtol(buffer+i+1, NULL, 10);
+							if (xClip < 0)
+							{
+								printf("%s: xClip value must be positive.\n", lineTab);
+								goto cutpasteend;
+							}
+							break;
+
+						case 3:
+							yClip = strtol(buffer+i+1, NULL, 10);
+							if (yClip < 0)
+							{
+								printf("%s: yClip value must be positive.\n", lineTab);
+								goto cutpasteend;
+							}
+							break;
+
+						case 4:
+							xTo = strtol(buffer+i+1, NULL, 10);
+							break;
+
+						case 5:
+							yTo = strtol(buffer+i+1, NULL, 10);
+							break;
+						}
+					}
+				}
+
+				if ((commas != 3) && (commas != 5))
+				{
+					printf("WARNING %s doesn't have right number of commas. You need 3 or 5.");
+					break;
+				}
+
+				if (commas == 5)
+				{
+					for (j=0; j < yClip; j++)
+						for (i=0; i < xClip; i++) //?? note a bug here if rectangles overlap. How can we check?
+							myary[xTo+i][yTo+j] = myary[xi+i][yi+i];
+					break;
+				}
+
+				for (i=lastComma; i < (short)strlen(buffer); i++)
+				{
+					if (buffer[i] == ':')
+					{
+						inCommands=1;
+						continue;
+					}
+					if (inCommands)
+					{
+						switch(buffer[i])
+						{
+
+						case 'f': // flip = v + h
+						case 'v':
+							for (j=0; j < (yClip-1) / 2; j++)
+								for (i=0; i < xClip; i++)
+								{
+									temp = myary[xi+i][yTo+(yClip-1-j)];
+									myary[xi+i][yTo+(yClip-1-j)] = myary[xi+i][yi+j];
+									myary[xi+i][yi+j] = (short)temp;
+								}
+							if (buffer[i] == 'v')
+								break;
+
+						case 'h':
+							for (j=0; j < yClip; j++)
+								for (i=0; i < (xClip-1)/2; i++)
+								{
+									temp = myary[xi+i][yTo+yClip];
+									myary[xi+i][yTo+yClip] = myary[xi+(xClip-1-i)][yi+yClip];
+									myary[xi+(xClip-1-i)][yi+j] = (short)temp;
+								}
+							break;
+
+						case 'r':
+							if (xClip != yClip)
+							{
+								printf("WARNING %s: Need to rotate square!", lineTab);
+								goto cutpasteend;
+							}
+							{
+								short temp[4];
+								for (j=0; j < xClip / 2; j++)
+									for (i=0; i < xClip / 2; i++)
+									{
+										temp[0] = myary[i][j];
+										temp[1] = myary[xClip-j-1][i];
+										temp[2] = myary[xClip-i-1][xClip-j-1];
+										temp[3] = myary[j][xClip-i-1];
+										myary[i][j] = temp[3];
+										myary[xClip-j-1][i] = temp[0];
+										myary[xClip-i-1][xClip-j-1] = temp[1];
+										myary[j][xClip-i-1] = temp[2];
+									}
+							}
+							break;
+
+						case 'l':
+							if (xClip != yClip)
+							{
+								printf("WARNING %s: Need to rotate square!", lineTab);
+								goto cutpasteend;
+							}
+							{
+								short temp[4];
+								for (j=0; j < xClip / 2; j++)
+									for (i=0; i < xClip / 2; i++)
+									{
+										temp[0] = myary[i][j];
+										temp[1] = myary[xClip-j-1][i];
+										temp[2] = myary[xClip-i-1][xClip-j-1];
+										temp[3] = myary[j][xClip-i-1];
+										myary[i][j] = temp[1];
+										myary[xClip-j-1][i] = temp[2];
+										myary[xClip-i-1][xClip-j-1] = temp[3];
+										myary[j][xClip-i-1] = temp[0];
+									}
+							}
+							break;
+
+						}
+					}
+				}
+			}
+				cutpasteend:
 			break;
 
 		case '+': //+/-/^/v rotate the start-x in the rectangle. For moving around, use dx/dy
