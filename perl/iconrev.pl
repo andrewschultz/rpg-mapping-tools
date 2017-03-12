@@ -288,22 +288,34 @@ my $foundOne;
 
 if (defined($binVals[0]))
 {
+  my %finalGuess;
 for $ih (sort {$a <=> $b} keys %iconCandTotal)
 {
+  my $alreadyIcon = 0;
   my $curMax = 1;
   my $sumHits = $iconCandFreq{"$ih-1"};
-    if ($trackOccur)
+
+  if ($trackOccur)
 	{
 	  print "#first occurrence of icon below at $firstOccur{$ih}, last at $lastOccur{$ih}\n";
 	}
+
   for (2..$iconCandTotal{$ih})
   {
-    $sumHits += $iconCandFreq{"$ih-$_"};
 	#print "$ih-$_ adds " . $iconCandFreq{"$ih-$_"} . "\n";
+    $sumHits += $iconCandFreq{"$ih-$_"};
     if ($iconCandFreq{"$ih-$_"} > $iconCandFreq{"$ih-$curMax"}) { $curMax = $_; }
   }
-    print "#icon with $sumHits hits\n";
-  printf("0x%02x\n%s", $ih, vflip($iconCandidates{"$ih-$curMax"}));
+  print "#icon with $sumHits hits\n";
+  $finalGuess{$ih} = $iconCandidates{"$ih-$curMax"};
+
+  my $ih2 = 0;
+  for $ih2 (sort keys %finalGuess)
+  {
+    if (($ih ne $ih2) && ($finalGuess{$ih} eq $finalGuess{$ih2})) { printf("0x%02xc%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+  }
+
+  if (!$alreadyIcon) { printf("0x%02x\n%s", $ih, vflip($iconCandidates{"$ih-$curMax"})); }
   for $col (@excludeArray)
   {
   #if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
