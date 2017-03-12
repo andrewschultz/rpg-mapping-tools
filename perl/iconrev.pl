@@ -259,7 +259,7 @@ sub showLikelyIcons
    open(C, ">$iconGuess");
    for $idx(sort {$a <=> $b} keys %binProb)
    {
-     print C sprintf("0x%02x\n%s\n", $idx, vflip($binProb{$idx}));
+     print C sprintf("0x%02x\n%s\n", $idx, flipToIcon($binProb{$idx}));
    }
    close(C);
  }
@@ -315,7 +315,15 @@ for $ih (sort {$a <=> $b} keys %iconCandTotal)
     if (($ih ne $ih2) && ($finalGuess{$ih} eq $finalGuess{$ih2})) { printf("0x%02xc%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
   }
 
-  if (!$alreadyIcon) { printf("0x%02x\n%s", $ih, vflip($iconCandidates{"$ih-$curMax"})); }
+  if (!$alreadyIcon)
+  {
+    for $ih2 (sort keys %finalGuess)
+    {
+      if (($ih ne $ih2) && (vflip($finalGuess{$ih}) eq $finalGuess{$ih2})) { printf("0x%02xv%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+    }
+  }
+
+  if (!$alreadyIcon) { printf("0x%02x\n%s", $ih, flipToIcon($iconCandidates{"$ih-$curMax"})); }
   for $col (@excludeArray)
   {
   #if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
@@ -347,7 +355,7 @@ for $ih (sort { $iconHash{$b} <=> $iconHash{$a} } keys %iconHash)
 	}
 	if (!$foundOne) { print "??"; }
 	print "\n";
-	print vflip($ih);
+	print flipToIcon($ih);
   }
   elsif ($iconHash{$ih} > 0) { $belowthreshold++; }
 }
@@ -357,7 +365,7 @@ if ($badPattern) { print "#$badPattern icons with bad patterns were ignored.\n";
 if ($belowthreshold) { print "#$belowthreshold icons occurred below $threshold times and were ignored.\n"; }
 }
 
-sub vflip
+sub flipToIcon
 {
   my $x;
   my $y;
@@ -387,6 +395,15 @@ sub verifyBinArray
   my $type = Image::Info::image_type($binAry[0]);
   if ((!defined($type->{file_type})) || ($type->{file_type} ne "BMP"))
   { die ("$binAry[0] must be a BMP file. Have " . (defined($type->{file_type}) ? $type->{file_type} : "nothing") ."."); }
+}
+
+sub vflip
+{
+  return join("\n", reverse(split(/\n/, $_[0]))) . "\n";
+}
+
+sub hflip
+{
 }
 
 sub usage
