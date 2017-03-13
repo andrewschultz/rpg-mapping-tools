@@ -17,7 +17,6 @@
 # also where an icon first occurs etc.
 #
 
-die(hflip("-1-2-3\n-4-5-6\n-7-8-9\n"));
 use Image::Info qw(image_info dim);
 use Image::Size;
 
@@ -310,29 +309,40 @@ for $ih (sort {$a <=> $b} keys %iconCandTotal)
   print "#icon with $sumHits hits\n";
   $finalGuess{$ih} = $iconCandidates{"$ih-$curMax"};
 
-  my $ih2 = 0;
-  for $ih2 (sort keys %finalGuess)
-  {
-    if (($ih ne $ih2) && ($finalGuess{$ih} eq $finalGuess{$ih2})) { printf("0x%02xc%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
-  }
+  my $ih2 = monochrome($finalGuess{$ih});
 
-  if (!$alreadyIcon)
-  {
-    for $ih2 (sort keys %finalGuess)
+    if ($ih2 != -1)
     {
-      if (($ih ne $ih2) && (vflip($finalGuess{$ih}) eq $finalGuess{$ih2})) { printf("0x%02xv%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+	  $alreadyIcon = 1;
+	  printf("0x%02x=%x\n", $ih, $ih2);
     }
-  }
 
-  if (!$alreadyIcon)
-  {
-    for $ih2 (sort keys %finalGuess)
+    if (!$alreadyIcon)
     {
-      if (($ih ne $ih2) && (hflip($finalGuess{$ih}) eq $finalGuess{$ih2})) { printf("0x%02xh%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+      for $ih2 (sort keys %finalGuess)
+      {
+        if (($ih ne $ih2) && ($finalGuess{$ih} eq $finalGuess{$ih2})) { printf("0x%02xc%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+      }
     }
-  }
+
+    if (!$alreadyIcon)
+    {
+      for $ih2 (sort keys %finalGuess)
+      {
+        if (($ih ne $ih2) && (vflip($finalGuess{$ih}) eq $finalGuess{$ih2})) { printf("0x%02xv%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+      }
+    }
+
+    if (!$alreadyIcon)
+    {
+      for $ih2 (sort keys %finalGuess)
+      {
+        if (($ih ne $ih2) && (hflip($finalGuess{$ih}) eq $finalGuess{$ih2})) { printf("0x%02xh%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+      }
+    }
 
   if (!$alreadyIcon) { printf("0x%02x\n%s", $ih, flipToIcon($iconCandidates{"$ih-$curMax"})); }
+
   for $col (@excludeArray)
   {
   #if ($iconHash{$ih} =~ /\b$col\b/) { $badPattern++; next OUTER; }
@@ -404,6 +414,22 @@ sub verifyBinArray
   my $type = Image::Info::image_type($binAry[0]);
   if ((!defined($type->{file_type})) || ($type->{file_type} ne "BMP"))
   { die ("$binAry[0] must be a BMP file. Have " . (defined($type->{file_type}) ? $type->{file_type} : "nothing") ."."); }
+}
+
+sub monochrome
+{
+  my @a1 = split(/\n/, $_[0]);
+  my @a2;
+  my $myColor;
+
+  for (@a1)
+  {
+    @a2 = split(/-/, $_);
+    if ($a2[0] eq "") { shift(@a2); }
+	if (!defined($myColor)) { $myColor = $a2[0]; }
+	for (@a2) { if ($_ ne $myColor) { return -1; } }
+  }
+  return $myColor;
 }
 
 sub vflip
