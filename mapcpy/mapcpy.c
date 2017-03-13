@@ -81,7 +81,7 @@ main(int argc, char * argv[])
 
 	short readType = STRAIGHT_BYTES;
 
-	short myary[MAXW][MAXW], ch;
+	short myAry[MAXW][MAXW], ch;
 	char myExt[10] = "";
 
 	char myFile[200] = "";
@@ -198,7 +198,7 @@ main(int argc, char * argv[])
 
 	for (j=0; j < MAXH; j++)
 		for (i=0; i < MAXW; i++)
-			myary[i][j] = 0;
+			myAry[i][j] = 0;
 
 	for (i=0; i < 256; i++)
 		replace[i] = -1;
@@ -404,12 +404,12 @@ main(int argc, char * argv[])
 					for (j=0; j < yClip; j++)
 						for (i=0; i < xClip; i++)
 						{
-							cutBuffer[i][j] = myary[xi+i][yi+j];
-							myary[xi+i][yi+j] = 0;
+							cutBuffer[i][j] = myAry[xi+i][yi+j];
+							myAry[xi+i][yi+j] = 0;
 						}
 					for (j=0; j < yClip; j++)
 						for (i=0; i < xClip; i++)
-							myary[xTo+i][yTo+j] = cutBuffer[i][j];
+							myAry[xTo+i][yTo+j] = cutBuffer[i][j];
 					break;
 				}
 
@@ -428,74 +428,74 @@ main(int argc, char * argv[])
 						case 'f': // flip = v + h
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
-									cutBuffer[i][j] = myary[xi+xClip-1-i][yi+yClip-1-j];
+									cutBuffer[i][j] = myAry[xi+xClip-1-i][yi+yClip-1-j];
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
-									myary[xi+i][yi+j] = cutBuffer[i][j];
+									myAry[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case 'v':
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
-									cutBuffer[i][j] = myary[xi+i][yi+yClip-1-j];
+									cutBuffer[i][j] = myAry[xi+i][yi+yClip-1-j];
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
-									myary[xi+i][yi+j] = cutBuffer[i][j];
+									myAry[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case 'h':
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
-									cutBuffer[i][j] = myary[xi+xClip-1-i][yi+j];
+									cutBuffer[i][j] = myAry[xi+xClip-1-i][yi+j];
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
-									myary[xi+i][yi+j] = cutBuffer[i][j];
+									myAry[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case 'r':
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
 								{
-									cutBuffer[xClip-j-1][i] = myary[xi+i][yi+j];
-									myary[xi+i][yi+j] = 0;
+									cutBuffer[xClip-j-1][i] = myAry[xi+i][yi+j];
+									myAry[xi+i][yi+j] = 0;
 								}
 							for (j=0; j < xClip; j++)
 								for (i=0; i < yClip; i++)
-									myary[xi+i][yi+j] = cutBuffer[i][j];
+									myAry[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case 'l':
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
 								{
-									cutBuffer[j][yClip-i-1] = myary[xi+i][yi+j];
-									myary[xi+i][yi+j] = 0;
+									cutBuffer[j][yClip-i-1] = myAry[xi+i][yi+j];
+									myAry[xi+i][yi+j] = 0;
 								}
 							for (j=0; j < xClip; j++)
 								for (i=0; i < yClip; i++)
-									myary[xi+i][yi+j] = cutBuffer[i][j];
+									myAry[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case '\\':
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
 								{
-									cutBuffer[j][i] = myary[xi+i][yi+j];
+									cutBuffer[j][i] = myAry[xi+i][yi+j];
 								}
 							for (j=0; j < xClip; j++)
 								for (i=0; i < yClip; i++)
-									myary[xi+i][yi+j] = cutBuffer[i][j];
+									myAry[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case '/':
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
 								{
-									cutBuffer[xClip-i-1][yClip-j-1] = myary[xi+i][yi+j];
+									cutBuffer[xClip-i-1][yClip-j-1] = myAry[xi+i][yi+j];
 								}
 							for (j=0; j < xClip; j++)
 								for (i=0; i < yClip; i++)
-									myary[xi+i][yi+j] = cutBuffer[i][j];
+									myAry[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						}
@@ -606,7 +606,7 @@ main(int argc, char * argv[])
 
 				for (j=clearU; j < clearD; j++)
 					for (i=clearL; i < clearR; i++)
-						myary[i][j] = defaultSquare;
+						myAry[i][j] = defaultSquare;
 			}
 			break;
 
@@ -710,17 +710,17 @@ main(int argc, char * argv[])
 			{
 			for (j=1; j < outH-1; j++)
 				for (i=0; i < outW-1; i++)
-					if (myary[i][j] == 0x03)
-						if (isYellow(myary[i][j-1]) || isYellow(myary[i][j+1]) || isYellow(myary[i+1][j]) || isYellow(myary[i-1][j]))
-						if ((myary[i][j-1] >> 4) && (myary[i][j+1] >> 4) && (myary[i+1][j] >> 4) && (myary[i-1][j] >> 4))
-							myary[i][j] = 0x4e;
+					if (myAry[i][j] == 0x03)
+						if (isYellow(myAry[i][j-1]) || isYellow(myAry[i][j+1]) || isYellow(myAry[i+1][j]) || isYellow(myAry[i-1][j]))
+						if ((myAry[i][j-1] >> 4) && (myAry[i][j+1] >> 4) && (myAry[i+1][j] >> 4) && (myAry[i-1][j] >> 4))
+							myAry[i][j] = 0x4e;
 			}
 
 			temp2 = ((outW-outWi) % 4) ? 4 - ((outW - outWi) % 4) : 0;
 			for (j=outHi; j < outH; j++)
 			{
 				for (i=outWi; i < outW; i++)
-					fputc(myary[i][outH-1-j], I);
+					fputc(myAry[i][outH-1-j], I);
 				if (i)
 					for (i=0; i < temp2; i++)
 						fputc(0, I);
@@ -786,9 +786,9 @@ main(int argc, char * argv[])
 				for (j=0; j < diagL; j++)
 					for (i=j+1; i < diagL; i++)
 					{
-						temp = myary[diagX+i][diagY+j];
-						myary[diagX+i][diagY+j] = myary[diagX+j][diagY+i];
-						myary[diagX+j][diagY+i] = temp;
+						temp = myAry[diagX+i][diagY+j];
+						myAry[diagX+i][diagY+j] = myAry[diagX+j][diagY+i];
+						myAry[diagX+j][diagY+i] = temp;
 					}
 			}
 			break;
@@ -1134,7 +1134,7 @@ fromr:
 						if (viable(i, j, qflags))
 						{
 							if (trackOverlap && !overlapOK)
-								if (ch != myary[myX+i2][myY+j2])
+								if (ch != myAry[myX+i2][myY+j2])
 								{
 									printf("Overlap at %s, (%d, %d) %02x vs %02x.\n", buffer, myX+i2, myY+j2);
 									if (blockOverlap)
@@ -1143,40 +1143,40 @@ fromr:
 							switch(readType)
 							{
 							case NIB_HIGH_FIRST:
-								myary[myX+i2][myY+j2] = (ch >> 4);
-								myary[myX+i2+1][myY+j2] = (ch & 0xf);
+								myAry[myX+i2][myY+j2] = (ch >> 4);
+								myAry[myX+i2+1][myY+j2] = (ch & 0xf);
 								i++;
 								break;
 
 							case NIB_LOW_FIRST:
-								myary[myX+i2][myY+j2] = (ch & 0xf);
-								myary[myX+i2+1][myY+j2] = (ch >> 4);
+								myAry[myX+i2][myY+j2] = (ch & 0xf);
+								myAry[myX+i2+1][myY+j2] = (ch >> 4);
 								i++;
 								break;
 
 							default:
-								myary[myX+i2][myY+j2] = ch;
+								myAry[myX+i2][myY+j2] = ch;
 								break;
 							}
 						}
 					}
 					//not perfect. What if we have fringe AND shift-offset? Oh well.
 					if ((i == 0) && (doFringe))
-						if (overlapOK || (myary[myX+myW][myY+j2] == 0))
-							myary[myX+myW][myY+j2] = myary[myX][myY+j2];
+						if (overlapOK || (myAry[myX+myW][myY+j2] == 0))
+							myAry[myX+myW][myY+j2] = myAry[myX][myY+j2];
 				}
 			if (doFringe)
 				for (i=0; i < myW+1; i++)
-					if (overlapOK || (myary[myX+i][myY+myH] == 0))
+					if (overlapOK || (myAry[myX+i][myY+myH] == 0))
 					{
 						if (trackOverlap && !overlapOK)
-							if (ch != myary[myX+i][myY+myH])
+							if (ch != myAry[myX+i][myY+myH])
 							{
 								printf("Overlap at %s, (%d, %d) %02x vs %02x.\n", buffer, myX+i, myY+myH);
 								if (blockOverlap)
 									continue;
 							}
-							myary[myX+i][myY+myH] = ch;
+							myAry[myX+i][myY+myH] = ch;
 					}
 
 			if (forceV)
@@ -1354,33 +1354,33 @@ fromr:
 					case BIT_HIGH_FIRST:
 						ch = fgetc(G) & 0xff;
 						for (i = 0; i <= 7; i++)
-							myary[myX+curX+i][myY] = (ch >> (7 - i)) & 1;
+							myAry[myX+curX+i][myY] = (ch >> (7 - i)) & 1;
 						curX += 8;
 						break;
 
 					case BIT_LOW_FIRST:
 						ch = fgetc(G) & 0xff;
 						for (i = 0; i <= 7; i++)
-							myary[myX+curX+i][myY] = (ch >> i) & 1;
+							myAry[myX+curX+i][myY] = (ch >> i) & 1;
 						curX += 8;
 						break;
 
 					case NIB_HIGH_FIRST:
 						ch = fgetc(G) & 0xff;
-						myary[myX+curX][myY] = ch >> 4;
-						myary[myX+curX+1][myY] = ch & 0xf;
+						myAry[myX+curX][myY] = ch >> 4;
+						myAry[myX+curX+1][myY] = ch & 0xf;
 						curX += 2;
 						break;
 
 					case NIB_LOW_FIRST:
 						ch = fgetc(G) & 0xff;
-						myary[myX+curX][myY] = ch & 0xf;
-						myary[myX+curX+1][myY] = ch >> 4;
+						myAry[myX+curX][myY] = ch & 0xf;
+						myAry[myX+curX+1][myY] = ch >> 4;
 						curX += 2;
 						break;
 
 					default:
-						myary[myX + curX][myY] = fgetc(G) & 0xff;
+						myAry[myX + curX][myY] = fgetc(G) & 0xff;
 						curX++;
 						break;
 					}
@@ -1608,13 +1608,21 @@ Flag -u prints out how to write a file for mapcpy to read.\n");
 
 void mapCpyFmt()
 {
-	printf("The basics You need W#, H# and w (for width of input) and x#/y# tells where to start\n\
-O/o goes to an offset (O doesn't auto multiply small #s by 0x100 hex)\n\
+	printf("The basics:\n\
+You need W#, H# and w (for width of input) and x#/y# tells where to start\n\
+E= gives default file name extension\n\
+rFILENAME reads file (slash after means read default # of chars)\n\
+O/o goes to an offset (O doesn't auto multiply small #s by 0x100 hex), O= specifies file default offset\n\
 S/s reads a sector (256 bytes unless a comma separated value after)\n\
 Semicolon ends it\n\
-dy/dx adjusts where you are\n\
-Flag -d prints out debug text.\n\
-Flag -u prints out how to write a file for mapcpy to read.\n\
+dy/dx adjusts where you are e.g. dy+2, dx-2\n\
+u18 moves you down/right (depending on if v+ (default) or v- is set)\n\
+$ does copy/paste (xi, yi, xclip, yclip, optional xTo, yTo) : (rlf)\n\
+> writes to output\n\
+* clears to the given number\n\
+&v-8 sets vertical adjust -8 after reading a rectangle, &h+8 horizontal +8, &4 both +4\n\
+# comments things out\n\
+You may use tabs to separate commands\n\
 https://github.com/andrewschultz/rpg-mapping-tools/tree/master/samples contains examples\n\
     especially magic-candle, phantasie and 2400\n");
 }
