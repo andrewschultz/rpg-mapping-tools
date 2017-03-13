@@ -17,6 +17,7 @@
 # also where an icon first occurs etc.
 #
 
+die(hflip("-1-2-3\n-4-5-6\n-7-8-9\n"));
 use Image::Info qw(image_info dim);
 use Image::Size;
 
@@ -323,6 +324,14 @@ for $ih (sort {$a <=> $b} keys %iconCandTotal)
     }
   }
 
+  if (!$alreadyIcon)
+  {
+    for $ih2 (sort keys %finalGuess)
+    {
+      if (($ih ne $ih2) && (hflip($finalGuess{$ih}) eq $finalGuess{$ih2})) { printf("0x%02xh%02x\n", $ih, $ih2); $alreadyIcon = 1; last; }
+    }
+  }
+
   if (!$alreadyIcon) { printf("0x%02x\n%s", $ih, flipToIcon($iconCandidates{"$ih-$curMax"})); }
   for $col (@excludeArray)
   {
@@ -404,6 +413,16 @@ sub vflip
 
 sub hflip
 {
+  my $ret = "";
+  my @lines = split(/\n/, $_[0]);
+  my @temp;
+  for (@lines)
+  {
+    @temp =  split(/-/, $_);
+	push(@temp, shift(@temp));
+    $ret .= join("-", reverse(@temp)) . "\n";
+  }
+  return $ret;
 }
 
 sub usage
