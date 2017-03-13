@@ -16,6 +16,8 @@
 #define MAXW 640
 #define MAXH 640
 
+#define CLIPMAX 256
+
 #define STRAIGHT_BYTES	0
 #define NIB_HIGH_FIRST	1
 #define NIB_LOW_FIRST	2
@@ -43,7 +45,7 @@ main(int argc, char * argv[])
 	short needToBMP = 0;
 	short commentBlock = 0;
 
-	short cutBuffer[200][200]; // for future using a cut buffer but probably not strictly necessary. Maybe limit it to 256?
+	short cutBuffer[CLIPMAX][CLIPMAX]; // for future using a cut buffer but probably not strictly necessary. Maybe limit it to 256?
 
 	short commodore = 0;
 
@@ -359,6 +361,11 @@ main(int argc, char * argv[])
 								printf("%s: xClip value must be positive.\n", lineTab);
 								goto cutpasteend;
 							}
+							if (xClip > CLIPMAX)
+							{
+								printf("%s: xClip value must be below %d.\n", lineTab, CLIPMAX);
+								goto cutpasteend;
+							}
 							break;
 
 						case 3:
@@ -366,6 +373,11 @@ main(int argc, char * argv[])
 							if (yClip < 0)
 							{
 								printf("%s: yClip value must be positive.\n", lineTab);
+								goto cutpasteend;
+							}
+							if (yClip > CLIPMAX)
+							{
+								printf("%s: yClip value must be below %d.\n", lineTab, CLIPMAX);
 								goto cutpasteend;
 							}
 							break;
@@ -390,8 +402,14 @@ main(int argc, char * argv[])
 				if (commas == 5)
 				{
 					for (j=0; j < yClip; j++)
-						for (i=0; i < xClip; i++) //?? note a bug here if rectangles overlap. How can we check?
-							myary[xTo+i][yTo+j] = myary[xi+i][yi+i];
+						for (i=0; i < xClip; i++)
+						{
+							cutBuffer[i][j] = myary[xi+i][yi+j];
+							myary[xi+i][yi+j] = 0;
+						}
+					for (j=0; j < yClip; j++)
+						for (i=0; i < xClip; i++)
+							myary[xTo+i][yTo+j] = cutBuffer[i][j];
 					break;
 				}
 
@@ -408,71 +426,54 @@ main(int argc, char * argv[])
 						{
 
 						case 'f': // flip = v + h
-						case 'v':
-							for (j=0; j < (yClip-1) / 2; j++)
+							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
-								{
-									temp = myary[xi+i][yTo+(yClip-1-j)];
-									myary[xi+i][yTo+(yClip-1-j)] = myary[xi+i][yi+j];
-									myary[xi+i][yi+j] = (short)temp;
-								}
-							if (buffer[i] == 'v')
-								break;
+									cutBuffer[i][j] = myary[xi+xClip-1-i][yi+yClip-1-j];
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+									myary[xi+i][yi+j] = cutBuffer[i][j];
+							break;
+
+						case 'v':
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+									cutBuffer[i][j] = myary[xi+i][yi+yClip-1-j];
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+									myary[xi+i][yi+j] = cutBuffer[i][j];
+							break;
 
 						case 'h':
 							for (j=0; j < yClip; j++)
-								for (i=0; i < (xClip-1)/2; i++)
-								{
-									temp = myary[xi+i][yTo+yClip];
-									myary[xi+i][yTo+yClip] = myary[xi+(xClip-1-i)][yi+yClip];
-									myary[xi+(xClip-1-i)][yi+j] = (short)temp;
-								}
+								for (i=0; i < xClip; i++)
+									cutBuffer[i][j] = myary[xi+xClip-1-i][yi+j];
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+									myary[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case 'r':
-							if (xClip != yClip)
-							{
-								printf("WARNING %s: Need to rotate square!", lineTab);
-								goto cutpasteend;
-							}
-							{
-								short temp[4];
-								for (j=0; j < xClip / 2; j++)
-									for (i=0; i < xClip / 2; i++)
-									{
-										temp[0] = myary[i][j];
-										temp[1] = myary[xClip-j-1][i];
-										temp[2] = myary[xClip-i-1][xClip-j-1];
-										temp[3] = myary[j][xClip-i-1];
-										myary[i][j] = temp[3];
-										myary[xClip-j-1][i] = temp[0];
-										myary[xClip-i-1][xClip-j-1] = temp[1];
-										myary[j][xClip-i-1] = temp[2];
-									}
-							}
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+								{
+									cutBuffer[xClip-j-1][i] = myary[i][j];
+									myary[xi+i][yi+j] = 0;
+								}
+							for (j=0; j < xClip; j++)
+								for (i=0; i < yClip; i++)
+									myary[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						case 'l':
-							if (xClip != yClip)
-							{
-								printf("WARNING %s: Need to rotate square!", lineTab);
-								goto cutpasteend;
-							}
-							{
-								short temp[4];
-								for (j=0; j < xClip / 2; j++)
-									for (i=0; i < xClip / 2; i++)
-									{
-										temp[0] = myary[i][j];
-										temp[1] = myary[xClip-j-1][i];
-										temp[2] = myary[xClip-i-1][xClip-j-1];
-										temp[3] = myary[j][xClip-i-1];
-										myary[i][j] = temp[1];
-										myary[xClip-j-1][i] = temp[2];
-										myary[xClip-i-1][xClip-j-1] = temp[3];
-										myary[j][xClip-i-1] = temp[0];
-									}
-							}
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+								{
+									cutBuffer[j][yClip-i-1] = myary[i][j];
+									myary[xi+i][yi+j] = 0;
+								}
+							for (j=0; j < xClip; j++)
+								for (i=0; i < yClip; i++)
+									myary[xi+i][yi+j] = cutBuffer[i][j];
 							break;
 
 						}
