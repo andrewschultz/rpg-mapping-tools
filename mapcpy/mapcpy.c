@@ -456,7 +456,7 @@ main(int argc, char * argv[])
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
 								{
-									cutBuffer[xClip-j-1][i] = myary[i][j];
+									cutBuffer[xClip-j-1][i] = myary[xi+i][yi+j];
 									myary[xi+i][yi+j] = 0;
 								}
 							for (j=0; j < xClip; j++)
@@ -468,8 +468,30 @@ main(int argc, char * argv[])
 							for (j=0; j < yClip; j++)
 								for (i=0; i < xClip; i++)
 								{
-									cutBuffer[j][yClip-i-1] = myary[i][j];
+									cutBuffer[j][yClip-i-1] = myary[xi+i][yi+j];
 									myary[xi+i][yi+j] = 0;
+								}
+							for (j=0; j < xClip; j++)
+								for (i=0; i < yClip; i++)
+									myary[xi+i][yi+j] = cutBuffer[i][j];
+							break;
+
+						case '\\':
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+								{
+									cutBuffer[j][i] = myary[xi+i][yi+j];
+								}
+							for (j=0; j < xClip; j++)
+								for (i=0; i < yClip; i++)
+									myary[xi+i][yi+j] = cutBuffer[i][j];
+							break;
+
+						case '/':
+							for (j=0; j < yClip; j++)
+								for (i=0; i < xClip; i++)
+								{
+									cutBuffer[xClip-i-1][yClip-j-1] = myary[xi+i][yi+j];
 								}
 							for (j=0; j < xClip; j++)
 								for (i=0; i < yClip; i++)
