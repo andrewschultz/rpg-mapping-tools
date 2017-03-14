@@ -1448,17 +1448,6 @@ if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, // class
 	// save the window handle in a global
 	hwnd = hwnd;
 
-	if (lpcmdline[0])
-	{
-		if (_access(lpcmdline, 0) == 0)
-			strcpy(CurrentFileName, lpcmdline);
-		else
-			MessageBox(hwnd, lpcmdline, "No such file", MB_OK);
-	}
-	else
-	{
-		CurrentFileName[0] = 0;
-	}
 	changeBarText(hwnd);
 
     hAccelTable = LoadAccelerators(hinstance, "MYACCEL");
@@ -1643,7 +1632,7 @@ void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME])
 	FILE * F = fopen(x, "rb");
 	if (F == NULL)
 	{
-		MessageBox(hwnd, "Uh oh", "Uh oh", MB_OK);
+		MessageBox(hwnd, "Uh oh", x, MB_OK);
 		return;
 	}
 
@@ -2137,13 +2126,33 @@ void parseCmdLine(LPSTR lpcmdline, HWND hwnd)
 	long i;
 	char buffer[200] = "";
 
+	if (lpcmdline[0])
+	{
+		if (lpcmdline[0] == '\"')
+		{
+			strcpy(buffer,lpcmdline+1);
+			buffer[strlen(buffer)-1] = 0;
+		}
+		else
+			strcpy(buffer, lpcmdline);
+
+		if (_access(buffer, 0) == 0)
+			strcpy(CurrentFileName, buffer);
+		else
+			MessageBox(hwnd, buffer, "No such file", MB_OK);
+	}
+	else
+	{
+		CurrentFileName[0] = 0;
+	}
+
 	for (i=0; lpcmdline[i] !=0; i++)
 		numSpaces+= (lpcmdline[i] == ' ');
 
 	if ((numSpaces == 0) && (i > 1))
 	{
-		ReadBinaryMap(hwnd, lpcmdline);
-		strcpy(CurrentFileName, lpcmdline);
+		ReadBinaryMap(hwnd, buffer);
+		strcpy(CurrentFileName, buffer);
 	}
 
 }
