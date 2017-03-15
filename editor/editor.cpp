@@ -56,6 +56,7 @@ void changeBarText(HWND hwnd);
 void regularTextOut(char x[100], HWND hwnd);
 void noteNewShiftBox(HWND hwnd);
 
+void UpdateIconsWalls(HWND hwnd);
 void CreateNewMapfile(long, long);
 void SaveMapfile();
 void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf);
@@ -123,6 +124,12 @@ char wallFileName[200] = "walls.bmp";
 char startFileName[200] = "";
 
 long shotcount=0;
+
+HINSTANCE hinstGlobal;
+
+#define FIELD_TRANSPARENT 't'
+#define FIELD_ICONS 'i'
+#define FIELD_WALLS 'w'
 
 // FUNCTIONS //////////////////////////////////////////////
 LRESULT CALLBACK WindowProc(HWND hwnd,
@@ -1420,12 +1427,6 @@ MSG		 msg;		// generic message
 
 HACCEL hAccelTable;
 
-HBITMAP iconbmp;
-HBITMAP wallbmp;
-
-HBITMAP oldicon;
-HBITMAP oldwall;
-
 HDC localhdc;
 
 // first fill in the window class stucture
@@ -1468,23 +1469,14 @@ if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, // class
 	parseCmdLine();
 
 	//basic layout of the GUI here
-	iconbmp = (HBITMAP)LoadImage(hinstance, iconFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-	wallbmp = (HBITMAP)LoadImage(hinstance, wallFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
 	localhdc = GetDC(hwnd);
 
 	icondc = CreateCompatibleDC(localhdc);
 	walldc = CreateCompatibleDC(localhdc);
 
-	oldicon = (HBITMAP)SelectObject(icondc, iconbmp);
-	oldwall = (HBITMAP)SelectObject(walldc, wallbmp);
-
-	drawMyIcons(hwnd);
-
-	SetBkColor(localhdc,RGB(255,255,255));
-	Rectangle(localhdc, 0,0,576,576);
-
 	setInitialChecks(hwnd);
+
+	UpdateIconsWalls(hwnd);
 
 	if (startFileName[0])
 	{
@@ -1510,10 +1502,6 @@ while(1)
 
 	} // end while
 
-	SelectObject(icondc,oldicon);
-	SelectObject(walldc,oldwall);
-	DeleteObject(wallbmp);
-	DeleteObject(iconbmp);
 	ReleaseDC(hwnd, localhdc);
 	DeleteDC(icondc);
 	DeleteDC(walldc);
@@ -1644,7 +1632,8 @@ if (workNotSaved)
 void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME])
 {
 	long j, i;
-	short haveTransp;
+	char nextCode;
+	char buffer [200];
 
 	FILE * F = fopen(x, "rb");
 	if (F == NULL)
@@ -1703,21 +1692,73 @@ void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME])
 		UDWallArray[i][j] = fgetc(F);
 		fgetc(F);
 	}
+
+	while ((nextCode = fgetc(F)) != EOF)
+	{
+	switch (nextCode)
+	{
+		case FIELD_TRANSPARENT:
+		for (j=0; j < myH; j++)
+			for (i=0; i < myW; i++)
+				TranspIconArray[i][j] = fgetc(F);
+		break;
+
+		case FIELD_ICONS:
+			fgets(buffer, 200, F);
+			if (_access(buffer, 0))
+			{
+				MessageBox(hwnd, "Read error", "Invalid icon file specified", MB_OK);
+			}
+			else
+			{
+				strcpy(iconFileName, buffer);
+			}
+			break;
+
+		case FIELD_WALLS:
+			fgets(buffer, 200, F);
+			if (_access(buffer, 0))
+			{
+				MessageBox(hwnd, "Read error", "Invalid wall file specified", MB_OK);
+			}
+			else
+			{
+				strcpy(wallFileName, buffer);
+			}
+			break;
+
+	}
+	}
+
 	fclose(F);
 
-	haveTransp = fgetc(F);
-	if ((haveTransp == EOF) || (!haveTransp))
-		return;
-
-	for (j=0; j < myH; j++)
-		for (i=0; i < myW; i++)
-			TranspIconArray[i][j] = fgetc(F);
 
 	myW = 35;
 	myH = 35;
 
-	ReloadTheMap(hwnd);
+	UpdateIconsWalls(hwnd);
 
+}
+
+void UpdateIconsWalls(HWND hwnd)
+{
+	HDC localhdc = GetDC(hwnd);
+
+	HBITMAP iconbmp = (HBITMAP)LoadImage(hinstGlobal, iconFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	HBITMAP wallbmp = (HBITMAP)LoadImage(hinstGlobal, wallFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+	HBITMAP mainicon = (HBITMAP)SelectObject(icondc, iconbmp);
+	HBITMAP mainwall = (HBITMAP)SelectObject(walldc, wallbmp);
+
+	DeleteObject(iconbmp);
+	DeleteObject(wallbmp);
+
+	drawMyIcons(hwnd);
+
+	SetBkColor(localhdc,RGB(255,255,255));
+	Rectangle(localhdc, 0,0,576,576);
+
+	ReleaseDC(hwnd, localhdc);
 }
 
 void CreateNewMapfile(long x, long y)
@@ -1805,9 +1846,16 @@ void SaveMapfile()
 			if (TranspIconArray[i][j])
 				gotTrans = 1;
 
+	fputc('w', F);
+	fputs(wallFileName, F);
+	fputc(0, F);
+	fputc('i', F);
+	fputs(iconFileName, F);
+	fputc(0, F);
+
 	if (gotTrans)
 	{
-		fputc(1, F);
+		fputc(FIELD_TRANSPARENT, F);
 		for (j=0; j < myH; j++)
 			for (i=0; i < myW; i++)
 				fputc(TranspIconArray[i][j], F);
@@ -2014,6 +2062,8 @@ void SaveBitmapFile(HWND hwnd, short trim)
 
 	long xmin = 0, ymin = 0, xmax = 34, ymax = 34;
 
+	long beentheres = 0;
+
 	char buf2[200];
 
 	strcpy(buf2, CurrentFileName);
@@ -2032,6 +2082,8 @@ void SaveBitmapFile(HWND hwnd, short trim)
 		for (j=0; j < MAXICONSHIGH - 1; j++)
 ;			for (i=0; i < MAXICONSWIDE - 1; i++)
 			{
+				if (SquareIconArray[i][j] == BEENTHERE)
+					beentheres++;
 				t = SquareIconArray[i][j] | TranspIconArray[i][j];
 				if (t)
 				{
@@ -2147,6 +2199,13 @@ void SaveBitmapFile(HWND hwnd, short trim)
 	DeleteObject(SelectObject(hDC,oldBM));
 	DeleteDC(hDC);
 	ReleaseDC(hwnd,hWinDC);
+
+	sprintf(buf2, "Note: %d dotted squares, which you may wish to remove", beentheres);
+
+	if (beentheres)
+	{
+		MessageBox(hwnd, buf2, "Dotted squares remain", MB_OK);
+	}
 }
 
 void parseCmdLine()
