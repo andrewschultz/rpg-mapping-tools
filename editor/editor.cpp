@@ -44,8 +44,10 @@
 #define XVAL(a,b) (SquareIconArray[a][b]%16)*16
 #define YVAL(a,b) (SquareIconArray[a][b]/16)*16
 // FUNCTION DEFS
+void getIconOrWall(HWND hwnd, long isIcon);
 void DoOpenFile(HWND hwnd);
 void DoCreateFile(HWND hwnd);
+void DoSaveAs(HWND hwnd);
 void DrawPointers(HWND hwnd, COLORREF myColor);
 void DrawPointerRectangle(HWND hwnd, long xOffset, long yOffset, COLORREF myColor);
 void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME]);
@@ -166,8 +168,33 @@ switch(msg)
 			SaveBitmapFile(hwnd, 1);
 			break;
 
+		case ID_FILE_SAVE_AS:
+			DoSaveAs(hwnd);
+			break;
+
 		case ID_FILE_SAVE_MAPFILE:
 			SaveMapfile();
+			break;
+
+		case ID_FILE_RESET_ICON:
+			strcpy(iconFileName, "");
+			UpdateIconsWalls(hwnd);
+			break;
+
+		case ID_FILE_RESET_WALL:
+			strcpy(wallFileName, "");
+			UpdateIconsWalls(hwnd);
+			break;
+
+		case ID_FILE_CHANGE_ICON:
+			getIconOrWall(hwnd, 1);
+			break;
+
+		case ID_FILE_CHANGE_WALL:
+			getIconOrWall(hwnd, 0);
+			break;
+
+		case ID_FILE_EXIT:
 			break;
 
 		case ID_EDIT_RELOAD_ALL:
@@ -1566,6 +1593,110 @@ if (workNotSaved)
   }
 }
 
+VOID getIconOrWall(HWND hwnd, long isIcon)
+{
+
+OPENFILENAME  locOFN;
+char        locFilterSpec[128] = TEXT("BMP files\0*.bmp\0");
+char        locFileName[MAXFILENAME];
+char        locFileTitle[MAXFILENAME];
+
+  locFileName[0] = 0;
+  locFileTitle[0] = 0;
+
+
+  locOFN.lStructSize = sizeof(OPENFILENAME);
+  locOFN.hwndOwner = hwnd;
+  locOFN.hInstance = NULL;
+  locOFN.lpstrFilter = locFilterSpec;
+  locOFN.lpstrCustomFilter = NULL;
+  locOFN.nMaxCustFilter = 0L;
+  locOFN.nFilterIndex = 0L;
+  locOFN.lpstrFile = locFileName;
+  locOFN.nMaxFile = MAXFILENAME;
+  locOFN.lpstrFileTitle = locFileTitle;
+  locOFN.nMaxFileTitle = MAXFILENAME;
+  locOFN.lpstrInitialDir = NULL;
+  locOFN.lpstrTitle = TEXT("Open...");
+
+  locOFN.Flags = OFN_FILEMUSTEXIST;
+
+  locOFN.lpstrDefExt = NULL;
+  locOFN.lCustData = 0;
+  locOFN.lpfnHook = NULL;
+  locOFN.lpTemplateName = NULL;
+
+if (workNotSaved)
+{
+	long x = MessageBox(NULL, "Do you wish to open a new file without saving? If so, hit OK. If not, hit Cancel.", "Save Warning", MB_OKCANCEL);
+	if (x != 1)
+		return;
+}
+
+  if (GetOpenFileName(&locOFN) == TRUE)
+  {
+	  if (isIcon == 1)
+		  strcpy(iconFileName, locFileName);
+	  else
+		  strcpy(wallFileName, locFileName);
+	  UpdateIconsWalls(hwnd);
+  }
+}
+
+VOID DoSaveAs(HWND hwnd)
+{
+OPENFILENAME  locOFN;
+char        locFilterSpec[128] = TEXT("MAP and TXT files\0*.map\0");
+char        locFileName[MAXFILENAME];
+char        locFileTitle[MAXFILENAME];
+
+  locFileName[0] = 0;
+  locFileTitle[0] = 0;
+
+
+  locOFN.lStructSize = sizeof(OPENFILENAME);
+  locOFN.hwndOwner = hwnd;
+  locOFN.hInstance = NULL;
+  locOFN.lpstrFilter = locFilterSpec;
+  locOFN.lpstrCustomFilter = NULL;
+  locOFN.nMaxCustFilter = 0L;
+  locOFN.nFilterIndex = 0L;
+  locOFN.lpstrFile = locFileName;
+  locOFN.nMaxFile = MAXFILENAME;
+  locOFN.lpstrFileTitle = locFileTitle;
+  locOFN.nMaxFileTitle = MAXFILENAME;
+  locOFN.lpstrInitialDir = NULL;
+  locOFN.lpstrTitle = TEXT("Open...");
+
+  locOFN.Flags = 0;
+
+  locOFN.lpstrDefExt = NULL;
+  locOFN.lCustData = 0;
+  locOFN.lpfnHook = NULL;
+  locOFN.lpTemplateName = NULL;
+
+  if (GetOpenFileName(&locOFN) == TRUE)
+  {
+	  long acc;
+	  long q = strlen(locFileName);
+	  if ((strlen(locFileName) < 4) ||
+		  !((locFileName[q-1] == 'p') && (locFileName[q-2] == 'a') && (locFileName[q-3] == 'm') && (locFileName[q-4] == '.')))
+		  strcat(locFileName, ".map");
+
+	  acc = _access(locFileName, 0);
+	  if (acc == 0)
+	  {
+		  MessageBox(NULL, "The file already exists. Use ctrl-o to open.", "File exists", MB_OK);
+		  return;
+	  }
+
+	  strcpy(CurrentFileName, locFileName);
+	  changeBarText(hwnd);
+	  SaveMapfile();
+	  workNotSaved = 0;
+  }
+}
+
 VOID DoCreateFile(HWND hwnd)
 {
 
@@ -1623,6 +1754,7 @@ if (workNotSaved)
 
 	  strcpy(CurrentFileName, locFileName);
 	  changeBarText(hwnd);
+	  SaveMapfile();
 	  workNotSaved = 0;
   }
 }
@@ -1744,11 +1876,17 @@ void UpdateIconsWalls(HWND hwnd)
 {
 	HDC localhdc = GetDC(hwnd);
 
-	HBITMAP iconbmp = (HBITMAP)LoadImage(hinstGlobal, iconFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-	HBITMAP wallbmp = (HBITMAP)LoadImage(hinstGlobal, wallFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	HBITMAP iconbmp;
+	HBITMAP wallbmp;
 
-	HBITMAP mainicon = (HBITMAP)SelectObject(icondc, iconbmp);
-	HBITMAP mainwall = (HBITMAP)SelectObject(walldc, wallbmp);
+	HBITMAP mainicon;
+	HBITMAP mainwall;
+
+	iconbmp = (HBITMAP)LoadImage(hinstGlobal, iconFileName[0] ? iconFileName : "icons.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	wallbmp = (HBITMAP)LoadImage(hinstGlobal, wallFileName[0] ? wallFileName : "walls.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+	mainicon = (HBITMAP)SelectObject(icondc, iconbmp);
+	mainwall = (HBITMAP)SelectObject(walldc, wallbmp);
 
 	DeleteObject(iconbmp);
 	DeleteObject(wallbmp);
@@ -1846,12 +1984,19 @@ void SaveMapfile()
 			if (TranspIconArray[i][j])
 				gotTrans = 1;
 
-	fputc('w', F);
-	fputs(wallFileName, F);
-	fputc(0, F);
-	fputc('i', F);
-	fputs(iconFileName, F);
-	fputc(0, F);
+	if (wallFileName[0])
+	{
+		fputc('w', F);
+		fputs(wallFileName, F);
+		fputc(0, F);
+	}
+
+	if (iconFileName[0])
+	{
+		fputc('i', F);
+		fputs(iconFileName, F);
+		fputc(0, F);
+	}
 
 	if (gotTrans)
 	{

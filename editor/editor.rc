@@ -120,6 +120,10 @@ BEGIN
         MENUITEM "Save &as",                    ID_FILE_SAVE_AS
         MENUITEM "Save a&ll",                   ID_FILE_SAVE_ALL
         MENUITEM SEPARATOR
+        MENUITEM "Change &icon file",                   ID_FILE_CHANGE_ICON
+        MENUITEM "Change &wall file",                   ID_FILE_CHANGE_WALL
+        MENUITEM "Reset &icon file",                   ID_FILE_RESET_ICON
+        MENUITEM "Reset &wall file",                   ID_FILE_RESET_WALL
         MENUITEM "E&xit",                       ID_FILE_EXIT
     END
     POPUP "&Edit"
