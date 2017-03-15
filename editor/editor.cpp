@@ -60,7 +60,7 @@ void CreateNewMapfile(long, long);
 void SaveMapfile();
 void flipStuff (HWND hwnd, int xi, int yi, int xf, int yf);
 void SaveBitmapFile(HWND hwnd, short trim);
-void parseCmdLine(LPSTR cmdLine, HWND hwnd);
+void parseCmdLine();
 
 char textToShift[200]; // receives name of item to delete.
 void setInitialChecks(HWND hwnd);
@@ -99,7 +99,7 @@ long xCurrent = 0, yCurrent = 0, iconNumber = 0, massCutPasteIcon;
 long notPeriod = 0;
 long WallIconNumber = 2;	//default to doors. Can add/delete walls with (shift) WASZ
 long myW = MAXICONSWIDE, myH = MAXICONSHIGH;
-char CurrentFileName[200];
+char CurrentFileName[200] = "";
 
 long cutHeight=0, cutWidth = 0;
 long zeroBottom = 1;
@@ -117,6 +117,10 @@ long workNotSaved = 0;
 short prevDefArray[10] = {
 	0x3f, 0x26, 0x56, 0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0x3f
 };
+
+char iconFileName[200] = "icons.bmp";
+char wallFileName[200] = "walls.bmp";
+char startFileName[200] = "";
 
 long shotcount=0;
 
@@ -1416,6 +1420,14 @@ MSG		 msg;		// generic message
 
 HACCEL hAccelTable;
 
+HBITMAP iconbmp;
+HBITMAP wallbmp;
+
+HBITMAP oldicon;
+HBITMAP oldwall;
+
+HDC localhdc;
+
 // first fill in the window class stucture
 winclass.style			= CS_DBLCLKS | CS_OWNDC |
                           CS_HREDRAW | CS_VREDRAW;
@@ -1453,26 +1465,31 @@ if (!(hwnd = CreateWindow(WINDOW_CLASS_NAME, // class
     hAccelTable = LoadAccelerators(hinstance, "MYACCEL");
 // enter main event loop
 
-{
-	HBITMAP iconbmp = (HBITMAP)LoadImage(hinstance,"icons.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
-	HBITMAP wallbmp = (HBITMAP)LoadImage(hinstance,"walls.bmp",IMAGE_BITMAP,0,0,LR_LOADFROMFILE);
+	parseCmdLine();
 
-	HDC      localhdc = GetDC(hwnd);
+	//basic layout of the GUI here
+	iconbmp = (HBITMAP)LoadImage(hinstance, iconFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	wallbmp = (HBITMAP)LoadImage(hinstance, wallFileName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
-icondc = CreateCompatibleDC(localhdc);
-walldc = CreateCompatibleDC(localhdc);
+	localhdc = GetDC(hwnd);
 
-	HBITMAP oldicon = (HBITMAP)SelectObject(icondc, iconbmp);
-	HBITMAP oldwall = (HBITMAP)SelectObject(walldc, wallbmp);
+	icondc = CreateCompatibleDC(localhdc);
+	walldc = CreateCompatibleDC(localhdc);
+
+	oldicon = (HBITMAP)SelectObject(icondc, iconbmp);
+	oldwall = (HBITMAP)SelectObject(walldc, wallbmp);
 
 	drawMyIcons(hwnd);
 
 	SetBkColor(localhdc,RGB(255,255,255));
 	Rectangle(localhdc, 0,0,576,576);
 
-	parseCmdLine(lpcmdline, hwnd);
-
 	setInitialChecks(hwnd);
+
+	if (startFileName[0])
+	{
+		ReadBinaryMap(hwnd, startFileName);
+	}
 
 while(1)
 	{
@@ -1500,7 +1517,7 @@ while(1)
 	ReleaseDC(hwnd, localhdc);
 	DeleteDC(icondc);
 	DeleteDC(walldc);
-}
+
 // return to Windows like this
 return(msg.wParam);
 
@@ -1651,6 +1668,18 @@ void ReadBinaryMap(HWND hwnd, char x[MAXFILENAME])
 
 	myW = fgetc(F);
 	myH = fgetc(F);
+
+	if (myW > 35 || myH > 35)
+	{
+		char x[200];
+
+		sprintf(x, "%d(%02x) x %d(%02x) dimensions are outside 35x35 bounds, rounding down.", myW, myW, myH, myH);
+		MessageBox(hwnd, x, "dimension problems", MB_OK);
+		if (myW > 35)
+			myW = 35;
+		if (myW > 35)
+			myW = 35;
+	}
 
 	for (j=0; j < myH; j++)
 	{
@@ -2120,41 +2149,57 @@ void SaveBitmapFile(HWND hwnd, short trim)
 	ReleaseDC(hwnd,hWinDC);
 }
 
-void parseCmdLine(LPSTR lpcmdline, HWND hwnd)
+void parseCmdLine()
 {
-	short numSpaces = 0;
-	long i;
-	char buffer[200] = "";
+	short count = 1;
+	short gotLocFile = 0;
 
-	if (lpcmdline[0])
+	while (count < __argc)
 	{
-		if (lpcmdline[0] == '\"')
+		if (__argv[count][0] == '-')
 		{
-			strcpy(buffer,lpcmdline+1);
-			buffer[strlen(buffer)-1] = 0;
+			short lc = __argv[count][1] | 0x20;
+			switch(lc)
+			{
+			case 'i':
+				if (__argv[count][2] == ':')
+					strcpy(iconFileName, __argv[count+1] + 2);
+				else
+				{
+					strcpy(iconFileName, __argv[count+1]);
+					count++;
+				}
+				break;
+
+			case 'w':
+				if (__argv[count][2] == ':')
+					strcpy(wallFileName, __argv[count+1] + 2);
+				else
+				{
+					strcpy(wallFileName, __argv[count+1]);
+					count++;
+				}
+				break;
+
+			default:
+				printf("WARNING: Unknown flag %s at argument %d.\n", __argv[count], count);
+				break;
+			}
 		}
 		else
-			strcpy(buffer, lpcmdline);
-
-		if (_access(buffer, 0) == 0)
-			strcpy(CurrentFileName, buffer);
-		else
-			MessageBox(hwnd, buffer, "No such file", MB_OK);
+		{
+			if (gotLocFile)
+			{
+				printf("WARNING: argument %d tries to define a second file.", count);
+			}
+			else
+			{
+				gotLocFile = 1;
+				strcpy(startFileName, __argv[count]);
+			}
+		}
+		count++;
 	}
-	else
-	{
-		CurrentFileName[0] = 0;
-	}
-
-	for (i=0; lpcmdline[i] !=0; i++)
-		numSpaces+= (lpcmdline[i] == ' ');
-
-	if ((numSpaces == 0) && (i > 1))
-	{
-		ReadBinaryMap(hwnd, buffer);
-		strcpy(CurrentFileName, buffer);
-	}
-
 }
 
 void drawMyIcons(HWND hwnd)
