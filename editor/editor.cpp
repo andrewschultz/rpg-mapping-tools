@@ -382,7 +382,7 @@ switch(msg)
 			{
 			long i, j;
 			for (j=0; j < MAXICONSHIGH; j++)
-				for (i=0; i < MAXICONSWIDE; i++)
+				for (i=0; i < MAXICONSHIGH; i++)
 				{
 					if ((UDWallArray[i][j] == 0) && (i < MAXICONSWIDE-1))
 						UDWallArray[i][j] = GRIDLINE;
@@ -2092,8 +2092,8 @@ void ReloadTheMap(HWND hwnd)
 	{
 		DrawPointers(hwnd, RGB(255,0,0));
 	}
-	for (j=0; j < MAXICONSHIGH+1; j++)
-		for (i=0; i < MAXICONSWIDE+1; i++)
+	for (j=0; j < MAXICONSHIGH; j++)
+		for (i=0; i < MAXICONSWIDE; i++)
 		{
 			TransparentBlt(hdc, 8+i*16, 16+j*16, 16, 16, walldc,
 				LRWallArray[i][j]*16, 16, 16, 16, RGB(255,255,255));
