@@ -2,14 +2,19 @@
 # scopes out Deathlord weapons and other items
 #
 
+import re
+
+zap_whitespace = True
+
 num_items = 75
 
 classes = ['SENSHI', 'KISHI', 'RYOSHI', 'YABANJIN', 'KICHIGAI', 'SAMURAI', 'RONIN', 'YAKUZA',
   'ANSATSUSHA', 'NINJA', 'SHUKENJA', 'SHISAI', 'SHIZEN', 'MAHOTSUKAI', 'GENKAI', 'KOSAKU' ]
 
-# this was used to focus on remaining columns
+# this was used to focus on remaining columns/bytes
 # ignore = [0, 2, 3, 4, 6, 7, 8, 9, 0xa, 0xb, 0xc]
-ignore = []
+# however, bytes 1 and 2 are tied together, so I'll just be ignoring #2
+ignore = [2]
 
 headers = [ 'SELL', 'WHO CAN EQUIP IT           ', '?2', 'ATT', 'DMG+', 'TO-HIT', 'AC', 'MTYPE', 'RACE ', 'CLASS-USE', 'USES', 'EFFECT', 'SLOT' ]
 
@@ -34,22 +39,22 @@ def what_it_means(myar, y):
         elif myar[1] == 0:
             temp = 'NO HEALERS'
         elif myar[1] == 1:
-            temp = 'FIGHTERS HEALERS'
+            temp = 'FIGHTERS/HEALERS'
         elif myar[1] == 2:
             temp = 'NO CASTERS'
         elif myar[1] == 3:
             temp = 'FIGHTERS ONLY'
         elif myar[2] == 1:
-            temp = 'NO NINJA SHUKENJA MAGES'
+            temp = 'NO NINJA/SHUKENJA/MAGES'
         elif myar[2] == 2:
-            temp = 'FIGHTERS HEALERS NO YABANJIN'
+            temp = 'FIGHTERS/HEALERS NO YABANJIN'
         elif myar[2] == 3:
-            temp = 'SENSHI KISHI SAMURAI RONIN'
+            temp = 'SENSHI/KISHI/SAMURAI/RONIN'
         else:
             temp = str(x) + ' ' + str(myar[2])
     elif y is 2:
         temp = ''
-    elif y is 6:
+    elif y is 5 or y is 6:
         temp = str(x - 256 if x > 128 else x)
     elif y is 7:
         temp = {
@@ -93,18 +98,23 @@ def what_it_means(myar, y):
         temp = temp + " " * (1+len(headers[y]) - len(temp))
     return temp
 
+def zapwhite(string, do_i_zap):
+    return re.sub(" +\|", "|", string) if do_i_zap else string
+
 def read_one_item(fp, i):
-	string = ""
-	ch = [0]
-	ch2 = fp.read(13)
-	bytear = [int(a) for a in ch2]
-	while not ch[0] & 0x80:
-		ch = fp.read(1)
-		y = (ch[0] ^ 0x65) & 0x7f
-		string = string + chr(y)
-#	print('|' + string + '|' + '|'.join(what_it_means(bytear[a], a) for a in range(0, len(bytear))) + '|')
-	print('|' + '{:14s}'.format(string) + '|' + '|'.join('{:3s}'.format(what_it_means(bytear, a)) for a in valid_headers) + '|')
-#	print('|' + '{:14s}'.format(string) + '|' + '|'.join('{:3d}'.format(a) for a in bytear) + '|')
+    global zap_whitespace
+    string = ""
+    ch = [0]
+    ch2 = fp.read(13)
+    bytear = [int(a) for a in ch2]
+    while not ch[0] & 0x80:
+        ch = fp.read(1)
+        y = (ch[0] ^ 0x65) & 0x7f
+        string = string + chr(y)
+#    print('|' + string + '|' + '|'.join(what_it_means(bytear[a], a) for a in range(0, len(bytear))) + '|')
+    to_print = '|{:02x}  '.format(i) + '|{:14s}'.format(string) + '|' + '|'.join('{:3s}'.format(what_it_means(bytear, a)) for a in valid_headers) + '|'
+    print(zapwhite(to_print, zap_whitespace))
+#    print('|' + '{:14s}'.format(string) + '|' + '|'.join('{:3d}'.format(a) for a in bytear) + '|')
 
 # I could use numPy for this, but I didn't have it installed at the time
 for a in range(0,len(headers)):
@@ -117,10 +127,8 @@ fp.seek(0x9b70, 0)
 
 print(";format:gf-markup")
 print()
-print('|*ITEM NAME    |*' + '|*'.join(headers[a] for a in valid_headers) + '|')
+
+print(zapwhite('|*NUM|*ITEM NAME    |*' + '|*'.join(headers[a] for a in valid_headers) + '|', zap_whitespace))
 
 for i in range(0, num_items):
-	read_one_item(fp, i)
-
-print()
-print('Mages = genkai/mahotsukai, healers = shisai/shizen')
+    read_one_item(fp, i)
