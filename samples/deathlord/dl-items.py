@@ -8,6 +8,8 @@ zap_whitespace = True
 
 num_items = 75
 
+slots = ['HAND', 'MISSILE', 'ARMOR', 'SHIELD', 'ACCESSORY', 'RING', 'USABLE', 'DOCUMENT']
+
 classes = ['SENSHI', 'KISHI', 'RYOSHI', 'YABANJIN', 'KICHIGAI', 'SAMURAI', 'RONIN', 'YAKUZA',
   'ANSATSUSHA', 'NINJA', 'SHUKENJA', 'SHISAI', 'SHIZEN', 'MAHOTSUKAI', 'GENKAI', 'KOSAKU' ]
 
@@ -16,11 +18,12 @@ classes = ['SENSHI', 'KISHI', 'RYOSHI', 'YABANJIN', 'KICHIGAI', 'SAMURAI', 'RONI
 # however, bytes 1 and 2 are tied together, so I'll just be ignoring #2
 ignore = [2]
 
-headers = [ 'SELL', 'WHO CAN EQUIP IT           ', '?2', 'ATT', 'DMG+', 'TO-HIT', 'AC', 'MTYPE', 'RACE ', 'CLASS-USE', 'USES', 'EFFECT', 'SLOT' ]
+headers = [ 'SELL', 'WHO CAN EQUIP IT           ', '?2', 'ATT', 'DMG+', 'TO-HIT', 'AC', 'MTYPE', 'RACE ', 'CLASS-USE', 'USES', 'EFFECT', 'SLOT        ' ]
 
 valid_headers = []
 
 def what_it_means(myar, y):
+    global slots
     global classes
     global ignore
     temp = ""
@@ -91,6 +94,8 @@ def what_it_means(myar, y):
         14: 'message',
         255: 'NONE'
         }.get(x, str(x))
+    elif y is 0xc:
+        temp = slots[x] + '/' + str(x) if x < len(slots) else 'UNKNOWN'
     else:
         temp = str(x)
         # temp = 'NONE' if x is 255 else str(x)
@@ -130,5 +135,9 @@ print()
 
 print(zapwhite('|*NUM|*ITEM NAME    |*' + '|*'.join(headers[a] for a in valid_headers) + '|', zap_whitespace))
 
+print_tell = False
+
 for i in range(0, num_items):
+    if print_tell:
+        print('{:x}'.format(fp.tell()))
     read_one_item(fp, i)
