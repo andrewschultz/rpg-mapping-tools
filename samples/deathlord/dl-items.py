@@ -13,6 +13,9 @@ slots = ['HAND', 'MISSILE', 'ARMOR', 'SHIELD', 'ACCESSORY', 'RING', 'USABLE', 'D
 classes = ['SENSHI', 'KISHI', 'RYOSHI', 'YABANJIN', 'KICHIGAI', 'SAMURAI', 'RONIN', 'YAKUZA',
   'ANSATSUSHA', 'NINJA', 'SHUKENJA', 'SHISAI', 'SHIZEN', 'MAHOTSUKAI', 'GENKAI', 'KOSAKU' ]
 
+item_effects = [ 'INOCHI', 'ALNASU', 'ZUMA', 'KOROSU', 'MOINOCHI', 'TSUIHO', 'KAKUSU',
+  'HOHYO', 'MOAKARI', 'ICHIHAN', 'HITATE', 'SANTATE', 'dispel curtain', 'see in Hell', 'message']
+
 # this was used to focus on remaining columns/bytes
 # ignore = [0, 2, 3, 4, 6, 7, 8, 9, 0xa, 0xb, 0xc]
 # however, bytes 1 and 2 are tied together, so I'll just be ignoring #2
@@ -77,23 +80,7 @@ def what_it_means(myar, y):
     elif y is 0xa:
         temp = '++' if x is 0 else ('N/A' if x is 255 else str(x))
     elif y is 0xb:
-        temp = {
-        0: 'INOCHI',
-        1: 'ALNASU',
-        2: 'TAIYOHI (?)',
-        3: 'KOROSU (?)',
-        4: 'MOINOCHI (??)', 
-        5: 'TSUIHO',
-        7: 'HOHYO',
-        8: 'MOAKARI (?)',
-        9: 'ICHIHAN',
-        10: 'HITATE',
-        11: 'SANTATE',
-        12: 'dispel curtain',
-        13: 'see in Hell',
-        14: 'message',
-        255: 'NONE'
-        }.get(x, str(x))
+        temp = 'NONE' if x is 255 else ( '??' + str(x) if x > len(item_effects) else item_effects[x])
     elif y is 0xc:
         temp = slots[x] + '/' + str(x) if x < len(slots) else 'UNKNOWN'
     else:
@@ -118,6 +105,7 @@ def read_one_item(fp, i):
         string = string + chr(y)
 #    print('|' + string + '|' + '|'.join(what_it_means(bytear[a], a) for a in range(0, len(bytear))) + '|')
     to_print = '|{:02x}  '.format(i) + '|{:14s}'.format(string) + '|' + '|'.join('{:3s}'.format(what_it_means(bytear, a)) for a in valid_headers) + '|'
+    to_print = re.sub(r"\|([-\+])", r"| \1", to_print) # to make sure gamefaqs markup doesn't see |+ or |-
     print(zapwhite(to_print, zap_whitespace))
 #    print('|' + '{:14s}'.format(string) + '|' + '|'.join('{:3d}'.format(a) for a in bytear) + '|')
 

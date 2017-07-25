@@ -4,7 +4,7 @@ import re
 # change these constants if/when necessary
 
 printNumber = False
-printTell = True
+printTell = False
 
 numMonsters = 130
 
@@ -53,7 +53,7 @@ def readOneMonster(fp, i):
         statString = re.sub(r'\| +', '|', statString)
     else:
         statString = statString + "(None)"
-    statString = re.sub("\|-", "| -", statString)
+    statString = re.sub(r"\|([-\+])", r"| \1", statString) # to make sure gamefaqs markup doesn't see |+ or |-
     print (statString + '|')
     return
 
