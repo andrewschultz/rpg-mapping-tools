@@ -1,31 +1,16 @@
 import re
 import glob
 import sys
+import os
 
 # errata: Stairs dungeon is a word dungeon. Fix that.
 # fort wintergreen should be labeled.
+# kawahara map is ordered wrong
+# 1 2 5
+# 3 4 6
+# what is the grey square in the Troll Hole?
 
-# dungeons to tackle
-# kodan SAVED
-# telegrond SAVED
-# hill giants SAVED
-# kobito mines (word) SAVED
-# akhamun ra SAVED
-# sultan's palace (emerald rod) SAVED
-# pyramid of old ones (word) SAVED
-# linear dungeon SAVED
-# malkanth (tooth) SAVED
-# greenbanks (lantern) SAVED
-# chessboard (word) SAVED
-# stairs (word) SAVED
-# slide trap dungeon SAVED
-# twin rivers SAVED
-# sunken temple SAVED
-# hell 1-16
-# troll hole (word) SAVED
-# shumi's tower SAVED
-# door maze dungeon (word) SAVED
-# cave of elements (word) SAVED
+# also, mark off chutes and special treasures like the Ruby Ring
 
 finished = [
   'dl-osozaki', 'dl-red-shogun', 'dl-kodan-s', 'dl-kodan', 'dl-kodan-e', 'dl-isle-dead', 'dl-asagata', 'dl-elements', 'dl-akmihr',
@@ -33,9 +18,14 @@ finished = [
   ]
 # finished = []
 
-important_dungeon = { 0x08: 'message' }
+important_dungeon = {
+  0x08: 'message', 0x34: 'message',
+  0xc5: 'word gate'
+  }
 important_inside = {
-  0x03: 'stairs down', 0x04: 'stairs up'
+  0x03: 'stairs down', 0x04: 'stairs up',
+  0x27: 'curtain', 0x38: 'Arkham\'s wall',
+  0x8d: 'ruby ring chest'
   }
 important_out = {
   0x0b: 'tundra dungeon', 0x0e: 'dungeon', 0x10: 'snow mtn dungeon', 0x13: 'north palace', 0x14: 'town', 0x15: 'ruins', 0x16: 'temple', 0x17: 'village',
@@ -106,6 +96,11 @@ total_files = read_files = 0
 
 for my_file in save_states:
     total_files = total_files + 1
+    filesize = os.path.getsize(my_file)
+    # filesize = os.stat('C:\\Python27\\Lib\\genericpath.py').st_size 
+    if filesize != 145400:
+        print ("Non-save state file", my_file, "should have size 145400 but has", filesize )
+        continue
     if re.search("\.bak", my_file):
         print("Ignoring backup file", my_file)
         continue

@@ -10,29 +10,34 @@ num_items = 75
 
 slots = ['HAND', 'MISSILE', 'ARMOR', 'SHIELD', 'ACCESSORY', 'RING', 'USABLE', 'DOCUMENT']
 
-classes = ['SENSHI', 'KISHI', 'RYOSHI', 'YABANJIN', 'KICHIGAI', 'SAMURAI', 'RONIN', 'YAKUZA',
-  'ANSATSUSHA', 'NINJA', 'SHUKENJA', 'SHISAI', 'SHIZEN', 'MAHOTSUKAI', 'GENKAI', 'KOSAKU' ]
+classes = [
+    'SENSHI', 'KISHI', 'RYOSHI', 'YABANJIN', 'KICHIGAI', 'SAMURAI', 'RONIN', 'YAKUZA',
+    'ANSATSUSHA', 'NINJA', 'SHUKENJA', 'SHISAI', 'SHIZEN', 'MAHOTSUKAI', 'GENKAI', 'KOSAKU']
 
-item_effects = [ 'INOCHI', 'ALNASU', 'ZUMA', 'KOROSU', 'MOINOCHI', 'TSUIHO', 'KAKUSU',
-  'HOHYO', 'MOAKARI', 'ICHIHAN', 'HITATE', 'SANTATE', 'dispel curtain', 'see in Hell', 'message']
+item_effects = [
+    'INOCHI', 'ALNASU', 'ZUMA', 'KOROSU', 'MOINOCHI', 'TSUIHO', 'KAKUSU',
+    'HOHYO', 'MOAKARI', 'ICHIHAN', 'HITATE', 'SANTATE', 'dispel curtain', 'see in Hell', 'message']
 
 # this was used to focus on remaining columns/bytes
 # ignore = [0, 2, 3, 4, 6, 7, 8, 9, 0xa, 0xb, 0xc]
 # however, bytes 1 and 2 are tied together, so I'll just be ignoring #2
 ignore = [2]
 
-headers = [ 'SELL', 'WHO CAN EQUIP IT           ', '?2', 'ATT', 'DMG+', 'TO-HIT', 'AC', 'MTYPE', 'RACE ', 'CLASS-USE', 'USES', 'EFFECT', 'SLOT        ' ]
+headers = [
+    'SELL', 'WHO CAN EQUIP IT           ', '?2', 'ATT', 'DMG+', 'TO-HIT', 'AC',
+    'MTYPE', 'RACE ', 'CLASS-USE', 'USES', 'EFFECT', 'SLOT        ']
 
 valid_headers = []
+
 
 def what_it_means(myar, y):
     global slots
     global classes
     global ignore
-    temp = ""
     x = myar[y]
     if y in ignore:
         return ""
+    temp = ""
     if y is 0:
         temp = 'CAN\'T' if x is 0 else str(x)
     elif y is 1:
@@ -64,34 +69,36 @@ def what_it_means(myar, y):
         temp = str(x - 256 if x > 128 else x)
     elif y is 7:
         temp = {
-        0: 'DRAGON',
-        1: 'GIANT',
-        2: 'UNDEAD',
-        3: 'DEMON',
-        4: 'DLORD'
+            0: 'DRAGON',
+            1: 'GIANT',
+            2: 'UNDEAD',
+            3: 'DEMON',
+            4: 'DLORD'
         }.get(x, 'NONE')
     elif y is 8:
         temp = {
-        1: 'TOSHI',
-        3: 'KOBITO'
+            1: 'TOSHI',
+            3: 'KOBITO'
         }.get(x, 'NONE')
     elif y is 9:
         temp = 'N/A' if x is 255 else (str(x) if x >= len(classes) else classes[x])
     elif y is 0xa:
         temp = '++' if x is 0 else ('N/A' if x is 255 else str(x))
     elif y is 0xb:
-        temp = 'NONE' if x is 255 else ( '??' + str(x) if x > len(item_effects) else item_effects[x])
+        temp = 'NONE' if x is 255 else ('??' + str(x) if x > len(item_effects) else item_effects[x])
     elif y is 0xc:
         temp = slots[x] + '/' + str(x) if x < len(slots) else 'UNKNOWN'
     else:
         temp = str(x)
         # temp = 'NONE' if x is 255 else str(x)
-    if len(temp) < len(headers[y])+1:
-        temp = temp + " " * (1+len(headers[y]) - len(temp))
+    if len(temp) < len(headers[y]) + 1:
+        temp = temp + " " * (1 + len(headers[y]) - len(temp))
     return temp
+
 
 def zapwhite(string, do_i_zap):
     return re.sub(" +\|", "|", string) if do_i_zap else string
+
 
 def read_one_item(fp, i):
     global zap_whitespace
@@ -103,15 +110,18 @@ def read_one_item(fp, i):
         ch = fp.read(1)
         y = (ch[0] ^ 0x65) & 0x7f
         string = string + chr(y)
-#    print('|' + string + '|' + '|'.join(what_it_means(bytear[a], a) for a in range(0, len(bytear))) + '|')
-    to_print = '|{:02x}  '.format(i) + '|{:14s}'.format(string) + '|' + '|'.join('{:3s}'.format(what_it_means(bytear, a)) for a in valid_headers) + '|'
-    to_print = re.sub(r"\|([-\+])", r"| \1", to_print) # to make sure gamefaqs markup doesn't see |+ or |-
+    #    print('|' + string + '|' + '|'.join(what_it_means(bytear[a], a) for a in range(0, len(bytear))) + '|')
+    to_print = '|{:02x}  '.format(i) + '|{:14s}'.format(string) + '|' + '|'.join(
+        '{:3s}'.format(what_it_means(bytear, a)) for a in valid_headers) + '|'
+    to_print = re.sub(r"\|([-\+])", r"| \1", to_print)  # to make sure gamefaqs markup doesn't see |+ or |-
     print(zapwhite(to_print, zap_whitespace))
+
+
 #    print('|' + '{:14s}'.format(string) + '|' + '|'.join('{:3d}'.format(a) for a in bytear) + '|')
 
 # I could use numPy for this, but I didn't have it installed at the time
-for a in range(0,len(headers)):
-    if not a in ignore:
+for a in range(0, len(headers)):
+    if a not in ignore:
         valid_headers.append(a)
 
 fp = open("dli-0-00", "rb")
