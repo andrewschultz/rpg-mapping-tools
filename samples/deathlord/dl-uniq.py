@@ -11,9 +11,9 @@ save_states = glob.glob("c:\\emu\\apple\\dlsave\\*")
 total_files = read_files = 0
 
 for my_file in save_states:
-    filesize = os.path.getsize(my_file)
-    if filesize != 145400:
-        print ("Non-save state file", my_file, "should have size 145400 but has", filesize )
+    file_size = os.path.getsize(my_file)
+    if file_size != 145400:
+        print("Non-save state file", my_file, "should have size 145400 but has", file_size)
         continue
     if re.search("\.bak", my_file):
         print("Ignoring backup file", my_file)
@@ -24,14 +24,13 @@ for my_file in save_states:
     if re.search("\.bmp", my_file):
         print("Ignoring bitmap file", my_file)
         continue
-    my_short = my_file
     my_short = re.sub(r".*\\", "", my_file)
     if my_short in finished:
         continue
     try:
         fp = open(my_file, "rb")
-    except:
-        print("Bad file name", my_file)
+    except KnownExceptions:
+        print("Trouble opening", my_file)
         exit()
     read_files = read_files + 1
     byte_array = fp.read(4096)
@@ -48,5 +47,5 @@ for my_file in save_states:
     for y in frequency.keys():
         if frequency[y] <= threshold:
             print(my_short,
-                'icon {:02x}'.format(y), 'x={:02x}'.format(found_at_x[y]),
-                'y={:02x}'.format(found_at_y[y]), frequency[y])
+                  'icon {:02x}'.format(y), 'x={:02x}'.format(found_at_x[y]),
+                  'y={:02x}'.format(found_at_y[y]), frequency[y])
