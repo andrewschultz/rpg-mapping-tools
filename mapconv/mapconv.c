@@ -84,6 +84,7 @@ short NewPIXFile;
 #define MAPCONV_XTRA_AMENDMENTS_ALT_NAME 32768
 #define MAPCONV_NOTE_NO_XTR 65536
 #define MAPCONV_SHOW_FREQ_STATS 131072
+#define MAPCONV_DEBUG_SHOW_EDGE_UNDEF 262144
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -318,6 +319,12 @@ main(int argc, char * argv[])
 				break;
 
 			case 'a':
+				if (argv[CurComd][2] == 'u')
+				{
+					MAPCONV_STATUS |= MAPCONV_DEBUG_SHOW_EDGE_UNDEF;
+					break;
+				}
+
 				if (argv[CurComd][2] == 'f')
 				{
 					fillUnknownWithLCD = 1;
@@ -1318,6 +1325,23 @@ void PrintOutUnused()
 	short unusedBaseIcons = 0;
 	short usedBaseIcons = 0;
 
+	short leftmostX[256];
+	short leftmostY[256];
+
+	short upmostX[256];
+	short upmostY[256];
+
+	short rightmostX[256];
+	short rightmostY[256];
+
+	short downmostX[256];
+	short downmostY[256];
+
+	short temp;
+
+	for (i=0; i < 256; i++)
+		leftmostX[i] = leftmostY[i] = rightmostX[i] = rightmostY[i] = upmostX[i] = upmostY[i] = downmostX[i] = downmostY[i] = -1;
+
 	printf("Roll call for unused icons:\n");
 
 	printGrid();
@@ -1327,35 +1351,66 @@ void PrintOutUnused()
 
 	for (j = BmpHandler.Yi; j < BmpHandler.Yf; j++)
 	{
-		k=j;
+		k = j;
+
 		if (MAPCONV_STATUS & MAPCONV_BOTTOM_TOP)
 		{
 			k = BmpHandler.Yf + BmpHandler.Yi - k - 1;
 		}
 		for (i = BmpHandler.Xi; i < BmpHandler.Xf; i++)
 		{ //printf("%2x", BmpHandler.ary[i][j]);
-			BmpHandler.freqAry[BmpHandler.ary[i][k]]++;
-			if (!BmpHandler.IconUsed[BmpHandler.ary[i][k]])
+			temp = BmpHandler.ary[i][k]; // this is used so we don't have to type in the current icon a bunch of times
+
+			BmpHandler.freqAry[temp]++;
+			if (BmpHandler.IconUsed[temp] != 1)
 			{
-				if ((MAPCONV_STATUS & MAPCONV_DEBUG_ONLY_FIRST) && (used[BmpHandler.ary[i][k]]))
+				if ((leftmostX[temp] == -1) || (i < leftmostX[temp]))
+				{
+					leftmostX[temp] = (short) i;
+					leftmostY[temp] = (short) j;
+				}
+
+				if (i > rightmostX[temp])
+				{
+					rightmostX[temp] = (short) i;
+					rightmostY[temp] = (short) j;
+				}
+
+				if ((upmostX[temp] == -1) || (j < upmostY[temp]))
+				{
+					upmostX[temp] = (short) i;
+					upmostY[temp] = (short) j;
+				}
+
+				if (j > downmostY[temp])
+				{
+					downmostX[temp] = (short) i;
+					downmostY[temp] = (short) j;
+				}
+
+			}
+
+			if (!BmpHandler.IconUsed[temp])
+			{
+				if ((MAPCONV_STATUS & MAPCONV_DEBUG_ONLY_FIRST) && (used[temp]))
 				{
 				}
 				else
-					printf("%02x %02x (hex coord) Unused icon %x(hex) also %d %d (decimal coord).\n", i, k, BmpHandler.ary[i][k], i-BmpHandler.Xi, k-BmpHandler.Yi);
+					printf("%02x %02x (hex coord) Unused icon %x(hex) also %d %d (decimal coord).\n", i, k, temp, i-BmpHandler.Xi, k-BmpHandler.Yi);
 				used[BmpHandler.ary[i][k]]++;
-				if (BmpHandler.IconUsed[BmpHandler.ary[i][k]] == 0)
+				if (BmpHandler.IconUsed[temp] == 2)
 					unusedBaseIcons++;
-				BmpHandler.IconUsed[BmpHandler.ary[i][k]] = 2;
+				BmpHandler.IconUsed[temp] = 0;
 				totalUnused++;
 			}
 			else
 			{
-				if (usedAtAll[BmpHandler.ary[i][k]] == 0)
+				if (usedAtAll[temp] == 0)
 				{
-					usedAtAll[BmpHandler.ary[i][k]] = 1;
+					usedAtAll[temp] = 1;
 					usedBaseIcons++;
 				}
-				if (BmpHandler.IconUsed[BmpHandler.ary[i][k]] == 2)
+				if (BmpHandler.IconUsed[temp] == 2)
 					totalUnused++;
 				else
 					totalUsed++;
@@ -1363,6 +1418,13 @@ void PrintOutUnused()
 		}
 //		printf("\n");
 	}
+	if (MAPCONV_STATUS & MAPCONV_DEBUG_SHOW_EDGE_UNDEF)
+		for (i=0; i < 256; i++)
+			if (leftmostX[i] != -1)
+				printf("%02x: leftmost=%02x,%02x rightmost=%02x,%02x upmost=%02x,%02x downmost=%02x,%02x\n", i,
+					leftmostX[i], leftmostY[i], rightmostX[i], rightmostY[i],
+					upmostX[i], upmostY[i], downmostX[i], downmostY[i]);
+
 	if (MAPCONV_STATUS & MAPCONV_SHOW_FREQ_STATS)
 	{
 		runFreqStats();
@@ -1372,7 +1434,7 @@ void PrintOutUnused()
 		float q = ((float)(totalUsed*100))/(totalUsed+totalUnused);
 	    printf("Total stats:\n");
 		printf("%d of %d usable icons in final map, for %f percent.\n", totalUsed, totalUsed+totalUnused, q);
-		printf("%d unused based icons, %d used.\n", unusedBaseIcons, usedBaseIcons);
+		printf("%d icons not defined in icon file, %d sent to the output BMP.\n", unusedBaseIcons, usedBaseIcons);
 	}
 	if (totalUnused > 0)
 		printGrid();
