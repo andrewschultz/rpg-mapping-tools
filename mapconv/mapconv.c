@@ -179,8 +179,8 @@ typedef struct
 	char BinStr[MAXSTRING];
 	char OutStr[MAXSTRING];
 
-	short TheWidth;
-	short TheHeight;
+	short IconWidth;
+	short IconHeight;
 
 	short Xi;
 	short Yi;
@@ -287,7 +287,7 @@ main(int argc, char * argv[])
 	BmpHandler.startIconBase = 10;
 	BmpHandler.mainXtrBase = 10;
 
-	BmpHandler.TheHeight = BmpHandler.TheWidth = 0;
+	BmpHandler.IconHeight = BmpHandler.IconWidth = 0;
 
 	BmpHandler.unknownLCDColor = 0x808080;
 
@@ -398,7 +398,7 @@ main(int argc, char * argv[])
 				if (argv[CurComd][2] == 's')
 				{
 					if (argc > CurComd)
-						BmpHandler.TheHeight = BmpHandler.TheWidth = (short)strtol(argv[CurComd+1], NULL, 10);
+						BmpHandler.IconHeight = BmpHandler.IconWidth = (short)strtol(argv[CurComd+1], NULL, 10);
 					else
 						printf("-i(s/h/w) requires a numerical argument after.");
 					CurComd++;
@@ -408,7 +408,7 @@ main(int argc, char * argv[])
 				if (argv[CurComd][2] == 'h')
 				{
 					if (argc > CurComd)
-						BmpHandler.TheHeight = (short)strtol(argv[CurComd+1], NULL, 10);
+						BmpHandler.IconHeight = (short)strtol(argv[CurComd+1], NULL, 10);
 					else
 						printf("-i(s/h/w) requires a numerical argument after.");
 					CurComd++;
@@ -418,7 +418,7 @@ main(int argc, char * argv[])
 				if (argv[CurComd][2] == 'w')
 				{
 					if (argc > CurComd)
-						BmpHandler.TheWidth = (short)strtol(argv[CurComd+1], NULL, 10);
+						BmpHandler.IconWidth = (short)strtol(argv[CurComd+1], NULL, 10);
 					else
 						printf("-i(s/h/w) requires a numerical argument after.");
 					CurComd++;
@@ -734,9 +734,9 @@ short NMRRead(char FileStr[MAXSTRING])
 			break;
 
 		case 'h':
-			if (BmpHandler.TheWidth != 0)
+			if (BmpHandler.IconWidth != 0)
 				printf("Line %d redefines width.\n", thisLine);
-			BmpHandler.TheWidth = (short)strtol(BufStr, &BufStr2, 10);
+			BmpHandler.IconWidth = (short)strtol(BufStr, &BufStr2, 10);
 			break;
 
 		case 'i': //read in an icons file
@@ -809,9 +809,9 @@ short NMRRead(char FileStr[MAXSTRING])
 			break;
 
 		case 'w':
-			if (BmpHandler.TheHeight != 0)
+			if (BmpHandler.IconHeight != 0)
 				printf("Line %d redefines width.\n", thisLine);
-			BmpHandler.TheHeight = (short)strtol(BufStr, &BufStr2, 10);
+			BmpHandler.IconHeight = (short)strtol(BufStr, &BufStr2, 10);
 			break;
 
 		default:
@@ -902,10 +902,10 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 					temp = (short) strtol(buffer+2, NULL, 10);
 					if (temp > MAXICONSIZE)
 						temp = MAXICONSIZE;
-					BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
+					BmpHandler.IconHeight = BmpHandler.IconWidth = temp;
 				}
 				else
-					BmpHandler.TheHeight = temp;
+					BmpHandler.IconHeight = temp;
 				break;
 
 			case 'w':
@@ -924,10 +924,10 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 					temp = (short) strtol(buffer+2, NULL, 10);
 					if (temp > MAXICONSIZE)
 						temp = MAXICONSIZE;
-					BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
+					BmpHandler.IconHeight = BmpHandler.IconWidth = temp;
 				}
 				else
-					BmpHandler.TheWidth = temp;
+					BmpHandler.IconWidth = temp;
 				break;
 
 			case 's':
@@ -939,7 +939,7 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 				temp = (short) strtol(buffer+2, NULL, 10);
 				if (temp > MAXICONSIZE)
 					temp = MAXICONSIZE;
-				BmpHandler.TheHeight = BmpHandler.TheWidth = temp;
+				BmpHandler.IconHeight = BmpHandler.IconWidth = temp;
 				break;
 
 			case 'l':
@@ -954,9 +954,9 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 				temp = (short) strtol(buffer+1, NULL, 16);
 				for (i1 = 0; i1 < 10; i1++)
 					LCDize((short)i1, (short)(temp + i1), (short)(buffer[0] == 'L'),
-						(short)((BmpHandler.TheWidth + 1) / 4), (short) 1, //Xi Yi
-						(short)((BmpHandler.TheWidth/4) + ((BmpHandler.TheWidth+1)/4)),
-						(short)((BmpHandler.TheWidth / 2) - 1), //dY
+						(short)((BmpHandler.IconWidth + 1) / 4), (short) 1, //Xi Yi
+						(short)((BmpHandler.IconWidth/4) + ((BmpHandler.IconWidth+1)/4)),
+						(short)((BmpHandler.IconWidth / 2) - 1), //dY
 						(short) 1);
 				break;
 
@@ -1065,14 +1065,14 @@ void WriteIconsToBmp()
 		{
 		case 0x12:
 			fgetc(F0);
-			temp = (BmpHandler.TheWidth + 2) * 16;
+			temp = (BmpHandler.IconWidth + 2) * 16;
 			fputc(temp & 0xff, F1);
 			fputc((temp >> 8) & 0xff, F1);
 			break;
 
 		case 0x16:
 			fgetc(F0);
-			temp = (BmpHandler.TheHeight + 2) * 16;
+			temp = (BmpHandler.IconHeight + 2) * 16;
 			fputc(temp & 0xff, F1);
 			fputc((temp >> 8) & 0xff, F1);
 			break;
@@ -1111,21 +1111,21 @@ void WriteIconsToBmp()
 
 	for (j=15; j >= 0; j--)
 	{
-		for (i2 = 0; i2 < (BmpHandler.TheWidth+2) * 16; i2++)
+		for (i2 = 0; i2 < (BmpHandler.IconWidth+2) * 16; i2++)
 			fputc(8, F1);
 
-		for (j2 = BmpHandler.TheHeight - 1; j2 >= 0; j2--)
+		for (j2 = BmpHandler.IconHeight - 1; j2 >= 0; j2--)
 		{
 			for (i=0; i < 16; i++)
 			{
 				fputc(8, F1);
-				for (i2=0; i2 < BmpHandler.TheWidth; i2++)
+				for (i2=0; i2 < BmpHandler.IconWidth; i2++)
 					fputc(BmpHandler.Icons[(i & 0xf) + (j << 4)][i2][j2], F1);
 				fputc(8, F1);
 			}
 		}
 
-		for (i2 = 0; i2 < (BmpHandler.TheWidth+2) * 16; i2++)
+		for (i2 = 0; i2 < (BmpHandler.IconWidth+2) * 16; i2++)
 			fputc(8, F1);
 	}
 
@@ -1182,7 +1182,7 @@ void WriteToBmp()
         switch(i)
         {
 			case 0x12:
-				temp = (long)(BmpHandler.Xf-BmpHandler.Xi)*(long)BmpHandler.TheWidth;
+				temp = (long)(BmpHandler.Xf-BmpHandler.Xi)*(long)BmpHandler.IconWidth;
 				putlong(temp, F3);
 				i += 3;
 				fgetc(F1);
@@ -1191,7 +1191,7 @@ void WriteToBmp()
 				fgetc(F1);
 				break;
 			case 0x16:
-				putlong((long)(BmpHandler.Yf-BmpHandler.Yi)*(long)BmpHandler.TheHeight, F3);
+				putlong((long)(BmpHandler.Yf-BmpHandler.Yi)*(long)BmpHandler.IconHeight, F3);
 				i += 3;
 				fgetc(F1);
 				fgetc(F1);
@@ -1256,19 +1256,19 @@ void WriteToBmp()
 	}
 
 	for (j = BmpHandler.Yi;  j < BmpHandler.Yf;  j++)
-		for (j2 = 0;  j2 < BmpHandler.TheHeight;  j2++)
+		for (j2 = 0;  j2 < BmpHandler.IconHeight;  j2++)
 		{
 			if (xyphus && (j & 1))
 			{
 				xyphusJump = 1;
-				for (i2=0; i2 < BmpHandler.TheWidth / 2; i2++)
+				for (i2=0; i2 < BmpHandler.IconWidth / 2; i2++)
 					putc(0, F3);
 			}
 
 			for (i = BmpHandler.Xi;  i < BmpHandler.Xf;  i++)
-				for (i2 = 0;  i2 < BmpHandler.TheWidth;  i2++)
+				for (i2 = 0;  i2 < BmpHandler.IconWidth;  i2++)
 				{
-					short xyz=BmpHandler.Icons[BmpHandler.transpary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.TheHeight-j2-1];
+					short xyz=BmpHandler.Icons[BmpHandler.transpary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.IconHeight-j2-1];
 					if (BmpHandler.cutNext)
 						if ((i < BmpHandler.cutRight) && (i >= BmpHandler.cutLeft)
 							&& (j >= BmpHandler.cutUp) && (j < BmpHandler.cutDown))
@@ -1279,14 +1279,14 @@ void WriteToBmp()
 					if ((BmpHandler.transpary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]) && (xyz != BmpHandler.TransparencyColor))
 						fputc((char)xyz, F3);
 					else
-				 		fputc((char)BmpHandler.Icons[BmpHandler.ary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.TheHeight-j2-1], F3);
+				 		fputc((char)BmpHandler.Icons[BmpHandler.ary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.IconHeight-j2-1], F3);
 				}
                   if (temp % 4)
                     for (j3=(temp%4);  j3<4;  j3++)
 			    fputc(0, F3);
 
 			if (xyphusJump)
-				for (i2=0; i2 < (BmpHandler.TheWidth+1) / 2; i2++)
+				for (i2=0; i2 < (BmpHandler.IconWidth+1) / 2; i2++)
 					putc(0, F3);
 		}
 	fclose(F1);
@@ -1453,19 +1453,29 @@ void runFreqStats()
 {
 	short idx[256];
 	short i;
+	short printedAnything = 0;
 
 	for (i=0; i < 256; i++)
 		idx[i] = i;
 
     qsort (idx, sizeof(idx)/sizeof(*idx), sizeof(*idx), comp);
 
-	printf("FREQUENCY STATS\n");
 
     for (i = 0 ; i < 256 ; i++)
 		if (BmpHandler.freqAry[idx[i]])
 			if (((MAPCONV_STATUS & MAPCONV_SHOW_FREQ_STATS_UNUSED) && BmpHandler.IconUsed[idx[i]] != 1) ||
 				((MAPCONV_STATUS & MAPCONV_SHOW_FREQ_STATS_USED) && BmpHandler.IconUsed[idx[i]] == 1))
+			{
+				if (!printedAnything)
+				{
+					printf("FREQUENCY STATS\n");
+					printedAnything = 1;
+				}
 		        printf ("%02x (%02d): %d\n", idx[i], idx[i], BmpHandler.freqAry[idx[i]]);
+			}
+
+	if (!printedAnything)
+		printf("No frequency stats to print.\n");
 }
 
 int comp (const void * elem1, const void * elem2)
@@ -1839,8 +1849,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	// have an icon interact on itself. Usually not necessary but this lets you combine, say, checkerboard with an outline.
 	if ((q == tst) && otherIcon(myBuf[0]))
 	{
-		for (j=0;  j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (j=0;  j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				BmpHandler.Icons[256][i][j] = BmpHandler.Icons[q][i][j];
 		tst = 256;
 		if (BmpHandler.IconDefined[q] == 0)
@@ -1855,8 +1865,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		break;
 
 	case '=':	//changes one icon to all one color.
-		for (j=0;  j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (j=0;  j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				BmpHandler.Icons[q][i][j] = tst;
 		break;
 
@@ -1867,11 +1877,11 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		tst2 = CharToNum(myBuf[startLoc+1]);
 		if (tst == '/')
 			startLoc++;
-		for (j=0;  j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				if (i + j < BmpHandler.TheHeight - 1)
+		for (j=0;  j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				if (i + j < BmpHandler.IconHeight - 1)
 					BmpHandler.Icons[q][i][j] = tst;
-				else if (i + j > BmpHandler.TheHeight - 1)
+				else if (i + j > BmpHandler.IconHeight - 1)
 					BmpHandler.Icons[q][i][j] = tst2;
 				else if (startLoc == 2)
 					BmpHandler.Icons[q][i][j] = tst;
@@ -1884,8 +1894,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			startLoc++;
 		tst = CharToNum(myBuf[startLoc]);
 		tst2 = CharToNum(myBuf[startLoc+1]);
-		for (j=0;  j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (j=0;  j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				if (i > j)
 					BmpHandler.Icons[q][i][j] = tst;
 				else if (i < j)
@@ -1902,8 +1912,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: copied-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[tst][i][j];
 		break;
 
@@ -1913,9 +1923,9 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				BmpHandler.Icons[q][BmpHandler.IconWidth-1-i][BmpHandler.IconHeight-1-j] = BmpHandler.Icons[tst][i][j];
 		break;
 
 	case 'f': // flip across the SW/NE diagonal
@@ -1924,9 +1934,9 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				BmpHandler.Icons[q][BmpHandler.IconWidth-1-j][BmpHandler.IconHeight-1-i] = BmpHandler.Icons[tst][i][j];
 		break;
 
 	case 'F': // flip across the SE/NW diagonal
@@ -1935,8 +1945,8 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				BmpHandler.Icons[q][j][i] = BmpHandler.Icons[tst][i][j];
 		break;
 
@@ -1946,17 +1956,17 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][BmpHandler.TheWidth-1-i][j] = BmpHandler.Icons[tst][i][j];
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				BmpHandler.Icons[q][BmpHandler.IconWidth-1-i][j] = BmpHandler.Icons[tst][i][j];
 		break;
 
 	case 'H': //horizontal trimming, with color after
 		tst = CharToNum(myBuf[1]);
 		tst2 = CharToNum(myBuf[2]);
-		for (j=0; j < BmpHandler.TheHeight; j++)
+		for (j=0; j < BmpHandler.IconHeight; j++)
 			for (i=0; i < tst2; i++)
-				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.TheWidth-i-1][j] = tst;
+				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][BmpHandler.IconWidth-i-1][j] = tst;
 		break;
 
 	case 'l': //rotate 90 degrees left
@@ -1965,36 +1975,36 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		if (BmpHandler.TheHeight != BmpHandler.TheWidth)
+		if (BmpHandler.IconHeight != BmpHandler.IconWidth)
 		{
 			printf ("Need height = width to rotate.\n");
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][j][BmpHandler.TheHeight-1-i] = BmpHandler.Icons[tst][i][j];
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				BmpHandler.Icons[q][j][BmpHandler.IconHeight-1-i] = BmpHandler.Icons[tst][i][j];
 		break;
 
 	case 'L': // lcd digits
 		LCDize(tst, (short)q, 0,
-			(short)((BmpHandler.TheWidth + 1) / 4), (short) 1, //Xi Yi
-			(short)((BmpHandler.TheWidth/4) + ((BmpHandler.TheWidth+1)/4)),
-			(short)((BmpHandler.TheWidth / 2) - 1), //dY
+			(short)((BmpHandler.IconWidth + 1) / 4), (short) 1, //Xi Yi
+			(short)((BmpHandler.IconWidth/4) + ((BmpHandler.IconWidth+1)/4)),
+			(short)((BmpHandler.IconWidth / 2) - 1), //dY
 			(short) 1);
 		break;
 
 	case 'O': //this puts a ring around a square, border color first then fill
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][j][BmpHandler.TheHeight-1-i] =
-				(i == 0 || j == 0 || i == BmpHandler.TheWidth-1 || j == BmpHandler.TheHeight-1) ? tst>>4 : tst & 0xf;
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				BmpHandler.Icons[q][j][BmpHandler.IconHeight-1-i] =
+				(i == 0 || j == 0 || i == BmpHandler.IconWidth-1 || j == BmpHandler.IconHeight-1) ? tst>>4 : tst & 0xf;
 		break;
 
 	case 'p': // palette replacement eg change reds to purple, 0x34p2~6 (switch) or 0x34p2-6 (only 2 to 6)
 		tst = CharToNum(myBuf[1]);
 		tst2 = CharToNum(myBuf[3]);
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 			{
 				if (BmpHandler.Icons[q][j][i] == tst)
 					BmpHandler.Icons[q][j][i] = tst2;
@@ -2010,21 +2020,21 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		if (BmpHandler.TheHeight != BmpHandler.TheWidth)
+		if (BmpHandler.IconHeight != BmpHandler.IconWidth)
 		{
 			printf ("Need height = width to rotate.\n");
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][BmpHandler.TheWidth-1-j][i] = BmpHandler.Icons[tst][i][j];
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				BmpHandler.Icons[q][BmpHandler.IconWidth-1-j][i] = BmpHandler.Icons[tst][i][j];
 		break;
 
 	case 'S': //switch 2 colors. Actually, you can switch with a null color with no problem.
 		tst = CharToNum(myBuf[1]);
 		tst2 = CharToNum(myBuf[2]);
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0; i < BmpHandler.TheWidth; i++)
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0; i < BmpHandler.IconWidth; i++)
 				if ((BmpHandler.Icons[q][i][j] == tst) || (BmpHandler.Icons[q][i][j] == tst2))
 					BmpHandler.Icons[q][i][j] = tst + tst2 - BmpHandler.Icons[q][i][j];
 		overwriteCheck = -1;
@@ -2036,25 +2046,25 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
-				BmpHandler.Icons[q][i][BmpHandler.TheHeight-1-j] = BmpHandler.Icons[tst][i][j];
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
+				BmpHandler.Icons[q][i][BmpHandler.IconHeight-1-j] = BmpHandler.Icons[tst][i][j];
 		break;
 
 	case 'V': //vertical trimming, with color after
 		tst = CharToNum(myBuf[1]);
 		tst2 = CharToNum(myBuf[2]);
 		for (j=0; j < tst2; j++)
-			for (i=0; i < BmpHandler.TheWidth; i++)
-				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.TheHeight-j-1] = tst;
+			for (i=0; i < BmpHandler.IconWidth; i++)
+				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.IconHeight-j-1] = tst;
 		break;
 
 	case 'x': //alternating checkerboard colors
 		tst = CharToNum(myBuf[1]);
 		tst2 = CharToNum(myBuf[2]);
 		//printf("Checkerboard! %d %d\n", tst, tst2);
-		for (j=0;  j < BmpHandler.TheHeight; j++)
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (j=0;  j < BmpHandler.IconHeight; j++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				if ((i+j)%2)
 					BmpHandler.Icons[q][i][j] = tst2;
 				else
@@ -2080,7 +2090,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	if (!processFurther)
 		return;
 
-	for (j=0;  j < BmpHandler.TheHeight; j++)
+	for (j=0;  j < BmpHandler.IconHeight; j++)
 	{
 		short buflen;
 		BmpHandler.IconUsed[q] = 1;
@@ -2089,14 +2099,14 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		buflen = strlen(buffer);
 
 		if (buffer[0] == '*')
-			for (i=0;  i < BmpHandler.TheWidth;  i++)
+			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				BmpHandler.Icons[q][i][j] = CharToNum(buffer[1]);
-			if (buflen < BmpHandler.TheWidth+1)
+			if (buflen < BmpHandler.IconWidth+1)
 				printf("Warning: line %d has only %d length.\n", lineInFile, strlen(buffer));
-			if (buflen > BmpHandler.TheWidth+1)
+			if (buflen > BmpHandler.IconWidth+1)
 				printf("Warning: line %d runs over with %d length.\n", lineInFile, strlen(buffer));
 
-		for (i=0;  i < BmpHandler.TheWidth;  i++)
+		for (i=0;  i < BmpHandler.IconWidth;  i++)
 		{
             BmpHandler.Icons[q][i][j] = CharToNum(buffer[i]);
             if ((buffer[i] > '9') || (buffer[i] < '0'))
@@ -2136,19 +2146,19 @@ void unknownToLCD()
 {
 	long outlineColor = BmpHandler.unknownLCDColor ^ 0x808080;
 	short i;
-	short wd = (BmpHandler.TheWidth-4) >> 1;
-	short hd = (BmpHandler.TheHeight-1) >> 1;
+	short wd = (BmpHandler.IconWidth-4) >> 1;
+	short hd = (BmpHandler.IconHeight-1) >> 1;
 
-	if (BmpHandler.TheWidth != BmpHandler.TheHeight)
+	if (BmpHandler.IconWidth != BmpHandler.IconHeight)
 	{
 		printf("Sorry, can't do anything when width != height. Or, rather, it's too tricky.\n");
 		return;
 	}
 
-	if ((BmpHandler.TheWidth < 8) || (BmpHandler.TheHeight < 8))
+	if ((BmpHandler.IconWidth < 8) || (BmpHandler.IconHeight < 8))
 	{
 		printf("Sorry, dimensions of %dx%d is too narrow to LCDize unknown icons. I'll need 8x8 at least.\n",
-			BmpHandler.TheWidth, BmpHandler.TheHeight);
+			BmpHandler.IconWidth, BmpHandler.IconHeight);
 		return;
 	}
 
@@ -2157,10 +2167,10 @@ void unknownToLCD()
 		if (!BmpHandler.IconDefined[i])
 		{
 			//printf("Adding %02x.\n", i);
-			LCDize((short)(i >> 4), i, 0, 1, 1, wd, (short)((BmpHandler.TheHeight)/2-1), 1);
+			LCDize((short)(i >> 4), i, 0, 1, 1, wd, (short)((BmpHandler.IconHeight)/2-1), 1);
 			LCDize((short)(i & 0xf), i, TRANSPARENT_LCD,
 				(short)(wd+3), 1,	//xi, yi
-				wd, (short)((BmpHandler.TheHeight)/2-1), //dx, dy
+				wd, (short)((BmpHandler.IconHeight)/2-1), //dx, dy
 				1);
 		}
 	}
@@ -2178,8 +2188,8 @@ void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short xi, s
 	}
 
 	if (allowPrevDefined != TRANSPARENT_LCD)
-		for (j=0; j < BmpHandler.TheHeight; j++)
-			for (i=0; i < BmpHandler.TheWidth; i++)
+		for (j=0; j < BmpHandler.IconHeight; j++)
+			for (i=0; i < BmpHandler.IconWidth; i++)
 				BmpHandler.Icons[whichIcon][i][j] = lcd_blank;
 
 	if ((BmpHandler.IconDefined[whichIcon] != 0) && (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS))
