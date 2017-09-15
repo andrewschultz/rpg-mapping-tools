@@ -18,6 +18,7 @@ Flag -db to give debug text (xtr files, etc.).\n\
 Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
 Flag -i to show icon debugging.\n\
+Flag -io to create icon BMP. (optional # for filler/border color)\n\
 Flag -nh to show NMR help.\n\
 Flag -p to postprocess to png. -pa also erases png.bak/000 files.\n\
 Flag -r to regenerate the base BMP file.\n\

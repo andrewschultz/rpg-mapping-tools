@@ -45,6 +45,7 @@ Maybe have option to start with a certain line or end with it as well.
 
 #define BLACK 0
 #define WHITE 1
+#define GREY 8
 #define TRANSPARENCYCOLOR BLACK
 
 #define VALID 0
@@ -229,6 +230,7 @@ int LatestNumber(FILE *);
 void ReadRawData();
 int CharToNum(int);
 void ReadFromBmp();
+void WriteIconsToBmp();
 void WriteToBmp();
 void ModifyArray(char [MAXSTRING]);
 void PrintOutUnused();
@@ -255,6 +257,9 @@ short fillUnknownWithLCD;
 
 short transpUnder = 0;
 short xyphus = 0;
+
+short printIconBmp = 0;
+short iconOutBorderColor = GREY;
 
 main(int argc, char * argv[])
 {
@@ -372,6 +377,15 @@ main(int argc, char * argv[])
 				break;
 
 			case 'i':
+
+				if (argv[CurComd][2] == 'o')
+				{
+					printIconBmp = 1;
+					if (argv[CurComd][3])
+						iconOutBorderColor = strtol(argv[CurComd+3], NULL, 16) && 0xff;
+					break;
+				}
+
 				if (argv[CurComd][2] == 's')
 				{
 					if (argc > CurComd)
@@ -381,6 +395,7 @@ main(int argc, char * argv[])
 					CurComd++;
 					break;
 				}
+
 				if (argv[CurComd][2] == 'h')
 				{
 					if (argc > CurComd)
@@ -390,6 +405,7 @@ main(int argc, char * argv[])
 					CurComd++;
 					break;
 				}
+
 				if (argv[CurComd][2] == 'w')
 				{
 					if (argc > CurComd)
@@ -399,11 +415,13 @@ main(int argc, char * argv[])
 					CurComd++;
 					break;
 				}
+
 				if (argv[CurComd][2] == 'b')
 				{
 					MAPCONV_STATUS |= MAPCONV_IGNORE_BINS;
 					break;
 				}
+
 				MAPCONV_STATUS |= MAPCONV_DEBUG_ICONS;
 				printf("Debugging icons.\n");
 				break;
@@ -599,7 +617,7 @@ short NMRRead(char FileStr[MAXSTRING])
 		if (BufStr[0] == '\n')
 			printf("Warning: line %d is blank.\n", thisLine);
 
-		if (BufStr[1] == '.')
+		if (BufStr[0] == '.')
 		{
 			printf("WARNING: period (.) on line %d is a relic of old NMR versions. Skipping.\n", thisLine);
 			continue;
@@ -749,6 +767,9 @@ short NMRRead(char FileStr[MAXSTRING])
 				else
 					snip(BmpHandler.BinStr);
 				WriteToBmp();
+				if (printIconBmp)
+					WriteIconsToBmp();
+
 				NewPIXFile = 0;
 
 			}
@@ -998,6 +1019,101 @@ void ReadFromBmp()
 	for (i=0;  i < InMapH;  i++)
 		for (j=0;  j < InMapW;  j++)
 			BmpHandler.ary[j][InMapH-i-1] = fgetc(F1);
+	fclose(F1);
+}
+
+void WriteIconsToBmp()
+{
+	char IconOutFile[200];
+	FILE * F1;
+	FILE * F0 = fopen(BmpHandler.BmpStr, "rb");
+
+	short i, j, i2, j2;
+
+	short temp = 0;
+
+	printf("%s\n", BmpHandler.BmpStr);
+
+	strcpy(IconOutFile, BmpHandler.OutStr);
+
+	IconOutFile[strlen(IconOutFile)-4] = 0;
+	strcat(IconOutFile, "-ico.bmp");
+
+	printf("Writing icon file %s.\n", IconOutFile);
+
+	F1 = fopen(IconOutFile, "wb");
+
+	for (i=0; i < 0x436; i++)
+	{
+		switch(i)
+		{
+		case 0x12:
+			fgetc(F0);
+			temp = (BmpHandler.TheWidth + 2) * 16;
+			fputc(temp & 0xff, F1);
+			fputc((temp >> 8) & 0xff, F1);
+			break;
+
+		case 0x16:
+			fgetc(F0);
+			temp = (BmpHandler.TheHeight + 2) * 16;
+			fputc(temp & 0xff, F1);
+			fputc((temp >> 8) & 0xff, F1);
+			break;
+
+		case 0x13:
+		case 0x17:
+			fgetc(F0);
+			break;
+
+			case 0x36:
+				if (MAPCONV_STATUS & MAPCONV_NO_HEADER_FLAG)
+					fputc(fgetc(F0), F1);
+				else if (MAPCONV_STATUS & MAPCONV_USE_EGA_HEADER)
+				{
+					for (j=0; j < ADJ_HEADER_SIZE; j++)
+					{
+						fgetc(F0);
+						fputc(EgaHdr[j], F1);
+					}
+				}
+				else
+				{
+				for (j=0;  j < ADJ_HEADER_SIZE;  j++)
+				{
+					fputc(TheHdr[j], F1);
+				}
+				i += (ADJ_HEADER_SIZE - 1);
+				}
+				break;
+
+		default:
+			fputc(fgetc(F0), F1);
+			break;
+		}
+	}
+
+	for (j=15; j >= 0; j--)
+	{
+		for (i2 = 0; i2 < (BmpHandler.TheWidth+2) * 16; i2++)
+			fputc(8, F1);
+
+		for (j2 = BmpHandler.TheHeight - 1; j2 >= 0; j2--)
+		{
+			for (i=0; i < 16; i++)
+			{
+				fputc(8, F1);
+				for (i2=0; i2 < BmpHandler.TheWidth; i2++)
+					fputc(BmpHandler.Icons[(i & 0xf) + (j << 4)][i2][j2], F1);
+				fputc(8, F1);
+			}
+		}
+
+		for (i2 = 0; i2 < (BmpHandler.TheWidth+2) * 16; i2++)
+			fputc(8, F1);
+	}
+
+	fclose(F0);
 	fclose(F1);
 }
 
