@@ -83,8 +83,10 @@ short NewPIXFile;
 #define MAPCONV_REGENERATE_BASE_FILE 16384
 #define MAPCONV_XTRA_AMENDMENTS_ALT_NAME 32768
 #define MAPCONV_NOTE_NO_XTR 65536
-#define MAPCONV_SHOW_FREQ_STATS 131072
-#define MAPCONV_DEBUG_SHOW_EDGE_UNDEF 262144
+#define MAPCONV_SHOW_FREQ_STATS_USED 131072
+#define MAPCONV_SHOW_FREQ_STATS_UNUSED 262144
+#define MAPCONV_SHOW_FREQ_STATS 393216
+#define MAPCONV_DEBUG_SHOW_EDGE_UNDEF 524288
 
 #define NMR_READ_SUCCESS 0
 #define NMR_READ_NOFILE 1
@@ -503,7 +505,14 @@ main(int argc, char * argv[])
 				break;
 
 			case '#':
-				MAPCONV_STATUS |= MAPCONV_SHOW_FREQ_STATS;
+				if (argv[CurComd][2] == 0)
+					MAPCONV_STATUS |= MAPCONV_SHOW_FREQ_STATS;
+				else if (argv[CurComd][2] == 'n')
+					MAPCONV_STATUS |= MAPCONV_SHOW_FREQ_STATS_USED;
+				else if (argv[CurComd][2] == 'u')
+					MAPCONV_STATUS |= MAPCONV_SHOW_FREQ_STATS_UNUSED;
+				else
+					HelpBombOut();
 				break;
 
 			default:
@@ -1400,7 +1409,7 @@ void PrintOutUnused()
 				used[BmpHandler.ary[i][k]]++;
 				if (BmpHandler.IconUsed[temp] == 2)
 					unusedBaseIcons++;
-				BmpHandler.IconUsed[temp] = 0;
+				BmpHandler.IconUsed[temp] = 2;
 				totalUnused++;
 			}
 			else
@@ -1450,10 +1459,13 @@ void runFreqStats()
 
     qsort (idx, sizeof(idx)/sizeof(*idx), sizeof(*idx), comp);
 
+	printf("FREQUENCY STATS\n");
+
     for (i = 0 ; i < 256 ; i++)
 		if (BmpHandler.freqAry[idx[i]])
-	        printf ("%d: %d\n", idx[i], BmpHandler.freqAry[idx[i]]);
-
+			if (((MAPCONV_STATUS & MAPCONV_SHOW_FREQ_STATS_UNUSED) && BmpHandler.IconUsed[idx[i]] != 1) ||
+				((MAPCONV_STATUS & MAPCONV_SHOW_FREQ_STATS_USED) && BmpHandler.IconUsed[idx[i]] == 1))
+		        printf ("%02x (%02d): %d\n", idx[i], idx[i], BmpHandler.freqAry[idx[i]]);
 }
 
 int comp (const void * elem1, const void * elem2)

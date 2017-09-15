@@ -28,8 +28,10 @@ Flag -S to print out sort warning for icon files.\n\
 Flag -t(xx) to flag transparency and specify the color. Black=default.\n\
 Flag -u to debug squares with no icon.\n\
 Flag -uf to debug squares with no icon, only showing the first.\n\
-Flag -x to add extra modifications to the base BMP files, -xn to add -xtr, and -x0 to disable XTR file/add -nox.\n");
+Flag -x to add extra modifications to the base BMP files, -xn to add -xtr, and -x0 to disable XTR file/add -nox.\n\
+Flag -# gives stats, -#n is unused only, -#u is used only\n");
 
+	exit(0);
 }
 
 void helpMinorFeatures()
@@ -66,6 +68,8 @@ L00 = start LCD 0-9 at number given (l means don't overwrite icons that are ther
 > runs something from the command line.\n\
 \n\
 ; ends the file.\n");
+
+	exit(0);
 }
 
 void NMRHelp()
@@ -81,5 +85,7 @@ GT #optional command line stuff\n\
 semicolon #ends input\n");
 
 	printf("NMR Help\n");
+
+	exit(0);
 }
 
