@@ -144,18 +144,19 @@ char EgaHdr[ADJ_HEADER_SIZE] = {
 //  64
 //
 //128 = line down the middle
-//possible future is diagonals
+//diagonals are not implemented yet but...
+//256 = DR, 512 = DL
 
 short LCDs[36] = {
 	119, 128, 93, 109, //0-3
 	46, 107, 123, 37, //4-7
 	127, 47, 63, 122, //8-b
 	83, 124, 91, 27, // c-f
-	47, 62, 193, 0, //g-j
+	47, 62, 193, 100, //g-j
 	0, 18, 182, 55, //k-n
 	119, 31, 47, 19, //o-r
 	107, 129, 118, 0, //s-v
-	0, 0, 0, 0, //y-z
+	0, 768, 110, 577, //w-z
 };
 
 typedef struct
@@ -598,9 +599,15 @@ short NMRRead(char FileStr[MAXSTRING])
 		if (BufStr[0] == '\n')
 			printf("Warning: line %d is blank.\n", thisLine);
 
+		if (BufStr[1] == '.')
+		{
+			printf("WARNING: period (.) on line %d is a relic of old NMR versions. Skipping.\n", thisLine);
+			continue;
+		}
+
 		if (BufStr[1] != '=')
 		{
-			printf("Warning: new NMR routines need (char)= for each line.\n");
+			printf("Warning: new NMR routines need (char)= for each line. Change line %d=%s\n", thisLine, BufStr);
 			return NMR_READ_OLDVERSION;
 		}
 
@@ -977,7 +984,7 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 	if (fillUnknownWithLCD)
 		unknownToLCD();
 
- 	return VALID;
+	return VALID;
 
 }
 
@@ -1084,7 +1091,7 @@ void WriteToBmp()
                 fputc(fgetc(F1), F3);
                 break;
          }
- 	}
+	}
 
 	if (BmpHandler.BinStr[0] != 0)
 	{
