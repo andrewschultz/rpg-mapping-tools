@@ -4,8 +4,10 @@
 
 These are written in Python..
 
-* dl-monsters.py reads a save state to find all 130 monsters. The final byte's function is unknown.
+* dl-get.py gets all icons in a save file and converts them to names, so we know the special icons in any dungeon save state.
 * dl-items.py reads a save state to find all 75 monsters. All bytes are accounted for.
+* dl-monsters.py reads a save state to find all 130 monsters. The final byte's function is unknown.
+* dl-uniq.py maps where bytes pop up first and their frequencies in a save state
 
 The save file used should make no difference. The monster and item information are loaded into memory when a game starts, and there is no need to shuffle them around.
 

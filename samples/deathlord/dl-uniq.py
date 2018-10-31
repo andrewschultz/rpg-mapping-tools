@@ -1,10 +1,19 @@
+#
+# dl-uniq.py
+# maps where bytes pop up first and their frequencies in a save state
+# this will tell where to find maps etc.
+#
+# the threshold can be defined as well, but it's not on the command line, because this is an old script where I didn't use configs much.
+#
+
 import re
 import glob
 import os
 
 finished = []
 
-threshold = 2
+max_threshold = 1024
+min_threshold = 2
 
 save_states = glob.glob("c:\\emu\\apple\\dlsave\\*")
 
@@ -45,7 +54,7 @@ for my_file in save_states:
             found_at_x[byte_array[x]] = x % 64
             found_at_y[byte_array[x]] = x // 64
     for y in frequency.keys():
-        if frequency[y] <= threshold:
+        if frequency[y] <= max_threshold and frequency[y] >= max_threshold:
             print(my_short,
                   'icon {:02x}'.format(y), 'x={:02x}'.format(found_at_x[y]),
                   'y={:02x}'.format(found_at_y[y]), frequency[y])

@@ -1,3 +1,7 @@
+#
+# dl-get = get all the icons and oconvert them to names, so we can find special characters etc.
+#
+
 import re
 import glob
 import sys

@@ -15,3 +15,6 @@ So this small subdirectory has the raw materials for converting the data from An
 * if you have the bmp2png.exe utility, you can add the -p flag to convert everything to PNG.
 
 Note that these directions may not be perfect, so let me know if this is wrong.
+
+Scripts:
+* x2b.pl converts world.xml's tiles to a BMP. It requires 256.bmp somewhere. It doesn't require a separate hash or CFG file.
