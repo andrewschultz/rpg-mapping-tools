@@ -182,10 +182,10 @@ typedef struct
 	short IconWidth;
 	short IconHeight;
 
-	short Xi;
-	short Yi;
-	short Xf;
-	short Yf;
+	int Xi;
+	int Yi;
+	int Xf;
+	int Yf;
 
 	short ary[640][640];
 	short checkAry[640][640];
@@ -206,10 +206,10 @@ typedef struct
 	long iconNumBase;
 	long mainXtrBase;
 
-	long cutUp;
-	long cutDown;
-	long cutLeft;
-	long cutRight;
+	int cutUp;
+	int cutDown;
+	int cutLeft;
+	int cutRight;
 	char cutColor;
 	short cutNext;
 
@@ -589,7 +589,6 @@ short NMRRead(char FileStr[MAXSTRING])
 	long buflen = 0;
 
 	short i;
-	short j;
 
 	if (F == NULL)
 	{
@@ -605,7 +604,7 @@ short NMRRead(char FileStr[MAXSTRING])
 		F = fopen(BufStr, "r");
 		if (!F)
 		{
-			printf("Couldn't find %s or %s. Returning.\n");
+			printf("Couldn't find %s or %s. Returning.\n", FileStr, BufStr);
 			return NMR_READ_NOFILE;
 		}
 		else
@@ -688,7 +687,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'b':
 			{
-				long temp;
+				int temp;
 				char * token;
 				char seps[] = ",";
 				token = strtok(BufStr+2, seps);
@@ -985,7 +984,7 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 				else if ((buffer[1] == 'x') || (buffer[1] == 'X'))
 				{
 					if (buffer[1] == 'X')
-						printf("WARNING: line %d has capital x. This will not affect output.\n", lineInFile)
+						printf("WARNING: line %d has capital x. This will not affect output.\n", lineInFile);
 					//printf("Icon %x hex printed.\n", v);
 					curBase = 16;
 					OneIcon(CharToNum(buffer[2])*16+CharToNum(buffer[3]), buffer+4, F);
@@ -1301,7 +1300,7 @@ void WriteToBmp()
 	if (MAPCONV_STATUS & MAPCONV_PNG_POST)
 	{
 		char pngString[80];
-		char myCmd[100];
+		char myCmd[120];
 
 		short len;
 
@@ -1330,7 +1329,7 @@ void WriteToBmp()
 
 void PrintOutUnused()
 {
-	long j, i, k;
+	int j, i, k;
 	short used[256] = {0};
 	short usedAtAll[256] = {0};
 	long totalUnused = 0;
@@ -1507,8 +1506,8 @@ void ModifyArray(char XtrStr[MAXSTRING])
 {
 	FILE * F;
 
-	long xc, yc, nv, i, j, myBase = 10;
-	long xi=0, yi=0, x2=0, y2=0;
+	int xc, yc, nv, i, j, myBase = 10;
+	int xi=0, yi=0;
 	long count;
 	short lineNum = 0;
 	short temp = 0;
@@ -1770,7 +1769,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			{
 				if (debug == 2)
 					printf("xc %d xi %d yc %d yi %d, base %d\n", xc, xi, yc, yi, myBase);
-				printf("Array[%d][%d]=%d with char %d from string %s", xc+xi, yc+yi, nv, count, buffer);
+				printf("Array[%d][%d]=%d with char %ld from string %s", xc+xi, yc+yi, nv, count, buffer);
 			}
 
 			if (!BmpHandler.IconDefined[nv])
