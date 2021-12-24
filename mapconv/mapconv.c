@@ -589,6 +589,7 @@ short NMRRead(char FileStr[MAXSTRING])
 	long buflen = 0;
 
 	short i;
+	short j;
 
 	if (F == NULL)
 	{
@@ -848,6 +849,7 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 	short i1, i2, i3;
 	short blankWarn = 0;
 	short keepGoing = 1;
+	lineInFile = 0;
 
 	if (foundExtra)
 	{
@@ -980,8 +982,10 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 					curBase = 10;
 					OneIcon(CharToNum(buffer[2])*10+CharToNum(buffer[3]), buffer+4, F);
 				}
-				else if (buffer[1] == 'x')
+				else if ((buffer[1] == 'x') || (buffer[1] == 'X'))
 				{
+					if (buffer[1] == 'X')
+						printf("WARNING: line %d has capital x. This will not affect output.\n", lineInFile)
 					//printf("Icon %x hex printed.\n", v);
 					curBase = 16;
 					OneIcon(CharToNum(buffer[2])*16+CharToNum(buffer[3]), buffer+4, F);
