@@ -227,7 +227,7 @@ main(int argc, char * argv[])
 			continue;
 		}
 
- 		buffer = strtok(myLine, "\t");
+		buffer = strtok(myLine, "\t");
 		tabIndex = 1;
 
 		do
@@ -759,7 +759,7 @@ main(int argc, char * argv[])
 				strcat(cmdbuf, buffer+temp+1);
 				system(cmdbuf);
 			}
- 			break;
+			break;
 
 		case '\\':
 			{
@@ -1477,6 +1477,9 @@ fromr:
 			myY = strtol(buffer+1, NULL, 10);
 			myLastY = myY;
 			}
+			break;
+
+		case '#': //commented line after tabl
 			break;
 
 		default:
