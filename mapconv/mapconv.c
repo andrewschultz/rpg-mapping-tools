@@ -586,6 +586,7 @@ short NMRRead(char FileStr[MAXSTRING])
 	char BufStr[MAXSTRING];
 	char * BufStr2;
 	char bufLower;
+	char wh_help[100];
 
 	short thisLine = 0;
 	long buflen = 0;
@@ -784,15 +785,17 @@ short NMRRead(char FileStr[MAXSTRING])
                     BmpHandler.Xf += BmpHandler.Xi;
                 }
 
+                strcpy(wh_help, bufLower == 'd' ? " You may wish to switch d= to o=." : "");
+
                 if (BmpHandler.Xi > InMapW)
-                    printf("WARNING: %s x-min of %d more than width of in-map, %d.", BmpHandler.OutStr, BmpHandler.Xi, InMapW);
+                    printf("MAPCONV WARNING: %s x-min of %d more than width of map it is read from, %d.%s\n", BmpHandler.OutStr, BmpHandler.Xi, InMapW, wh_help);
                 else if (BmpHandler.Xf > InMapW)
-                    printf("WARNING: %s x-max of %d more than width of in-map, %d.", BmpHandler.OutStr, BmpHandler.Xf, InMapW);
+                    printf("MAPCONV WARNING: %s x-max of %d more than width of map it is read from, %d.%s\n", BmpHandler.OutStr, BmpHandler.Xf, InMapW, wh_help);
 
                 if (BmpHandler.Yi > InMapH)
-                    printf("WARNING: %s y-min of %d more than height of in-map, %d.", BmpHandler.OutStr, BmpHandler.Yi, InMapH);
+                    printf("MAPCONV WARNING: %s y-min of %d more than height of map it is read from, %d.%s\n", BmpHandler.OutStr, BmpHandler.Yi, InMapH, wh_help);
                 else if (BmpHandler.Yf > InMapH)
-                    printf("WARNING: %s y-max of %d more than height of in-map, %d.", BmpHandler.OutStr, BmpHandler.Yf, InMapH);
+                    printf("MAPCONV WARNING: %s y-max of %d more than height of map it is read from, %d.%s\n", BmpHandler.OutStr, BmpHandler.Yf, InMapH, wh_help);
 
 				BmpHandler.BinStr[0] = (char)0x00;
 
