@@ -243,8 +243,8 @@ void printGrid();
 void snip();
 
 //Globals with defaults
-long InMapH = 256;
-long InMapW = 256;
+short InMapH = 256;
+short InMapW = 256;
 
 short lineInFile = 0;
 
@@ -782,6 +782,16 @@ short NMRRead(char FileStr[MAXSTRING])
                     BmpHandler.Yf += BmpHandler.Yi;
                     BmpHandler.Xf += BmpHandler.Xi;
                 }
+
+                if (BmpHandler.Xi > InMapW)
+                    printf("WARNING: %s x-min of %d more than width of in-map, %d.", BmpHandler.OutStr, BmpHandler.Xi, InMapW);
+                else if (BmpHandler.Xf > InMapW)
+                    printf("WARNING: %s x-max of %d more than width of in-map, %d.", BmpHandler.OutStr, BmpHandler.Xf, InMapW);
+
+                if (BmpHandler.Yi > InMapH)
+                    printf("WARNING: %s y-min of %d more than height of in-map, %d.", BmpHandler.OutStr, BmpHandler.Yi, InMapH);
+                else if (BmpHandler.Yf > InMapH)
+                    printf("WARNING: %s y-max of %d more than height of in-map, %d.", BmpHandler.OutStr, BmpHandler.Yf, InMapH);
 
 				BmpHandler.BinStr[0] = (char)0x00;
 
