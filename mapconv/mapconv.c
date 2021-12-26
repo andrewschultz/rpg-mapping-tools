@@ -194,6 +194,7 @@ typedef struct
 	short Icons[257][16][16]; // the extra icon space is for rotating an icon about itself
 	short IconUsed[256];
 	short IconDefined[256];
+	short IconIsZigzag[256];
 
 	short freqAry[256];
 
@@ -1165,6 +1166,7 @@ void WriteToBmp()
 	char outStr[MAXSTRING];
 	short len = strlen(BmpHandler.OutStr);
 	short xyphusJump = 0;
+	long bmpWidth = 0, bmpHeight = 0;
 
 	int i, j, i2, j2, j3, count;
 
@@ -1205,22 +1207,26 @@ void WriteToBmp()
         switch(i)
         {
 			case 0x12:
-				temp = (long)(BmpHandler.Xf-BmpHandler.Xi)*(long)BmpHandler.IconWidth;
-				putlong(temp, F3);
+				bmpWidth = (long)(BmpHandler.Xf-BmpHandler.Xi)*(long)BmpHandler.IconWidth;
+				putlong(bmpWidth, F3);
 				i += 3;
 				fgetc(F1);
 				fgetc(F1);
 				fgetc(F1);
 				fgetc(F1);
 				break;
+
 			case 0x16:
-				putlong((long)(BmpHandler.Yf-BmpHandler.Yi)*(long)BmpHandler.IconHeight, F3);
+				bmpHeight = (long)(BmpHandler.Yf-BmpHandler.Yi)*(long)BmpHandler.IconHeight;
+				putlong(bmpHeight, F3);
 				i += 3;
 				fgetc(F1);
 				fgetc(F1);
 				fgetc(F1);
 				fgetc(F1);
+				printf("Width=%ld Height=%ld\n", bmpWidth, bmpHeight);
 				break;
+
 			case 0x36:
 				if (MAPCONV_STATUS & MAPCONV_NO_HEADER_FLAG)
 					fputc(fgetc(F1), F3);
@@ -1292,6 +1298,11 @@ void WriteToBmp()
 				for (i2 = 0;  i2 < BmpHandler.IconWidth;  i2++)
 				{
 					short xyz=BmpHandler.Icons[BmpHandler.transpary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.IconHeight-j2-1];
+					if (BmpHandler.IconIsZigzag[BmpHandler.ary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]])
+                    {
+                        fputc(BmpHandler.Icons[BmpHandler.ary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][(i2+j2+(i*BmpHandler.IconWidth)+(j*BmpHandler.IconHeight)) & 1][0], F3);
+                        continue;
+                    }
 					if (BmpHandler.cutNext)
 						if ((i < BmpHandler.cutRight) && (i >= BmpHandler.cutLeft)
 							&& (j >= BmpHandler.cutUp) && (j < BmpHandler.cutDown))
@@ -1304,13 +1315,15 @@ void WriteToBmp()
 					else
 				 		fputc((char)BmpHandler.Icons[BmpHandler.ary[i][BmpHandler.Yf+BmpHandler.Yi-j-1]][i2][BmpHandler.IconHeight-j2-1], F3);
 				}
-                  if (temp % 4)
-                    for (j3=(temp%4);  j3<4;  j3++)
-			    fputc(0, F3);
+
+            if (bmpWidth % 4) // byte padding if BMP Width is not divisible by 4
+                printf("Adding buffer %d\n", 4 - (bmpWidth % 4));
+                for (j3=(bmpWidth % 4);  j3<4;  j3++)
+                    fputc(0, F3);
 
 			if (xyphusJump)
 				for (i2=0; i2 < (BmpHandler.IconWidth+1) / 2; i2++)
-					putc(0, F3);
+					fputc(0, F3);
 		}
 	fclose(F1);
 	fclose(F3);
@@ -2082,7 +2095,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[q][i][j] = BmpHandler.Icons[q][i][BmpHandler.IconHeight-j-1] = tst;
 		break;
 
-	case 'x': //alternating checkerboard colors
+	case 'x': //alternating checkerboard colors, "dumb"
 		tst = CharToNum(myBuf[1]);
 		tst2 = CharToNum(myBuf[2]);
 		//printf("Checkerboard! %d %d\n", tst, tst2);
@@ -2093,6 +2106,12 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				else
 					BmpHandler.Icons[q][i][j] = tst;
 		break;
+
+    case '%': // alternating checkerboard colors but for odd width or height
+        BmpHandler.Icons[q][0][0] = CharToNum(myBuf[1]);
+        BmpHandler.Icons[q][1][0] = CharToNum(myBuf[2]);
+        BmpHandler.IconIsZigzag[q] = 1;
+        break;
 
 	default:
 		printf("Unknown command for icon %x: %s", q, myBuf);
