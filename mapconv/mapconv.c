@@ -552,10 +552,10 @@ main(int argc, char * argv[])
 	}
 
 	if (!foundExtra && (MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS))
-		printf("WARNING: You ran the -x option but the NMR file didn't reference a proper XTR file.\n");
+		printf("MAPCONV WARNING: You ran the -x option but the NMR file didn't reference a proper XTR file.\n");
 
 	if (foundExtra && !(MAPCONV_STATUS & MAPCONV_XTRA_AMENDMENTS))
-		printf("WARNING: The NMR file referenced an extra file but you didn't run the -x option.\n");
+		printf("MAPCONV WARNING: The NMR file referenced an extra file but you didn't run the -x option.\n");
 
 	if (BmpHandler.printHTMLFile > 0)
 	{
@@ -634,17 +634,17 @@ short NMRRead(char FileStr[MAXSTRING])
 			break;
 
 		if (BufStr[0] == '\n')
-			printf("Warning: line %d is blank.\n", thisLine);
+			printf("MAPCONV WARNING: line %d is blank.\n", thisLine);
 
 		if (BufStr[0] == '.')
 		{
-			printf("WARNING: period (.) on line %d is a relic of old NMR versions. Skipping.\n", thisLine);
+			printf("MAPCONV WARNING: period (.) on line %d is a relic of old NMR versions. Skipping.\n", thisLine);
 			continue;
 		}
 
 		if (BufStr[1] != '=')
 		{
-			printf("Warning: new NMR routines need (char)= for each line. Change line %d=%s\n", thisLine, BufStr);
+			printf("MAPCONV WARNING: new NMR routines need (char)= for each line. Change line %d=%s\n", thisLine, BufStr);
 			return NMR_READ_OLDVERSION;
 		}
 
@@ -735,7 +735,7 @@ short NMRRead(char FileStr[MAXSTRING])
 			if (MAPCONV_REGENERATE_BASE_FILE)
 				system(BufStr+2);
 			else
-				printf("Skipping %s", BufStr + 2);
+				printf("MAPCONV NOTE: Skipping %s since regenerate_base_file is set to false.", BufStr + 2);
 			break;
 
 		case 'h':
@@ -746,13 +746,13 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'i': //read in an icons file
 			if (strcmp(BufStr+buflen-4, "ahs") && strcmp(BufStr+buflen-4, "pix"))
-				printf("WARNING: wrong extension for icons file.\n");
+				printf("MAPCONV WARNING: wrong extension for icons file.\n");
 			strcpy(BmpHandler.PixStr, BufStr + 2);
 			snip(BmpHandler.PixStr);
 
 			if (ReadInIcons(BmpHandler.PixStr, 1) == INVALID)
 			{
-				printf("%s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
+				printf("MAPCONV ERROR: %s PIX file seems corrupt, possibly missing.\n", BmpHandler.PixStr);
 				return NMR_READ_PIXCORRUPT;
 			}
 			break;
@@ -1227,7 +1227,6 @@ void WriteToBmp()
 				fgetc(F1);
 				fgetc(F1);
 				fgetc(F1);
-				printf("Width=%ld Height=%ld\n", bmpWidth, bmpHeight);
 				break;
 
 			case 0x36:
@@ -1320,7 +1319,6 @@ void WriteToBmp()
 				}
 
             if (bmpWidth % 4) // byte padding if BMP Width is not divisible by 4
-                printf("Adding buffer %d\n", 4 - (bmpWidth % 4));
                 for (j3=(bmpWidth % 4);  j3<4;  j3++)
                     fputc(0, F3);
 
@@ -1664,7 +1662,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 				long x1, y1, x2, y2, defColor;
 
 				if (BmpHandler.startIconBase != BmpHandler.startIconBase)
-					printf("WARNING line %d has startIconBase != mainXtrBase.\n", lineNum);
+					printf("MAPCONV WARNING line %d has startIconBase != mainXtrBase.\n", lineNum);
 
 				x1=strtol(buffer+1, &SecondString, BmpHandler.startIconBase);
 				y1=strtol(buffer+4, &SecondString, BmpHandler.startIconBase);
@@ -1673,7 +1671,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 				defColor=strtol(buffer+13, &SecondString, BmpHandler.startIconBase);
 				if (defColor > 256)
 				{
-					printf("WARNING: Skipping icon value of %2x on line %d, can't be over x100/256.\n", defColor, lineNum);
+					printf("MAPCONV WARNING: Skipping icon value of %2x on line %d, can't be over x100/256.\n", defColor, lineNum);
 				}
 
 				for (j=0; j < y2; j++)
@@ -1819,7 +1817,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
 			{
 				if (BmpHandler.transpary[xc+xi][yc+yi])
-					printf("Warning: possible redefined xtr/transp %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
+					printf("MAPCONV WARNING: possible redefined xtr/transp %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
 				if (transpUnder)
 				{
 					BmpHandler.transpary[xc+xi][yc+yi] = BmpHandler.ary[xc+xi][yc+yi];
@@ -1831,7 +1829,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			else
 			{
 				if (BmpHandler.checkAry[xc+xi][yc+yi])
-					printf("Warning: possible redefined xtr %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
+					printf("MAPCONV WARNING: possible redefined xtr %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
 				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
 				BmpHandler.checkAry[xc+xi][yc+yi] = 1;
 			}
@@ -1948,7 +1946,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'c': //copies one icon to another
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: copied-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: copied-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -1959,7 +1957,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'e': // 180 degree rotation
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: rotated-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -1970,7 +1968,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'f': // flip across the SW/NE diagonal
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -1981,7 +1979,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'F': // flip across the SE/NW diagonal
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -1992,7 +1990,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'h': //copies one icon to another, flipped horizontally
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -2011,12 +2009,12 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'l': //rotate 90 degrees left
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: rotated-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		if (BmpHandler.IconHeight != BmpHandler.IconWidth)
 		{
-			printf ("Need height = width to rotate.\n");
+			printf ("MAPCONV ERROR: Need height = width to rotate.\n");
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -2056,12 +2054,12 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'r': //rotate 90 degrees right
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: rotated-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: rotated-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		if (BmpHandler.IconHeight != BmpHandler.IconWidth)
 		{
-			printf ("Need height = width to rotate.\n");
+			printf ("MAPCONV ERROR: Need height = width to rotate.\n");
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -2082,7 +2080,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	case 'v': //copies one icon to another, flipped vertically
 		if (BmpHandler.IconDefined[tst] == 0)
 		{
-			printf("Warning: flipped-from icon 0x%x is not defined.\n", tst);
+			printf("MAPCONV WARNING: flipped-from icon 0x%x is not defined.\n", tst);
 			return;
 		}
 		for (j=0; j < BmpHandler.IconHeight; j++)
@@ -2126,7 +2124,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 	}
 	if ((overwriteCheck == -1) && (BmpHandler.IconDefined[q] == 0))
 	{
-		printf("Warning, tried to do something with blank icon %x hex.\n", q);
+		printf("MAPCONV WARNING: tried to do something with blank icon %x hex.\n", q);
 	}
 
 	BmpHandler.IconDefined[q] = 1;
@@ -2147,9 +2145,9 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				BmpHandler.Icons[q][i][j] = CharToNum(buffer[1]);
 			if (buflen < BmpHandler.IconWidth+1)
-				printf("Warning: line %d has only %d length.\n", lineInFile, strlen(buffer));
+				printf("MAPCONV WARNING: line %d has only %d length.\n", lineInFile, strlen(buffer));
 			if (buflen > BmpHandler.IconWidth+1)
-				printf("Warning: line %d runs over with %d length.\n", lineInFile, strlen(buffer));
+				printf("MAPCONV WARNING: line %d runs over with %d length.\n", lineInFile, strlen(buffer));
 
 		for (i=0;  i < BmpHandler.IconWidth;  i++)
 		{
@@ -2239,12 +2237,12 @@ void LCDize(short whichNum, short whichIcon, short allowPrevDefined, short xi, s
 
 	if ((BmpHandler.IconDefined[whichIcon] != 0) && (MAPCONV_STATUS & MAPCONV_DEBUG_ICONS))
 	{
-		printf("Warning: icon %x already used, overwriting.\n", whichIcon);
+		printf("MAPCONV WARNING: icon %x already used, overwriting.\n", whichIcon);
 	}
 
 	if (dx < 2)
 	{
-		printf("Uh-oh, width is too narrow.\n");
+		printf("MAPCONV WARNING: map width is too narrow.\n");
 		return;
 	}
 
