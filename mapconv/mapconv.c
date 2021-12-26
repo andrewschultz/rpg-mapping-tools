@@ -584,6 +584,7 @@ short NMRRead(char FileStr[MAXSTRING])
 
 	char BufStr[MAXSTRING];
 	char * BufStr2;
+	char bufLower;
 
 	short thisLine = 0;
 	long buflen = 0;
@@ -646,7 +647,9 @@ short NMRRead(char FileStr[MAXSTRING])
 		}
 
 		snip(BufStr);
-		switch(BufStr[0] | 0x20)
+
+		bufLower = BufStr[0] | 0x20;
+		switch(bufLower)
 		{
 
 		case 'a':
@@ -752,6 +755,7 @@ short NMRRead(char FileStr[MAXSTRING])
 			}
 			break;
 
+        case 'd':
 		case 'o': //output a BMP file
 			{
 				char * token;
@@ -772,6 +776,12 @@ short NMRRead(char FileStr[MAXSTRING])
 
 				sscanf(token, "%s", &BmpHandler.OutStr);
 				token = strtok(NULL, seps);
+
+				if (bufLower == 'd')
+                {
+                    BmpHandler.Yf += BmpHandler.Yi;
+                    BmpHandler.Xf += BmpHandler.Xi;
+                }
 
 				BmpHandler.BinStr[0] = (char)0x00;
 
