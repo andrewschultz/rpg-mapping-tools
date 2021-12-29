@@ -701,39 +701,22 @@ short NMRRead(char FileStr[MAXSTRING])
 
 		case 'b':
 			{
-				int temp;
-				char * token;
-				char seps[] = ",";
-				token = strtok(BufStr+2, seps);
+			    int total_read;
+				total_read = sscanf(BufStr + 2, "%d,%d,%d,%d,%d", &BmpHandler.cutLeft, &BmpHandler.cutUp, &BmpHandler.cutRight, &BmpHandler.cutDown, &BmpHandler.cutColor);
 
-				sscanf(token, "%d", &BmpHandler.cutLeft);
-				token = strtok(NULL, seps);
-
-				sscanf(token, "%d", &BmpHandler.cutUp);
-				token = strtok(NULL, seps);
-
-				sscanf(token, "%d", &BmpHandler.cutRight);
-				token = strtok(NULL, seps);
-
-				sscanf(token, "%d", &BmpHandler.cutDown);
-				token = strtok(NULL, seps);
-
-				sscanf(token, "%d", &temp);
-				BmpHandler.cutColor = (char)temp;
-
-				if (token == NULL)
+				if (total_read < 5)
 				{
-					printf("You need five arguments to block out a rectangle.\n");
+					printf("MAPCONV WARNING: You need five arguments to block out a rectangle in b= at line %d, skipping.\n", lineInFile);
 					break;
 				}
 				if (BmpHandler.cutDown - BmpHandler.cutUp > 0x80)
 				{
-					printf("Cut area too high.\n");
+					printf("MAPCONV WARNING: Cut area too high in b= at line %d, skipping.\n", lineInFile);
 					break;
 				}
 				if (BmpHandler.cutRight - BmpHandler.cutLeft > 0x80)
 				{
-					printf("Cut area too wide.\n");
+					printf("MAPCONV WARNING: Cut area too wide in b= at line %d, skipping.\n", lineInFile);
 					break;
 				}
 				BmpHandler.cutNext = 1;
