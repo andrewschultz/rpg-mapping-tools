@@ -265,6 +265,8 @@ short xyphus = 0;
 short printIconBmp = 0;
 short iconOutBorderColor = GREY;
 
+short ignoreRedefined = false;
+
 main(int argc, char * argv[])
 {
 	char myFile[50];
@@ -387,6 +389,12 @@ main(int argc, char * argv[])
 				break;
 
 			case 'i':
+
+				if (argv[CurComd][2] == 'r')
+				{
+				    ignoreRedefined = true;
+					break;
+				}
 
 				if (argv[CurComd][2] == 'o')
 				{
@@ -1826,7 +1834,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 //			BmpHandler.ary[xc][255-yc] = nv;
 			if (XtrTransparencyRead && (MAPCONV_STATUS & MAPCONV_USE_TRANSPARENCY))
 			{
-				if (BmpHandler.transpary[xc+xi][yc+yi])
+				if (!ignoreRedefined && BmpHandler.transpary[xc+xi][yc+yi])
 					printf("MAPCONV WARNING: possible redefined xtr/transp %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
 				if (transpUnder)
 				{
@@ -1838,7 +1846,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			}
 			else
 			{
-				if (BmpHandler.checkAry[xc+xi][yc+yi])
+				if (!ignoreRedefined && BmpHandler.checkAry[xc+xi][yc+yi])
 					printf("MAPCONV WARNING: possible redefined xtr %d,%d(%02x,%03x hex)\n", xc+xi, yc+yi, xc+xi, yc+yi);
 				BmpHandler.ary[xc+xi][yc+yi] = (short)nv;
 				BmpHandler.checkAry[xc+xi][yc+yi] = 1;
