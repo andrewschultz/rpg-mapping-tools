@@ -18,7 +18,7 @@ Flag -db to give debug text (xtr files, etc.).\n\
 Flag -h to output html file of the output graphic's palettes.\n\
 Flag -n to turn off default header.\n\
 Flag -i to show icon debugging.\n\
-Flag -io to create icon BMP. (optional # for filler/border color)\n\
+Flag -io to create icon BMP. (optional # for filler/border color).\n\
 Flag -nh to show NMR help.\n\
 Flag -p to postprocess to png. -pa also erases png.bak/000 files.\n\
 Flag -r to regenerate the base BMP file.\n\
@@ -36,10 +36,12 @@ Flag -# gives stats, -#n is unused only, -#u is used only\n");
 
 void helpMinorFeatures()
 {
-	printf("-ch asks for color help\n\
--xy signifies mapping for Xyphus, which has a half-icon shifted jagged map\n\
--i(s/h/w) forces icon width/height, mostly used for testing\n");
+	printf("Flag -ch asks for color help\n\
+Flag -xy signifies mapping for Xyphus, which has a half-icon shifted jagged map\n\
+Flag -i(s/h/w) forces icon width/height, mostly used for testing\n\
+Flag -ir to ignore redefinition of icons (only if this is expected).\n");
 
+    exit(0);
 }
 
 void AHSHelp()

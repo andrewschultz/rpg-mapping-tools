@@ -266,7 +266,7 @@ short xyphus = 0;
 short printIconBmp = 0;
 short iconOutBorderColor = GREY;
 
-short ignoreRedefined = false;
+bool ignoreRedefined = false;
 
 int main(int argc, char * argv[])
 {
@@ -771,13 +771,25 @@ short NMRRead(char FileStr[MAXSTRING])
 			{
 			    int total_read;
 
+			    // note: to allow commas, result = sscanf(tokenstring, "%[^','],%[^','],%[^','],%s", o, s, t, f);
 			    total_read = sscanf(BufStr + 2, "%d,%d,%d,%d,%s", &BmpHandler.Xi, &BmpHandler.Yi, &BmpHandler.Xf, &BmpHandler.Yf, BmpHandler.OutStr);
 
 			    if (total_read < 5)
                     printf("MAPCONV WARNING: Line %d %s only had %d arguments read of 5.\n", lineInFile, BufStr + 2, total_read);
 
 			    if (strchr(BmpHandler.OutStr, ','))
-                    printf("MAPCONV WARNING: Line %d %s has an extra comma. This may be an artifact of defining old BIN files in the NMR file.", lineInFile, BmpHandler.OutStr);
+                {
+                    printf("MAPCONV WARNING: Line %d %s has an extra comma. This may be an artifact of defining old BIN files in the NMR file. Removing everything past the comma.",
+                           lineInFile, BmpHandler.OutStr);
+                    for (i = 0; i < strlen(BmpHandler.OutStr); i++)
+                    {
+                        if (BmpHandler.OutStr[i] == ',')
+                        {
+                            BmpHandler.OutStr[i] = 0;
+                            break;
+                        }
+                    }
+                }
 
 				if (bufLower == 'd')
                 {
@@ -797,15 +809,15 @@ short NMRRead(char FileStr[MAXSTRING])
                 else if (BmpHandler.Yf > InMapH)
                     printf("MAPCONV WARNING: %s y-max of %d more than height of map it is read from, %d.%s\n", BmpHandler.OutStr, BmpHandler.Yf, InMapH, wh_help);
 
+				strcpy(BmpHandler.BinStr, BmpHandler.OutStr);
+				BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 2] = 'i';
+				BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 1] = 'n';
+
 				WriteToBmp();
 				if (printIconBmp)
 					WriteIconsToBmp();
 
 				NewPIXFile = 0;
-
-				strcpy(BmpHandler.BinStr, BmpHandler.OutStr);
-				BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 2] = 'i';
-				BmpHandler.BinStr[strlen(BmpHandler.BinStr) - 1] = 'n';
 
 			}
 			break;
@@ -1249,7 +1261,7 @@ void WriteToBmp()
          }
 	}
 
-	if (BmpHandler.BinStr[0] != 0)
+	if (!(MAPCONV_STATUS & MAPCONV_IGNORE_BINS))
 	{
 		F2 = fopen(BmpHandler.BinStr, "wb");
 
