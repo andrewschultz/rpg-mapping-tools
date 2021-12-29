@@ -31,6 +31,7 @@ Want to check next we can change AHS or BMP in the middle of an NMR file.
 Maybe have option to start with a certain line or end with it as well.
 */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -267,7 +268,7 @@ short iconOutBorderColor = GREY;
 
 short ignoreRedefined = false;
 
-main(int argc, char * argv[])
+int main(int argc, char * argv[])
 {
 	char myFile[50];
 	short CurComd = 1;
@@ -1170,7 +1171,6 @@ void WriteIconsToBmp()
 
 void WriteToBmp()
 {
-	long temp;
 	FILE * F1 = fopen(BmpHandler.BmpStr, "rb");
 	FILE * F2;
 	FILE * F3;
@@ -1486,7 +1486,7 @@ void PrintOutUnused()
 	{
 		float q = ((float)(totalUsed*100))/(totalUsed+totalUnused);
 	    printf("Total stats:\n");
-		printf("%d of %d usable icons in final map, for %f percent.\n", totalUsed, totalUsed+totalUnused, q);
+		printf("%ld of %ld usable icons in final map, for %f percent.\n", totalUsed, totalUsed+totalUnused, q);
 		printf("%d icons not defined in icon file, %d sent to the output BMP.\n", unusedBaseIcons, usedBaseIcons);
 	}
 	if (totalUnused > 0)
@@ -1547,7 +1547,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 {
 	FILE * F;
 
-	int xc, yc, nv, i, j, myBase = 10;
+	int xc = 9, yc = 0, nv = 0, i, j, myBase = 10;
 	int xi=0, yi=0;
 	long count;
 	short lineNum = 0;
@@ -1671,7 +1671,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			{
 				long x1, y1, x2, y2, defColor;
 
-				if (BmpHandler.startIconBase != BmpHandler.startIconBase)
+				if (BmpHandler.startIconBase != BmpHandler.mainXtrBase)
 					printf("MAPCONV WARNING line %d has startIconBase != mainXtrBase.\n", lineNum);
 
 				x1=strtol(buffer+1, &SecondString, BmpHandler.startIconBase);
@@ -1681,7 +1681,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 				defColor=strtol(buffer+13, &SecondString, BmpHandler.startIconBase);
 				if (defColor > 256)
 				{
-					printf("MAPCONV WARNING: Skipping icon value of %2x on line %d, can't be over x100/256.\n", defColor, lineNum);
+					printf("MAPCONV WARNING: Skipping icon value of %2x on line %d, can't be over x100/256.\n", (short)defColor, lineNum);
 				}
 
 				for (j=0; j < y2; j++)
@@ -1909,7 +1909,7 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 				BmpHandler.Icons[256][i][j] = BmpHandler.Icons[q][i][j];
 		tst = 256;
 		if (BmpHandler.IconDefined[q] == 0)
-			printf("Warning, operating reflexively on icon %02x hex but it's undefined.");
+			printf("Warning, operating reflexively on icon %02x hex but it's undefined.", q);
 	}
 
 	switch(myBuf[0])
@@ -2162,10 +2162,11 @@ void OneIcon(int q, char myBuf[MAXSTRING], FILE * F)
 		if (buffer[0] == '*')
 			for (i=0;  i < BmpHandler.IconWidth;  i++)
 				BmpHandler.Icons[q][i][j] = CharToNum(buffer[1]);
-			if (buflen < BmpHandler.IconWidth+1)
-				printf("MAPCONV WARNING: line %d has only %d length.\n", lineInFile, strlen(buffer));
-			if (buflen > BmpHandler.IconWidth+1)
-				printf("MAPCONV WARNING: line %d runs over with %d length.\n", lineInFile, strlen(buffer));
+
+        if (buflen < BmpHandler.IconWidth+1)
+            printf("MAPCONV WARNING: line %d has only %d length.\n", lineInFile, (int)strlen(buffer));
+        if (buflen > BmpHandler.IconWidth+1)
+            printf("MAPCONV WARNING: line %d runs over with %d length.\n", lineInFile, (int)strlen(buffer));
 
 		for (i=0;  i < BmpHandler.IconWidth;  i++)
 		{
@@ -2205,10 +2206,11 @@ short otherIcon(char x)
 
 void unknownToLCD()
 {
-	long outlineColor = BmpHandler.unknownLCDColor ^ 0x808080;
 	short i;
 	short wd = (BmpHandler.IconWidth-4) >> 1;
-	short hd = (BmpHandler.IconHeight-1) >> 1;
+	// things that might not be useful but maybe had been once: outlineColor = "opposite" of unknownLCDcolor, hd = height with buffer to next multiple of 4
+	//long outlineColor = BmpHandler.unknownLCDColor ^ 0x808080;
+	//short hd = (BmpHandler.IconHeight-1) >> 1;
 
 	if (BmpHandler.IconWidth != BmpHandler.IconHeight)
 	{
