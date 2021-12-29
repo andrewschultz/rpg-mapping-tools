@@ -474,7 +474,7 @@ main(int argc, char * argv[])
 				printf("Use transparency.\n");
 				if (argv[CurComd][2])
 				{
-					BmpHandler.TransparencyColor = (short) strtol(argv[CurComd], NULL, 16);
+					BmpHandler.TransparencyColor = (short) strtol(argv[CurComd]+2, NULL, 16);
 					printf("Transparency color %02x.\n", BmpHandler.TransparencyColor);
 				}
 				break;
@@ -1171,7 +1171,7 @@ void WriteToBmp()
 	short xyphusJump = 0;
 	long bmpWidth = 0, bmpHeight = 0;
 
-	int i, j, i2, j2, j3, count;
+	int i, j, i2, j2, j3;
 
 	strcpy(outStr, BmpHandler.OutStr);
 
@@ -1244,7 +1244,6 @@ void WriteToBmp()
 				{
 				for (j=0;  j < ADJ_HEADER_SIZE;  j++)
 				{
-					count = fgetc(F1);
 					fputc(TheHdr[j], F3);
 				}
 				i += (ADJ_HEADER_SIZE - 1);
@@ -1579,6 +1578,9 @@ void ModifyArray(char XtrStr[MAXSTRING])
 
 	while (fgets(buffer, 200, F))
 	{
+        if ((strlen(buffer) > 0) && (buffer[strlen(buffer)-1] == '\n'))
+            buffer[strlen(buffer)-1] = 0;
+
 		lineNum++;
 		switch(buffer[0])
 		{
