@@ -1694,7 +1694,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			if ((!transparencyWarnYet) && !(MAPCONV_USE_TRANSPARENCY & MAPCONV_STATUS))
 			{
 				transparencyWarnYet = 1;
-				printf("WARNING line %d has a transparency toggle but you aren't running the -t option.\n", lineNum);
+				printf("MAPCONV WARNING line %d has a transparency toggle but you aren't running the -t# (0-f) option.\n", lineNum);
 			}
 
 			temp = 1;
@@ -1707,9 +1707,17 @@ void ModifyArray(char XtrStr[MAXSTRING])
 				transpUnder = 0;
 
 			if (buffer[temp] == '-')
+            {
+                if (debug)
+                    printf("MAPCONV NOTES: turning transparency off at line %d.\n", lineNum);
 				XtrTransparencyRead = 0;
+            }
 			else if (buffer[temp] == '+')
+            {
+                if (debug)
+                    printf("MAPCONV NOTES: turning transparency on at line %d.\n", lineNum);
 				XtrTransparencyRead = 1;
+            }
 			else if (buffer[1] != 'u')
 				printf("%s = bad transparency line at %d. Need t(u)(+/-).\n", buffer, lineNum);
 			break;
@@ -1784,7 +1792,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			count = 0;
 			while (buffer[count] && (buffer[count] != ','))
 				count++;
-			if (!buffer[count]) { printf("XTR file string too short: %s", buffer); break; }
+			if (!buffer[count]) { printf("MAPCONV WARNING XTR file location/tile line has 0 of 2 commas: %s", buffer); break; }
 
 			yc = strtol(buffer+count+1, &SecondString, BmpHandler.mainXtrBase);
 
@@ -1792,7 +1800,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 
 			while (buffer[count] && (buffer[count] != ',') && (buffer[count] != '='))
 				count++;
-			if (!buffer[count]) { printf("XTR file string too short: %s", buffer); break; }
+			if (!buffer[count]) { printf("MAPCONV WARNING XTR file location/tile line has 1 of 2 commas: %s", buffer); break; }
 
 			if (buffer[count] == '=')
 				nv = (char)buffer[count+1] & 0xff;	//ie =T, character stuff
@@ -1838,7 +1846,7 @@ void ModifyArray(char XtrStr[MAXSTRING])
 			break;
 
 		default:
-			printf("Xtr file has faulty line #%d:\n%s", lineNum, buffer);
+			printf("MAPCONV WARNING Xtr file has %s line #%d:\n%s", strlen(buffer) ? "faulty" : "blank", lineNum, buffer);
 			break;
 		}
 
