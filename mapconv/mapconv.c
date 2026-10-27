@@ -39,7 +39,7 @@ Maybe have option to start with a certain line or end with it as well.
 
 #include "mapconv-help.h"
 
-#define NUM_ICONS 256
+#define MAX_ICONS 320
 
 #define HEIGHT_FOUND 1
 #define WIDTH_FOUND 2
@@ -190,12 +190,12 @@ typedef struct
 	short checkAry[640][640];
 	short transpary[640][640];
 
-	short Icons[257][16][16]; // the extra icon space is for rotating an icon about itself
-	short IconUsed[256];
-	short IconDefined[256];
-	short IconIsZigzag[256];
+	short Icons[MAX_ICONS + 1][MAXICONSIZE][MAXICONSIZE]; // the extra icon space is for rotating an icon about itself
+	short IconUsed[MAX_ICONS];
+	short IconDefined[MAX_ICONS];
+	short IconIsZigzag[MAX_ICONS];
 
-	short freqAry[256];
+	short freqAry[MAX_ICONS];
 
 	short IsNewPIX;
 
@@ -293,7 +293,7 @@ int main(int argc, char * argv[])
 
 	BmpHandler.unknownLCDColor = 0x808080;
 
-	for (i=0; i < 256; i++)
+	for (i=0; i < MAX_ICONS; i++)
 		BmpHandler.IconDefined[i] = 0;
 
 	if (argc < 2)
@@ -869,7 +869,7 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 
 	if (reset == 1)
 	{
-		for (i1 = 0;  i1 < NUM_ICONS;  i1++)
+		for (i1 = 0;  i1 < MAX_ICONS;  i1++)
 		{
 			BmpHandler.IconDefined[i1] = 0;
 			BmpHandler.IconUsed[i1] = 0;
