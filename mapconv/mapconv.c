@@ -62,6 +62,8 @@ Maybe have option to start with a certain line or end with it as well.
 
 #define MAXSTRING 100
 
+#define DEFAULTPICSIZE 256
+
 short NewPIXFile;
 
 #define HEADERSIZE 0x436
@@ -243,8 +245,8 @@ void printGrid();
 void snip();
 
 //Globals with defaults
-short InMapH = 256;
-short InMapW = 256;
+short InMapH = DEFAULTPICSIZE;
+short InMapW = DEFAULTPICSIZE;
 
 short lineInFile = 0;
 
