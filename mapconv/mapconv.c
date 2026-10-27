@@ -58,7 +58,7 @@ Maybe have option to start with a certain line or end with it as well.
 
 #define TRANSPARENT_LCD 2
 
-#define MAXICONSIZE 16
+#define MAXICONSIZE 24
 
 #define MAXSTRING 100
 
@@ -897,6 +897,7 @@ int ReadInIcons(char yzzy[MAXSTRING], short reset)
 
 		temp = (short) strtol(buffer+1, NULL, 10);
 		if (temp > MAXICONSIZE)
+			printf("WARNING buffer size %s is over max icon size", temp);
 			temp = MAXICONSIZE;
 
 		switch(buffer[0])
